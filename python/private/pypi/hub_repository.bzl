@@ -15,11 +15,8 @@
 ""
 
 load("//python/private:text_util.bzl", "render")
-load(
-    ":render_pkg_aliases.bzl",
-    "render_multiplatform_pkg_aliases",
-    "whl_alias",
-)
+load(":render_pkg_aliases.bzl", "render_multiplatform_pkg_aliases")
+load(":whl_config_setting.bzl", "whl_config_setting")
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
@@ -32,7 +29,7 @@ def _impl(rctx):
     bzl_packages = rctx.attr.packages or rctx.attr.whl_map.keys()
     aliases = render_multiplatform_pkg_aliases(
         aliases = {
-            key: [whl_alias(**v) for v in json.decode(values)]
+            key: _whl_aliases(values)
             for key, values in rctx.attr.whl_map.items()
         },
         extra_hub_aliases = rctx.attr.extra_hub_aliases,
@@ -97,3 +94,45 @@ in the pip.parse tag class.
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _impl,
 )
+
+def _whl_aliases(repo_mapping_json):
+    """Inverse of whl_aliases
+
+    Args:
+        repo_mapping_json: {type}`str`
+
+    Returns:
+        What `whl_aliases` accepts.
+    """
+    return {
+        whl_config_setting(**v): repo
+        for repo, values in json.decode(repo_mapping_json).items()
+        for v in values
+    }
+
+def whl_aliases(repo_mapping):
+    """A function to serialize the aliases so that `hub_repository` can accept them.
+
+    Args:
+        repo_mapping: {type}`dict[str, list[struct]]` repo to
+            {obj}`whl_config_setting` mapping.
+
+    Returns:
+        A deserializable JSON string
+    """
+    return json.encode({
+        repo: [_whl_config_setting_dict(s) for s in settings]
+        for repo, settings in repo_mapping.items()
+    })
+
+def _whl_config_setting_dict(a):
+    ret = {}
+    if a.config_setting:
+        ret["config_setting"] = a.config_setting
+    if a.filename:
+        ret["filename"] = a.filename
+    if a.target_platforms:
+        ret["target_platforms"] = a.target_platforms
+    if a.version:
+        ret["version"] = a.version
+    return ret

@@ -17,7 +17,7 @@
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
 load("//python/private/pypi:extension.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
-load("//python/private/pypi:render_pkg_aliases.bzl", "whl_alias")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:whl_config_setting.bzl", "whl_config_setting")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -158,12 +158,13 @@ def _test_simple(env):
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
-        "simple": [
-            whl_alias(
-                repo = "pypi_315_simple",
-                version = "3.15",
-            ),
-        ],
+        "simple": {
+            "pypi_315_simple": [
+                whl_config_setting(
+                    version = "3.15",
+                ),
+            ],
+        },
     }})
     pypi.whl_libraries().contains_exactly({
         "pypi_315_simple": {
@@ -206,23 +207,25 @@ def _test_simple_multiple_requirements(env):
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
-        "simple": [
-            whl_alias(
-                repo = "pypi_315_simple_windows_x86_64",
-                target_platforms = [
-                    "cp315_windows_x86_64",
-                ],
-                version = "3.15",
-            ),
-            whl_alias(
-                repo = "pypi_315_simple_osx_aarch64_osx_x86_64",
-                target_platforms = [
-                    "cp315_osx_aarch64",
-                    "cp315_osx_x86_64",
-                ],
-                version = "3.15",
-            ),
-        ],
+        "simple": {
+            "pypi_315_simple_osx_aarch64_osx_x86_64": [
+                whl_config_setting(
+                    target_platforms = [
+                        "cp315_osx_aarch64",
+                        "cp315_osx_x86_64",
+                    ],
+                    version = "3.15",
+                ),
+            ],
+            "pypi_315_simple_windows_x86_64": [
+                whl_config_setting(
+                    target_platforms = [
+                        "cp315_windows_x86_64",
+                    ],
+                    version = "3.15",
+                ),
+            ],
+        },
     }})
     pypi.whl_libraries().contains_exactly({
         "pypi_315_simple_osx_aarch64_osx_x86_64": {
@@ -289,24 +292,25 @@ simple==0.0.3 --hash=sha256:deadbaaf
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
-        "extra": [
-            whl_alias(
-                repo = "pypi_315_extra",
-                version = "3.15",
-            ),
-        ],
-        "simple": [
-            whl_alias(
-                repo = "pypi_315_simple_linux_x86_64",
-                target_platforms = ["cp315_linux_x86_64"],
-                version = "3.15",
-            ),
-            whl_alias(
-                repo = "pypi_315_simple_osx_aarch64",
-                target_platforms = ["cp315_osx_aarch64"],
-                version = "3.15",
-            ),
-        ],
+        "extra": {
+            "pypi_315_extra": [
+                whl_config_setting(version = "3.15"),
+            ],
+        },
+        "simple": {
+            "pypi_315_simple_linux_x86_64": [
+                whl_config_setting(
+                    target_platforms = ["cp315_linux_x86_64"],
+                    version = "3.15",
+                ),
+            ],
+            "pypi_315_simple_osx_aarch64": [
+                whl_config_setting(
+                    target_platforms = ["cp315_osx_aarch64"],
+                    version = "3.15",
+                ),
+            ],
+        },
     }})
     pypi.whl_libraries().contains_exactly({
         "pypi_315_extra": {
@@ -404,24 +408,23 @@ some_pkg==0.0.1
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({
         "pypi": {
-            "simple": [
-                whl_alias(
-                    filename = "simple-0.0.1-py3-none-any.whl",
-                    repo = "pypi_315_simple_py3_none_any_deadb00f",
-                    version = "3.15",
-                ),
-                whl_alias(
-                    filename = "simple-0.0.1.tar.gz",
-                    repo = "pypi_315_simple_sdist_deadbeef",
-                    version = "3.15",
-                ),
-            ],
-            "some_pkg": [
-                whl_alias(
-                    repo = "pypi_315_some_pkg",
-                    version = "3.15",
-                ),
-            ],
+            "simple": {
+                "pypi_315_simple_py3_none_any_deadb00f": [
+                    whl_config_setting(
+                        filename = "simple-0.0.1-py3-none-any.whl",
+                        version = "3.15",
+                    ),
+                ],
+                "pypi_315_simple_sdist_deadbeef": [
+                    whl_config_setting(
+                        filename = "simple-0.0.1.tar.gz",
+                        version = "3.15",
+                    ),
+                ],
+            },
+            "some_pkg": {
+                "pypi_315_some_pkg": [whl_config_setting(version = "3.15")],
+            },
         },
     })
     pypi.whl_libraries().contains_exactly({

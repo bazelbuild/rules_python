@@ -21,7 +21,7 @@ load("//python/private:text_util.bzl", "render")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
 load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":pip_repository_attrs.bzl", "ATTRS")
-load(":render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
+load(":render_pkg_aliases.bzl", "render_pkg_aliases")
 load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 
 def _get_python_interpreter_attr(rctx):
@@ -174,7 +174,7 @@ def _pip_repository_impl(rctx):
 
     aliases = render_pkg_aliases(
         aliases = {
-            pkg: [whl_alias(repo = rctx.attr.name + "_" + pkg)]
+            pkg: rctx.attr.name + "_" + pkg
             for pkg in bzl_packages or []
         },
     )
