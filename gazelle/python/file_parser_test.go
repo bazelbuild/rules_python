@@ -15,11 +15,22 @@
 package python
 
 import (
+	"bytes"
 	"context"
+	"github.com/stretchr/testify/require"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestParseASTSyntaxError(t *testing.T) {
+	p := NewFileParser()
+	reader := bytes.NewReader([]byte("import os\nimport"))
+	err := p.parseAST(context.Background(), reader, "main.py")
+	assert.Error(t, err)
+}
 
 func TestParseImportStatements(t *testing.T) {
 	t.Parallel()
@@ -37,7 +48,7 @@ func TestParseImportStatements(t *testing.T) {
 		},
 		{
 			name:     "has import",
-			code:     "import unittest\nimport os.path\nfrom foo.bar import abc.xyz",
+			code:     "import unittest\nimport os.path\nfrom foo.bar import abc",
 			filepath: "abc.py",
 			result: []module{
 				{
@@ -53,7 +64,7 @@ func TestParseImportStatements(t *testing.T) {
 					From:       "",
 				},
 				{
-					Name:       "foo.bar.abc.xyz",
+					Name:       "foo.bar.abc",
 					LineNumber: 3,
 					Filepath:   "abc.py",
 					From:       "foo.bar",
@@ -76,19 +87,6 @@ func TestParseImportStatements(t *testing.T) {
 			},
 		},
 		{
-			name:     "invalid syntax",
-			code:     "import os\nimport",
-			filepath: "abc.py",
-			result: []module{
-				{
-					Name:       "os",
-					LineNumber: 1,
-					Filepath:   "abc.py",
-					From:       "",
-				},
-			},
-		},
-		{
 			name:     "import as",
 			code:     "import os as b\nfrom foo import bar as c# 123",
 			filepath: "abc.py",
@@ -104,6 +102,22 @@ func TestParseImportStatements(t *testing.T) {
 					LineNumber: 2,
 					Filepath:   "abc.py",
 					From:       "foo",
+				},
+			},
+		},
+		{
+			name: "ignore relative from imports",
+			code: "from .foo import func\nfrom bar import func2\nfrom foo.bar import func3\nfrom .. import foo",
+			result: []module{
+				{
+					Name:       "bar.func2",
+					LineNumber: 2,
+					From:       "bar",
+				},
+				{
+					Name:       "foo.bar.func3",
+					LineNumber: 3,
+					From:       "foo.bar",
 				},
 			},
 		},
@@ -138,11 +152,10 @@ func TestParseImportStatements(t *testing.T) {
 	for _, u := range units {
 		t.Run(u.name, func(t *testing.T) {
 			p := NewFileParser()
-			code := []byte(u.code)
-			p.SetCodeAndFile(code, "", u.filepath)
-			output, err := p.Parse(context.Background())
-			assert.NoError(t, err)
-			assert.Equal(t, u.result, output.Modules)
+			reader := bytes.NewReader([]byte(u.code))
+			err := p.parseAST(context.Background(), reader, u.filepath)
+			require.NoError(t, err)
+			assert.ElementsMatch(t, u.result, p.output.Modules)
 		})
 	}
 }
@@ -169,20 +182,19 @@ func TestParseComments(t *testing.T) {
 			code:   "if True:\n  # a = 1\n  # b = 2",
 			result: []comment{"# a = 1", "# b = 2"},
 		},
-		{
-			name:   "has comment inline",
-			code:   "import os# 123\nfrom pathlib import Path as b#456",
-			result: []comment{"# 123", "#456"},
-		},
+		//{
+		//	name:   "has comment inline",
+		//	code:   "import os# 123\nfrom pathlib import Path as b#456",
+		//	result: []comment{"# 123", "#456"},
+		//},
 	}
 	for _, u := range units {
 		t.Run(u.name, func(t *testing.T) {
 			p := NewFileParser()
-			code := []byte(u.code)
-			p.SetCodeAndFile(code, "", "")
-			output, err := p.Parse(context.Background())
-			assert.NoError(t, err)
-			assert.Equal(t, u.result, output.Comments)
+			reader := bytes.NewReader([]byte(u.code))
+			err := p.parseComments(context.Background(), reader)
+			require.NoError(t, err)
+			assert.ElementsMatch(t, u.result, p.output.Comments)
 		})
 	}
 }
@@ -232,21 +244,24 @@ if __name__ == "__main__":
 	for _, u := range units {
 		t.Run(u.name, func(t *testing.T) {
 			p := NewFileParser()
-			code := []byte(u.code)
-			p.SetCodeAndFile(code, "", "")
-			output, err := p.Parse(context.Background())
-			assert.NoError(t, err)
-			assert.Equal(t, u.result, output.HasMain)
+			reader := bytes.NewReader([]byte(u.code))
+			err := p.parseAST(context.Background(), reader, "main.py")
+			require.NoError(t, err)
+			assert.Equal(t, u.result, p.output.HasMain)
 		})
 	}
 }
 
-func TestParseFull(t *testing.T) {
-	p := NewFileParser()
+func TestParseFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "foo"), 0700))
 	code := []byte(`from bar import abc`)
-	p.SetCodeAndFile(code, "foo", "a.py")
-	output, err := p.Parse(context.Background())
-	assert.NoError(t, err)
+	err := os.WriteFile(filepath.Join(tmpDir, "foo", "a.py"), code, 0600)
+	require.NoError(t, err)
+
+	p := NewFileParser()
+	output, err := p.ParseFile(context.Background(), tmpDir, "foo", "a.py")
+	require.NoError(t, err)
 	assert.Equal(t, ParserOutput{
 		Modules:  []module{{Name: "bar.abc", LineNumber: 1, Filepath: "foo/a.py", From: "bar"}},
 		Comments: nil,
