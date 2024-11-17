@@ -141,16 +141,6 @@ rules_python_integration_test(
     py_main = "custom_commands_test.py",
 )
 
-rules_python_integration_test(
-    name = "no_unsafe_paths_test",
-    # Starlark implementation of core rules only available on Bazel 7+
-    bazel_versions = [
-        version
-        for version in bazel_binaries.versions.all
-        if not version.startswith("6.")
-    ],
-)
-
 py_library(
     name = "runner_lib",
     srcs = ["runner.py"],

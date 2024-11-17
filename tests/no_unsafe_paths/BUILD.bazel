@@ -11,24 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
+load("//tests/support:support.bzl", "SUPPORTS_BOOTSTRAP_SCRIPT")
 
-load("@python//3.10:defs.bzl", py_test_3_10 = "py_test")
-load("@python//3.11:defs.bzl", py_test_3_11 = "py_test")
-
-py_test_3_10(
-    name = "test_py_3_10",
+py_reconfig_test(
+    name = "no_unsafe_paths_3.10_test",
     srcs = ["test.py"],
-    env = {
-        "RULES_PYTHON_BOOTSTRAP_VERBOSE": "1",
-    },
     main = "test.py",
+    python_version = "3.10",
+    bootstrap_impl = "script",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
-py_test_3_11(
-    name = "test_py_3_11",
+py_reconfig_test(
+    name = "no_unsafe_paths_3.11_test",
     srcs = ["test.py"],
-    env = {
-        "RULES_PYTHON_BOOTSTRAP_VERBOSE": "1",
-    },
     main = "test.py",
+    python_version = "3.11",
+    bootstrap_impl = "script",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
