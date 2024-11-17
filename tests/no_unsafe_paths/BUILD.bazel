@@ -17,17 +17,17 @@ load("//tests/support:support.bzl", "SUPPORTS_BOOTSTRAP_SCRIPT")
 py_reconfig_test(
     name = "no_unsafe_paths_3.10_test",
     srcs = ["test.py"],
+    bootstrap_impl = "script",
     main = "test.py",
     python_version = "3.10",
-    bootstrap_impl = "script",
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 py_reconfig_test(
     name = "no_unsafe_paths_3.11_test",
     srcs = ["test.py"],
+    bootstrap_impl = "script",
     main = "test.py",
     python_version = "3.11",
-    bootstrap_impl = "script",
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
