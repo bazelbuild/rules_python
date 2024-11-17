@@ -70,7 +70,7 @@ func ParseCode(code []byte, path string) (*sitter.Node, error) {
 
 	root := tree.RootNode()
 	if root.HasError() {
-		log.Printf("WARNING: failed to parse %q. The resuling BUILD target may be incorrect.", path)
+		log.Printf("WARNING: failed to parse %q. The resulting BUILD target may be incorrect.", path)
 
 		verbose, envExists := os.LookupEnv("GAZELLE_VERBOSE")
 		if envExists && verbose == "1" {
