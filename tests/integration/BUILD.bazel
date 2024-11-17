@@ -143,7 +143,7 @@ rules_python_integration_test(
 
 rules_python_integration_test(
     name = "no_unsafe_paths_test",
-     # Starlark implementation of core rules only available on Bazel 7+
+    # Starlark implementation of core rules only available on Bazel 7+
     bazel_versions = [
         version
         for version in bazel_binaries.versions.all

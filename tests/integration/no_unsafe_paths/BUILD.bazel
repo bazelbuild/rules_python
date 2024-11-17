@@ -18,17 +18,17 @@ load("@python//3.11:defs.bzl", py_test_3_11 = "py_test")
 py_test_3_10(
     name = "test_py_3_10",
     srcs = ["test.py"],
-    main = "test.py",
     env = {
         "RULES_PYTHON_BOOTSTRAP_VERBOSE": "1",
     },
+    main = "test.py",
 )
 
 py_test_3_11(
     name = "test_py_3_11",
     srcs = ["test.py"],
-    main = "test.py",
     env = {
         "RULES_PYTHON_BOOTSTRAP_VERBOSE": "1",
     },
+    main = "test.py",
 )
