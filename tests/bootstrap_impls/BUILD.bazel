@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load("//tests/support:support.bzl", "SUPPORTS_BOOTSTRAP_SCRIPT")
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test", "sh_py_run_test")
+load("//tests/support:support.bzl", "SUPPORTS_BOOTSTRAP_SCRIPT")
 load(":venv_relative_path_tests.bzl", "relative_path_test_suite")
 
 sh_py_run_test(
