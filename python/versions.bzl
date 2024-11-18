@@ -593,6 +593,7 @@ TOOL_VERSIONS = {
             "x86_64-apple-darwin": "python",
             "x86_64-pc-windows-msvc": "python",
             "x86_64-unknown-linux-gnu": "python",
+            "x86_64-unknown-linux-musl": "python",
             "aarch64-apple-darwin-freethreaded": "python/install",
             "aarch64-unknown-linux-gnu-freethreaded": "python/install",
             "ppc64le-unknown-linux-gnu-freethreaded": "python/install",
