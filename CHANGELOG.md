@@ -78,6 +78,8 @@ Other changes:
 * (pypi): Correctly handle multiple versions of the same package in the requirements
   files which is useful when including different PyTorch builds (e.g. <pytorch+cpu> vs <pytorch+cu118> ) for different target platforms.
   Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
+* (uv): Correct the sha256sum for the `uv` binary for aarch64-apple-darwin.
+  Fixes ([2411](https://github.com/bazelbuild/rules_python/issues/2411)).
 
 {#v0-0-0-added}
 ### Added
