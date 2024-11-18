@@ -44,16 +44,6 @@ UniversalWhlFlag = enum(
     UNIVERSAL = "universal",
 )
 
-# Determines which libc flavor is preferred when selecting the linux whl distributions.
-#
-# buildifier: disable=name-conventions
-WhlLibcFlag = enum(
-    # Prefer glibc wheels (e.g. manylinux_2_17_x86_64 or linux_x86_64)
-    GLIBC = "glibc",
-    # Prefer musl wheels (e.g. musllinux_2_17_x86_64)
-    MUSL = "musl",
-)
-
 INTERNAL_FLAGS = [
     "dist",
     "whl_plat",
