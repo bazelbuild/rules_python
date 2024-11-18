@@ -35,6 +35,11 @@ class Generator:
     # dig_wheel analyses the wheel .whl file determining the modules it provides
     # by looking at the directory structure.
     def dig_wheel(self, whl):
+        # Skip stubs and types wheels.
+        wheel_name = get_wheel_name(whl)
+        if wheel_name.endswith(("_stubs", "_types")):
+            self.mapping[wheel_name.lower()] = wheel_name.lower()
+            return
         with zipfile.ZipFile(whl, "r") as zip_file:
             for path in zip_file.namelist():
                 if is_metadata(path):

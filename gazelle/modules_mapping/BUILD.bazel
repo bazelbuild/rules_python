@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # gazelle:exclude *.py
 
@@ -6,6 +6,15 @@ py_binary(
     name = "generator",
     srcs = ["generator.py"],
     visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "test_generator",
+    srcs = ["test_generator.py"],
+    data = glob(["testdata/**"]),
+    imports = ["."],
+    main = "test_generator.py",
+    deps = [":generator"],
 )
 
 filegroup(

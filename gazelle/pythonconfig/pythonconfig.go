@@ -278,7 +278,7 @@ func (c *Config) SetGazelleManifest(gazelleManifest *manifest.Manifest) {
 // FindThirdPartyDependency scans the gazelle manifests for the current config
 // and the parent configs up to the root finding if it can resolve the module
 // name.
-func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
+func (c *Config) FindThirdPartyDependency(modName string) (string, string, bool) {
 	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
 		if currentCfg.gazelleManifest != nil {
 			gazelleManifest := currentCfg.gazelleManifest
@@ -291,11 +291,11 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				}
 
 				lbl := currentCfg.FormatThirdPartyDependency(distributionRepositoryName, distributionName)
-				return lbl.String(), true
+				return lbl.String(), distributionName, true
 			}
 		}
 	}
-	return "", false
+	return "", "", false
 }
 
 // AddIgnoreFile adds a file to the list of ignored files for a given package.
