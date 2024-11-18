@@ -45,8 +45,8 @@ A pyc-only build (aka "source less" builds) is when only `.pyc` files are
 included; the source `.py` files are not included.
 
 To enable this, set
-{obj}`--@rules_python//python/config_settings:precompile_source_retention=omit_source`
-flag on the command line or the {attr}`precompile_source_retention=omit_source`
+{bzl:obj}`--@rules_python//python/config_settings:precompile_source_retention=omit_source`
+flag on the command line or the {bzl:attr}`precompile_source_retention=omit_source`
 attribute on specific targets.
 
 The advantage of pyc-only builds are:
