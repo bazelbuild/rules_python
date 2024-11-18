@@ -88,7 +88,7 @@ string_flag(
 string_flag(
     name = "py_linux_libc",
     build_setting_default = LibcFlag.GLIBC,
-    values = sorted(LibcFlag.__members__.values()),
+    values = LibcFlag.flag_values(),
     # NOTE: Only public because it is used in pip hub and toolchain repos.
     visibility = ["//visibility:public"],
 )

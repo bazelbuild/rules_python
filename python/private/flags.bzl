@@ -137,7 +137,7 @@ FreeThreadedFlag = enum(
 # linux whl distributions.
 #
 # buildifier: disable=name-conventions
-LibcFlag = enum(
+LibcFlag = FlagEnum(
     # Prefer glibc wheels (e.g. manylinux_2_17_x86_64 or linux_x86_64)
     GLIBC = "glibc",
     # Prefer musl wheels (e.g. musllinux_2_17_x86_64)
