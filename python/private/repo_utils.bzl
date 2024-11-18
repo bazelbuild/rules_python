@@ -41,6 +41,10 @@ def _logger(mrctx, name = None):
 
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
+        Please use `return logger.fail` when using the `fail` method, because
+        it makes `buildifier` happy and ensures that other implementation of
+        the logger injected into the function work as expected by terminating
+        on the given line.
     """
     if _is_repo_debug_enabled(mrctx):
         verbosity_level = "DEBUG"
@@ -140,7 +144,7 @@ def _execute_internal(
     result = mrctx.execute(arguments, environment = environment, **kwargs)
 
     if fail_on_error and result.return_code != 0:
-        logger.fail((
+        return logger.fail((
             "repo.execute: {op}: end: failure:\n" +
             "  command: {cmd}\n" +
             "  return code: {return_code}\n" +

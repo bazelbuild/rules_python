@@ -15,6 +15,16 @@ Determines the verbosity of logging output for repo rules. Valid values:
 * `TRACE`
 :::
 
+:::{envvar} RULES_PYTHON_REPO_TOOLCHAIN_VERSION_OS_ARCH
+
+Determines the python interpreter platform to be used for a particular
+interpreter `(version, os, arch)` triple to be used in repository rules.
+Replace the `VERSION_OS_ARCH` part with actual values when using, e.g.
+`3_13_0_linux_x86_64`. The version values must have `_` instead of `.` and the
+os, arch values are the same as the ones mentioned in the
+`//python:versions.bzl` file.
+:::
+
 :::{envvar} RULES_PYTHON_PIP_ISOLATED
 
 Determines if `--isolated` is used with pip.
