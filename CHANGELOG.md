@@ -30,19 +30,19 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* Nothing changed.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* Nothing fixed.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* Nothing added.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* Nothing removed.
 -->
 
 {#v0-0-0}
@@ -52,25 +52,73 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+
 **Breaking**:
+* (toolchains) stop exposing config settings in python toolchain alias repos.
+  Please consider depending on the flags defined in
+  `//python/config_setting/...` and the `@platforms` package instead.
+* (toolchains) consumers who were depending on the `MACOS_NAME` and the `arch`
+  attribute in the `PLATFORMS` list, please update your code to respect the new
+  values. The values now correspond to the values available in the
+  `@platforms//` package constraint values.
+* (toolchains) `host_platform` and `interpreter` constants are no longer created
+  in the `toolchain` generated alias `.bzl` files. If you need to access the
+  host interpreter during the `repository_rule` evaluation, please use the
+  `@python_{version}_host//:python` targets created by
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
+  bzlmod extension.
 * (bzlmod) `pip.parse.parse_all_requirements_files` attribute has been removed.
   See notes in the previous versions about what to do.
 
 Other changes:
-* Nothing yet.
+* (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* (toolchains) stop depending on `uname` to get the value of the host platform.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* (gazelle): Parser failures will now be logged to the terminal. Additional
+  details can be logged by setting `GAZELLE_VERBOSE=1`.
+* (toolchains) allow users to select which variant of the support host toolchain
+  they would like to use through
+  `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
+  example, this allows one to use `freethreaded` python interpreter in the
+  `repository_rule` to build a wheel from `sdist`.
 
 {#v0-0-0-removed}
 ### Removed
+* Nothing removed.
+
+{#v0-40-0}
+## [0.40.0] - 2024-11-17
+
+[0.40.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.40.0
+
+{#v0-40-changed}
+### Changed
+* Nothing changed.
+
+{#v0-40-fixed}
+### Fixed
+* (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
+  ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
+
+{#v0-40-added}
+### Added
+* Nothing added.
+
+{#v0-40-removed}
+### Removed
 * (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
   Please use `requirements_linux.txt` instead.
+* (python_repository) Use bazel's built in `zstd` support and remove attributes
+  for customizing the `zstd` binary to be used for `zstd` archives in the
+  {bzl:obj}`python_repository` repository_rule. This affects the
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` callers in the `WORKSPACE`.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13

@@ -15,11 +15,12 @@
 """The Python versions we use for the toolchains.
 """
 
-# Values returned by https://bazel.build/rules/lib/repository_os.
-MACOS_NAME = "mac os"
+# Values present in the @platforms//os package
+MACOS_NAME = "osx"
 LINUX_NAME = "linux"
 WINDOWS_NAME = "windows"
 FREETHREADED = "freethreaded"
+INSTALL_ONLY = "install_only"
 
 DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
 
@@ -52,7 +53,7 @@ TOOL_VERSIONS = {
             "x86_64-apple-darwin": "8d06bec08db8cdd0f64f4f05ee892cf2fcbc58cfb1dd69da2caab78fac420238",
             "x86_64-unknown-linux-gnu": "aec8c4c53373b90be7e2131093caa26063be6d9d826f599c935c0e1042af3355",
         },
-        "strip_prefix": "python",
+        "strip_prefix": "python/install",
     },
     "3.8.12": {
         "url": "20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz",
@@ -579,7 +580,22 @@ TOOL_VERSIONS = {
             "x86_64-pc-windows-msvc-freethreaded": "bfd89f9acf866463bc4baf01733da5e767d13f5d0112175a4f57ba91f1541310",
             "x86_64-unknown-linux-gnu-freethreaded": "a73adeda301ad843cce05f31a2d3e76222b656984535a7b87696a24a098b216c",
         },
-        "strip_prefix": "python",
+        "strip_prefix": {
+            "aarch64-apple-darwin": "python",
+            "aarch64-unknown-linux-gnu": "python",
+            "ppc64le-unknown-linux-gnu": "python",
+            "s390x-unknown-linux-gnu": "python",
+            "x86_64-apple-darwin": "python",
+            "x86_64-pc-windows-msvc": "python",
+            "x86_64-unknown-linux-gnu": "python",
+            "aarch64-apple-darwin-freethreaded": "python/install",
+            "aarch64-unknown-linux-gnu-freethreaded": "python/install",
+            "ppc64le-unknown-linux-gnu-freethreaded": "python/install",
+            "s390x-unknown-linux-gnu-freethreaded": "python/install",
+            "x86_64-apple-darwin-freethreaded": "python/install",
+            "x86_64-pc-windows-msvc-freethreaded": "python/install",
+            "x86_64-unknown-linux-gnu-freethreaded": "python/install",
+        },
     },
 }
 
@@ -604,9 +620,8 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = MACOS_NAME,
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-            arch = "arm64",
+            # Matches the value in @platforms//cpu package
+            arch = "aarch64",
         ),
         "aarch64-unknown-linux-gnu": struct(
             compatible_with = [
@@ -617,9 +632,7 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            # Matches the value in @platforms//cpu package
             arch = "aarch64",
         ),
         "armv7-unknown-linux-gnu": struct(
@@ -631,7 +644,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            arch = "armv7",
+            # Matches the value in @platforms//cpu package
+            arch = "arm",
         ),
         "i386-unknown-linux-gnu": struct(
             compatible_with = [
@@ -642,7 +656,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            arch = "i386",
+            # Matches the value in @platforms//cpu package
+            arch = "x86_32",
         ),
         "ppc64le-unknown-linux-gnu": struct(
             compatible_with = [
@@ -653,10 +668,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-            arch = "ppc64le",
+            # Matches the value in @platforms//cpu package
+            arch = "ppc",
         ),
         "riscv64-unknown-linux-gnu": struct(
             compatible_with = [
@@ -667,6 +680,7 @@ def _generate_platforms():
                 Label("//python/config_settings:py_linux_libc"): "glibc",
             },
             os_name = LINUX_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "riscv64",
         ),
         "s390x-unknown-linux-gnu": struct(
@@ -678,9 +692,7 @@ def _generate_platforms():
                 Label("//python/config_settings:py_linux_libc"): "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            # Matches the value in @platforms//cpu package
             arch = "s390x",
         ),
         "x86_64-apple-darwin": struct(
@@ -690,6 +702,7 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = MACOS_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
         "x86_64-pc-windows-msvc": struct(
@@ -699,6 +712,7 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = WINDOWS_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
         "x86_64-unknown-linux-gnu": struct(
@@ -710,6 +724,7 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
     }
@@ -777,7 +792,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
                 }[p],
             )
         else:
-            build = "install_only"
+            build = INSTALL_ONLY
 
         if WINDOWS_NAME in platform:
             build = "shared-" + build

@@ -12,7 +12,6 @@ python_register_toolchains(
     python_version = "3.9",
 )
 
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 local_repository(
@@ -22,7 +21,7 @@ local_repository(
 
 pip_parse(
     name = "pypi",
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
     requirements_lock = "@compile_pip_requirements//:requirements_lock.txt",
 )
 

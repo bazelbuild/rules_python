@@ -86,7 +86,7 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 _py_gazelle_deps()
 
 # This interpreter is used for various rules_python dev-time tools
-load("@python//3.11.9:defs.bzl", "interpreter")
+interpreter = "@python_3_11_9_host//:python"
 
 #####################
 # Install twine for our own runfiles wheel publishing.
