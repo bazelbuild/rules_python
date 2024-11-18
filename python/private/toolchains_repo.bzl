@@ -403,17 +403,15 @@ def _get_host_platform(*, rctx, logger, python_version, os_name, cpu_name, platf
                 candidates,
             ))
         elif preference not in candidates:
-            logger.fail("Please choose a preferred interpreter out of the following platforms: {}".format(candidates))
-            return None
+            return logger.fail("Please choose a preferred interpreter out of the following platforms: {}".format(candidates))
         else:
             candidates = [preference]
 
     if candidates:
         return candidates[0]
 
-    logger.fail("Could not find a compatible 'host' python for '{os_name}', '{cpu_name}' from the loaded platforms: {platforms}".format(
+    return logger.fail("Could not find a compatible 'host' python for '{os_name}', '{cpu_name}' from the loaded platforms: {platforms}".format(
         os_name = os_name,
         cpu_name = cpu_name,
         platforms = platforms,
     ))
-    return None
