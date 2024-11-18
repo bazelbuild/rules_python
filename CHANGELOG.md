@@ -30,19 +30,19 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* Nothing changed.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* Nothing fixed.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* Nothing added.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* Nothing removed.
 -->
 
 {#v0-0-0}
@@ -70,7 +70,7 @@ Unreleased changes template.
   bzlmod extension.
 
 Other changes:
-* Nothing yet
+* (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -78,6 +78,8 @@ Other changes:
 
 {#v0-0-0-added}
 ### Added
+* (gazelle): Parser failures will now be logged to the terminal. Additional
+  details can be logged by setting `GAZELLE_VERBOSE=1`.
 * (toolchains) allow users to select which variant of the support host toolchain
   they would like to use through
   `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
@@ -90,8 +92,35 @@ Other changes:
 
 {#v0-0-0-removed}
 ### Removed
+* Nothing removed.
+
+{#v0-40-0}
+## [0.40.0] - 2024-11-17
+
+[0.40.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.40.0
+
+{#v0-40-changed}
+### Changed
+* Nothing changed.
+
+{#v0-40-fixed}
+### Fixed
+* (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
+  ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
+
+{#v0-40-added}
+### Added
+* Nothing added.
+
+{#v0-40-removed}
+### Removed
 * (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
   Please use `requirements_linux.txt` instead.
+* (python_repository) Use bazel's built in `zstd` support and remove attributes
+  for customizing the `zstd` binary to be used for `zstd` archives in the
+  {bzl:obj}`python_repository` repository_rule. This affects the
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` callers in the `WORKSPACE`.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13

@@ -39,6 +39,30 @@ can use an opt-in or opt-out approach by setting its value:
 * targets must opt-out: `--@rules_python//python/config_settings:precompile=enabled`
 * targets must opt-in: `--@rules_python//python/config_settings:precompile=disabled`
 
+## Pyc-only builds
+
+A pyc-only build (aka "source less" builds) is when only `.pyc` files are
+included; the source `.py` files are not included.
+
+To enable this, set
+{bzl:obj}`--@rules_python//python/config_settings:precompile_source_retention=omit_source`
+flag on the command line or the {bzl:attr}`precompile_source_retention=omit_source`
+attribute on specific targets.
+
+The advantage of pyc-only builds are:
+* Fewer total files in a binary.
+* Imports _may_ be _slightly_ faster.
+
+The disadvantages are:
+* Error messages will be less precise because the precise line and offset
+  information isn't in an pyc file.
+* pyc files are Python major-version specific.
+
+:::{note}
+pyc files are not a form of hiding source code. They are trivial to uncompile,
+and uncompiling them can recover almost the original source.
+:::
+
 ## Advanced precompiler customization
 
 The default implementation of the precompiler is a persistent, multiplexed,

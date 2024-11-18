@@ -34,6 +34,7 @@ buildifier:
   build_flags:
     - "--keep_going"
     - "--build_tag_filters=-integration-test"
+    - "--config=bazel7.x"
   test_targets:
     - "--"
     - "..."
@@ -84,16 +85,6 @@ buildifier:
     - //tests:version_3_8_test
     - //tests:version_3_9_test
     - //tests:version_default_test
-.pystar_base: &pystar_base
-  bazel: "7.x"
-  environment:
-    RULES_PYTHON_ENABLE_PYSTAR: "1"
-  build_flags:
-    - "--config=bazel7.x"
-  test_flags:
-    # The doc check tests fail because the Starlark implementation makes the
-    # PyInfo and PyRuntimeInfo symbols become documented.
-    - "--test_tag_filters=-integration-test,-doc_check_test"
 tasks:
   gazelle_extension_min:
     <<: *common_workspace_flags_min_bazel
@@ -139,26 +130,18 @@ tasks:
     name: "Default: Ubuntu, upcoming Bazel"
     platform: ubuntu2004
     bazel: last_rc
-  pystar_ubuntu_workspace:
+  ubuntu_workspace:
     <<: *reusable_config
-    <<: *pystar_base
-    name: "Default test: Ubuntu, Pystar, workspace"
+    name: "Default: Ubuntu, workspace"
     platform: ubuntu2004
-  pystar_ubuntu_bzlmod:
-    <<: *reusable_config
-    <<: *pystar_base
-    name: "Default test: Ubuntu, Pystar, bzlmod"
-    platform: ubuntu2004
-  pystar_mac_workspace:
+  mac_workspace:
     <<: *reusable_config
     <<: *common_workspace_flags
-    <<: *pystar_base
-    name: "Default test: Mac, Pystar, workspace"
+    name: "Default: Mac, workspace"
     platform: macos
-  pystar_windows_workspace:
+  windows_workspace:
     <<: *reusable_config
-    <<: *pystar_base
-    name: "Default test: Windows, Pystar, workspace"
+    name: "Default: Windows, workspace"
     platform: windows
 
   debian:
@@ -250,6 +233,13 @@ tasks:
     working_directory: examples/bzlmod
     platform: ubuntu2004
     bazel: 7.x
+  integration_test_bzlmod_ubuntu_upcoming:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
+    name: "examples/bzlmod: Ubuntu, upcoming Bazel"
+    working_directory: examples/bzlmod
+    platform: ubuntu2004
+    bazel: last_rc
   integration_test_bzlmod_debian:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
@@ -264,12 +254,27 @@ tasks:
     working_directory: examples/bzlmod
     platform: macos
     bazel: 7.x
+  integration_test_bzlmod_macos_upcoming:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
+    name: "examples/bzlmod: macOS, upcoming Bazel"
+    working_directory: examples/bzlmod
+    platform: macos
+    bazel: last_rc
   integration_test_bzlmod_windows:
     <<: *reusable_build_test_all
     # coverage is not supported on Windows
     name: "examples/bzlmod: Windows"
     working_directory: examples/bzlmod
     platform: windows
+    bazel: 7.x
+  integration_test_bzlmod_windows_upcoming:
+    <<: *reusable_build_test_all
+    # coverage is not supported on Windows
+    name: "examples/bzlmod: Windows, upcoming Bazel"
+    working_directory: examples/bzlmod
+    platform: windows
+    bazel: last_rc
   integration_test_bzlmod_ubuntu_lockfile:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod

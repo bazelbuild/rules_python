@@ -263,15 +263,22 @@ def filter_to_py_srcs(srcs):
     return [f for f in srcs if f.extension == "py"]
 
 def collect_imports(ctx, semantics):
-    return depset(direct = semantics.get_imports(ctx), transitive = [
-        dep[PyInfo].imports
-        for dep in ctx.attr.deps
-        if PyInfo in dep
-    ] + [
-        dep[BuiltinPyInfo].imports
-        for dep in ctx.attr.deps
-        if BuiltinPyInfo in dep
-    ] if BuiltinPyInfo != None else [])
+    """Collect the direct and transitive `imports` strings.
+
+    Args:
+        ctx: {type}`ctx` the current target ctx
+        semantics: semantics object for fetching direct imports.
+
+    Returns:
+        {type}`depset[str]` of import paths
+    """
+    transitive = []
+    for dep in ctx.attr.deps:
+        if PyInfo in dep:
+            transitive.append(dep[PyInfo].imports)
+        if BuiltinPyInfo != None and BuiltinPyInfo in dep:
+            transitive.append(dep[BuiltinPyInfo].imports)
+    return depset(direct = semantics.get_imports(ctx), transitive = transitive)
 
 def collect_runfiles(ctx, files = depset()):
     """Collects the necessary files from the rule's context.
