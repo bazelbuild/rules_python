@@ -750,16 +750,6 @@ The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
         ),
-        "extra_hub_aliases": attr.string_list_dict(
-            doc = """\
-Extra aliases to make for specific wheels in the hub repo. This is useful when
-paired with the {attr}`whl_modifications`.
-
-:::{versionadded} 0.38.0
-:::
-""",
-            mandatory = False,
-        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """

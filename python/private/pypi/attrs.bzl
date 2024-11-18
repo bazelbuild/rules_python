@@ -151,6 +151,16 @@ or empty in the environment), if `"VARNAME"` is listed in the
 `envsubst` attribute. See also `envsubst`.
 """,
     ),
+    "extra_hub_aliases": attr.string_list_dict(
+        doc = """\
+Extra aliases to make for specific wheels in the hub repo. This is useful when
+paired with the {attr}`whl_modifications`.
+
+:::{versionadded} 0.38.0
+:::
+""",
+        mandatory = False,
+    ),
     "isolated": attr.bool(
         doc = """\
 Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
