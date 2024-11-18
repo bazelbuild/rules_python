@@ -17,7 +17,7 @@
 load("@rules_python//python:versions.bzl", "PLATFORMS")
 
 def toolchain_aliases(*, name, platforms, visibility = None, native = native):
-    """Cretae toolchain aliases for the python toolchains.
+    """Create toolchain aliases for the python toolchains.
 
     Args:
         name: {type}`str` The name of the current repository.
