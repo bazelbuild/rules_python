@@ -60,7 +60,8 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (gazelle): Parser failures will now be logged to the terminal. Additional
+  details can be logged by setting `GAZELLE_VERBOSE=1`.
 
 {#v0-0-0-removed}
 ### Removed
