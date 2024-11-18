@@ -12,7 +12,7 @@ import sys
 # behaviour, which we set in the stage 1 bootstrap.
 # So the prepended entry needs to be removed only if the above option is either
 # unset or not supported by the interpreter.
-# TODO(#7091): Remove this hack when we drop support for Python 3.10 and below
+# NOTE: This can be removed when Python 3.10 and below is no longer supported
 if not getattr(sys.flags, "safe_path", False):
     del sys.path[0]
 
