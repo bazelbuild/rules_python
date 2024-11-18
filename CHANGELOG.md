@@ -88,7 +88,10 @@ Other changes:
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing removed.
+* (pypi): Remove `pypi_install_dependencies` macro that has been included in
+  {bzl:obj}`py_repositories` for a long time.
+* (bzlmod): Remove `DEFAULT_PYTHON_VERSION` from `interpreters.bzl` file. If
+  you need the version, please use it from the `versions.bzl` file instead.
 
 {#v0-40-0}
 ## [0.40.0] - 2024-11-17
