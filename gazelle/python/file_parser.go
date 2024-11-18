@@ -58,7 +58,7 @@ func NewFileParser() *FileParser {
 
 // ParseCode instantiates a new tree-sitter Parser and parses the python code, returning
 // the tree-sitter RootNode.
-// It print a warning if parsing fails.
+// It prints a warning if parsing fails.
 func ParseCode(code []byte, path string) (*sitter.Node, error) {
 	parser := sitter.NewParser()
 	parser.SetLanguage(python.GetLanguage())
