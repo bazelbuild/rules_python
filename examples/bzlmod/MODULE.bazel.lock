@@ -9623,7 +9623,7 @@
     },
     "@@rules_python~//python/uv:extensions.bzl%uv": {
       "general": {
-        "bzlTransitiveDigest": "umgu1yR4Wmqb1pJa+9hAcs9dPbeqBsPLceKiaEg3DdQ=",
+        "bzlTransitiveDigest": "wVkXn96Vi6Bn1BRJ4R0bOAbUFvh4k54kimcXSd11Y3g=",
         "usagesDigest": "wWx9DCrTsAgJQmDRUcO+EJrPKJEDsXpZbjzC0HVdde0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
