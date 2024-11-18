@@ -64,7 +64,7 @@ bzl_library(
         ":parse_whl_name_bzl",
         ":pip_repository_attrs_bzl",
         ":simpleapi_download_bzl",
-        ":whl_alias_bzl",
+        ":whl_config_setting_bzl",
         ":whl_library_bzl",
         ":whl_repo_name_bzl",
         "//python/private:full_version_bzl",
@@ -231,7 +231,7 @@ bzl_library(
         ":parse_requirements_bzl",
         ":pip_repository_attrs_bzl",
         ":render_pkg_aliases_bzl",
-        ":whl_alias_bzl",
+        ":whl_config_setting_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:repo_utils_bzl",
         "//python/private:text_util_bzl",
@@ -259,7 +259,7 @@ bzl_library(
     deps = [
         ":generate_group_library_build_bazel_bzl",
         ":parse_whl_name_bzl",
-        ":whl_alias_bzl",
+        ":whl_config_setting_bzl",
         ":whl_target_platforms_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:text_util_bzl",
@@ -287,7 +287,7 @@ bzl_library(
 )
 
 bzl_library(
-    name = "whl_alias_bzl",
+    name = "whl_config_setting_bzl",
     srcs = ["whl_config_setting.bzl"],
 )
 
