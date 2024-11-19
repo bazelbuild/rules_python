@@ -312,7 +312,7 @@ def _create_executable(
             ))
 
     # The interpreter is added this late in the process so that it isn't
-    # added to the files that zipping processes.
+    # added to the zipped files.
     if venv:
         extra_runfiles = extra_runfiles.merge(ctx.runfiles([venv.interpreter]))
     return create_executable_result_struct(
