@@ -68,6 +68,8 @@ Unreleased changes template.
   {bzl:obj}`python_register_toolchains` and
   {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
   bzlmod extension.
+* (bzlmod) `pip.parse.parse_all_requirements_files` attribute has been removed.
+  See notes in the previous versions about what to do.
 
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
@@ -222,7 +224,7 @@ Other changes:
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. To opt into this behavior, set
-  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  `pip.parse.parse_all_requirements_files`, which will become the
   default in future releases leading up to `1.0.0`. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
   issue is that it may break `bazel query` and in these use cases it is
