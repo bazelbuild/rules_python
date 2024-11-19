@@ -363,8 +363,10 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
     if runtime.interpreter:
         py_exe_basename = paths.basename(runtime.interpreter.short_path)
 
-        # A real symlink is required to support RBE. RBE may materialize what
-        # ctx.actions.symlink() points to.
+        # Even though ctx.actions.symlink() is used, using
+        # declare_symlink() is required to ensure that the resulting file
+        # in runfiles is always a symlink. An RBE implementation, for example,
+        # may choose to write what symlink() points to instead.
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
         interpreter_actual_path = runtime.interpreter.short_path
         parent = "/".join([".."] * (interpreter_actual_path.count("/") + 1))
