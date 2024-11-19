@@ -71,7 +71,7 @@ Unreleased changes template.
 
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
-* (pypi) extra_hub_aliases now works with pip_parse in WORKSPACE files.
+* (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
 
 {#v0-0-0-fixed}
 ### Fixed
