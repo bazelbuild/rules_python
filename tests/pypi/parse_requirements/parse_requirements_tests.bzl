@@ -19,6 +19,10 @@ load("//python/private/pypi:parse_requirements.bzl", "parse_requirements", "sele
 
 def _mock_ctx():
     testdata = {
+        "requirements_different_package_version": """\
+foo==0.0.1+local --hash=sha256:deadbeef
+foo==0.0.1 --hash=sha256:deadb00f
+""",
         "requirements_direct": """\
 foo[extra] @ https://some-url
 """,
@@ -381,6 +385,48 @@ def _test_env_marker_resolution(env):
     ).equals("0.0.1")
 
 _tests.append(_test_env_marker_resolution)
+
+def _test_different_package_version(env):
+    got = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_different_package_version": ["linux_x86_64"],
+        },
+    )
+    env.expect.that_dict(got).contains_exactly({
+        "foo": [
+            struct(
+                distribution = "foo",
+                extra_pip_args = [],
+                requirement_line = "foo==0.0.1 --hash=sha256:deadb00f",
+                srcs = struct(
+                    requirement = "foo==0.0.1",
+                    shas = ["deadb00f"],
+                    version = "0.0.1",
+                ),
+                target_platforms = ["linux_x86_64"],
+                whls = [],
+                sdist = None,
+                is_exposed = True,
+            ),
+            struct(
+                distribution = "foo",
+                extra_pip_args = [],
+                requirement_line = "foo==0.0.1+local --hash=sha256:deadbeef",
+                srcs = struct(
+                    requirement = "foo==0.0.1+local",
+                    shas = ["deadbeef"],
+                    version = "0.0.1+local",
+                ),
+                target_platforms = ["linux_x86_64"],
+                whls = [],
+                sdist = None,
+                is_exposed = True,
+            ),
+        ],
+    })
+
+_tests.append(_test_different_package_version)
 
 def parse_requirements_test_suite(name):
     """Create the test suite.

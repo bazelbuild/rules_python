@@ -15,7 +15,7 @@
 """This file contains repository rules and macros to support toolchain registration.
 """
 
-load("//python:versions.bzl", "FREETHREADED", "PLATFORMS")
+load("//python:versions.bzl", "FREETHREADED", "INSTALL_ONLY", "PLATFORMS")
 load(":auth.bzl", "get_auth")
 load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":text_util.bzl", "render")
@@ -72,50 +72,12 @@ def _python_repository_impl(rctx):
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
 
-    if release_filename.endswith(".zst"):
-        rctx.download(
+    if INSTALL_ONLY in release_filename:
+        rctx.download_and_extract(
             url = urls,
             sha256 = rctx.attr.sha256,
-            output = release_filename,
+            stripPrefix = rctx.attr.strip_prefix,
             auth = auth,
-        )
-        unzstd = rctx.which("unzstd")
-        if not unzstd:
-            url = rctx.attr.zstd_url.format(version = rctx.attr.zstd_version)
-            rctx.download_and_extract(
-                url = url,
-                sha256 = rctx.attr.zstd_sha256,
-                auth = auth,
-            )
-            working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
-
-            repo_utils.execute_checked(
-                rctx,
-                op = "python_repository.MakeZstd",
-                arguments = [
-                    repo_utils.which_checked(rctx, "make"),
-                    "--jobs=4",
-                ],
-                timeout = 600,
-                quiet = True,
-                working_directory = working_directory,
-                logger = logger,
-            )
-            zstd = "{working_directory}/zstd".format(working_directory = working_directory)
-            unzstd = "./unzstd"
-            rctx.symlink(zstd, unzstd)
-
-        repo_utils.execute_checked(
-            rctx,
-            op = "python_repository.ExtractRuntime",
-            arguments = [
-                repo_utils.which_checked(rctx, "tar"),
-                "--extract",
-                "--strip-components=2",
-                "--use-compress-program={unzstd}".format(unzstd = unzstd),
-                "--file={}".format(release_filename),
-            ],
-            logger = logger,
         )
     else:
         rctx.download_and_extract(
@@ -124,6 +86,12 @@ def _python_repository_impl(rctx):
             stripPrefix = rctx.attr.strip_prefix,
             auth = auth,
         )
+
+        # Strip the things that are not present in the INSTALL_ONLY builds
+        # NOTE: if the dirs are not present, we will not fail here
+        rctx.delete("python/build")
+        rctx.delete("python/licenses")
+        rctx.delete("python/PYTHON.json")
 
     patches = rctx.attr.patches
     if patches:
@@ -377,15 +345,6 @@ function defaults (e.g. `single_version_override` for `MODULE.bazel` files.
         ),
         "urls": attr.string_list(
             doc = "The URL of the interpreter to download. Exactly one of url and urls must be set.",
-        ),
-        "zstd_sha256": attr.string(
-            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
-        ),
-        "zstd_url": attr.string(
-            default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
-        ),
-        "zstd_version": attr.string(
-            default = "1.5.2",
         ),
         "_rule_name": attr.string(default = "python_repository"),
     },
