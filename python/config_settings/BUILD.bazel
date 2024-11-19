@@ -6,6 +6,7 @@ load(
     "BootstrapImplFlag",
     "ExecToolsToolchainFlag",
     "FreeThreadedFlag",
+    "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
 )
@@ -13,7 +14,6 @@ load(
     "//python/private/pypi:flags.bzl",
     "UniversalWhlFlag",
     "UseWhlFlag",
-    "WhlLibcFlag",
     "define_pypi_internal_flags",
 )
 load(":config_settings.bzl", "construct_config_settings")
@@ -87,8 +87,8 @@ string_flag(
 # This is used for pip and hermetic toolchain resolution.
 string_flag(
     name = "py_linux_libc",
-    build_setting_default = WhlLibcFlag.GLIBC,
-    values = sorted(WhlLibcFlag.__members__.values()),
+    build_setting_default = LibcFlag.GLIBC,
+    values = LibcFlag.flag_values(),
     # NOTE: Only public because it is used in pip hub and toolchain repos.
     visibility = ["//visibility:public"],
 )

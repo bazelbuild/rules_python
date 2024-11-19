@@ -70,7 +70,7 @@ UV_PLATFORMS = {
 UV_TOOL_VERSIONS = {
     "0.4.25": {
         "aarch64-apple-darwin": struct(
-            sha256 = "35786030f926e3d34d186edc0ea3989698e57755852af9ae4b39da5109abcbfa",
+            sha256 = "bb2ff4348114ef220ca52e44d5086640c4a1a18f797a5f1ab6f8559fc37b1230",
         ),
         "aarch64-unknown-linux-gnu": struct(
             sha256 = "4485852eb8013530c4275cd222c0056ce123f92742321f012610f1b241463f39",

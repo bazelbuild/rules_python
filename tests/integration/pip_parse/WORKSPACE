@@ -7,15 +7,6 @@ load("@rules_python//python:repositories.bzl", "py_repositories", "python_regist
 
 py_repositories()
 
-# This call is included in `py_repositories` and we are calling
-# `pip_install_dependencies` only to ensure that we are not breaking really old
-# code.
-#
-# TODO @aignas 2024-06-23: remove this before 1.0.0
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-
-pip_install_dependencies()
-
 python_register_toolchains(
     name = "python39",
     python_version = "3.9",

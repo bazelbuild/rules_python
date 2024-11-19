@@ -73,10 +73,16 @@ Unreleased changes template.
 
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
+* (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
 
 {#v0-0-0-fixed}
 ### Fixed
 * (toolchains) stop depending on `uname` to get the value of the host platform.
+* (pypi): Correctly handle multiple versions of the same package in the requirements
+  files which is useful when including different PyTorch builds (e.g. <pytorch+cpu> vs <pytorch+cu118> ) for different target platforms.
+  Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
+* (uv): Correct the sha256sum for the `uv` binary for aarch64-apple-darwin.
+  Fixes ([2411](https://github.com/bazelbuild/rules_python/issues/2411)).
 
 {#v0-0-0-added}
 ### Added
@@ -87,10 +93,17 @@ Other changes:
   `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
   example, this allows one to use `freethreaded` python interpreter in the
   `repository_rule` to build a wheel from `sdist`.
+* (toolchain) The python interpreters targeting `muslc` libc have been added
+  for the latest toolchain versions for each minor Python version. You can control
+  the toolchain selection by using the
+  {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing removed.
+* (pypi): Remove `pypi_install_dependencies` macro that has been included in
+  {bzl:obj}`py_repositories` for a long time.
+* (bzlmod): Remove `DEFAULT_PYTHON_VERSION` from `interpreters.bzl` file. If
+  you need the version, please use it from the `versions.bzl` file instead.
 
 {#v0-40-0}
 ## [0.40.0] - 2024-11-17

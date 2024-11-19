@@ -451,3 +451,10 @@ The toolchain() calls should be in a separate BUILD file from everything else.
 This avoids Bazel having to perform unnecessary work when it discovers the list
 of available toolchains.
 :::
+
+## Toolchain selection flags
+
+Currently the following flags are used to influence toolchain selection:
+* {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
+* {obj}`--@rules_python//python/config_settings:py_freethreaded` for selecting
+  the freethreaded experimental Python builds available from `3.13.0` onwards.
