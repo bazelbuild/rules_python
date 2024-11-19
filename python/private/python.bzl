@@ -462,7 +462,7 @@ def _get_toolchain_config(*, modules, _fail = fail):
             "strip_prefix": {
                 platform: item["strip_prefix"]
                 for platform in item["sha256"]
-            },
+            } if type(item["strip_prefix"]) == type("") else item["strip_prefix"],
             "url": {
                 platform: [item["url"]]
                 for platform in item["sha256"]

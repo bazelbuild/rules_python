@@ -24,7 +24,7 @@ load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
 load(":hub_repository.bzl", "hub_repository")
-load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
+load(":parse_requirements.bzl", "parse_requirements")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "whl_alias")
@@ -216,7 +216,6 @@ def _create_whl_repos(
         logger = logger,
     )
 
-    repository_platform = host_platform(module_ctx)
     for whl_name, requirements in requirements_by_platform.items():
         whl_name = normalize_name(whl_name)
 
@@ -318,38 +317,6 @@ def _create_whl_repos(
                 if is_exposed:
                     exposed_packages[whl_name] = None
                 continue
-
-        if not pip_attr.parse_all_requirements_files:
-            requirement = select_requirement(
-                requirements,
-                platform = None if pip_attr.download_only else repository_platform,
-            )
-            if not requirement:
-                # Sometimes the package is not present for host platform if there
-                # are whls specified only in particular requirements files, in that
-                # case just continue, however, if the download_only flag is set up,
-                # then the user can also specify the target platform of the wheel
-                # packages they want to download, in that case there will be always
-                # a requirement here, so we will not be in this code branch.
-                continue
-            elif get_index_urls:
-                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
-
-            whl_library_args["requirement"] = requirement.requirement_line
-            if requirement.extra_pip_args:
-                whl_library_args["extra_pip_args"] = requirement.extra_pip_args
-
-            # We sort so that the lock-file remains the same no matter the order of how the
-            # args are manipulated in the code going before.
-            repo_name = "{}_{}".format(pip_name, whl_name)
-            whl_libraries[repo_name] = dict(whl_library_args.items())
-            whl_map.setdefault(whl_name, []).append(
-                whl_alias(
-                    repo = repo_name,
-                    version = major_minor,
-                ),
-            )
-            continue
 
         is_exposed = False
         for requirement in requirements:
@@ -683,13 +650,6 @@ def _pip_impl(module_ctx):
     else:
         return None
 
-def _pip_non_reproducible(module_ctx):
-    _pip_impl(module_ctx)
-
-    # We default to calling the PyPI index and that will go into the
-    # MODULE.bazel.lock file, hence return nothing here.
-    return None
-
 def _pip_parse_ext_attrs(**kwargs):
     """Get the attributes for the pip extension.
 
@@ -750,16 +710,6 @@ The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
         ),
-        "extra_hub_aliases": attr.string_list_dict(
-            doc = """\
-Extra aliases to make for specific wheels in the hub repo. This is useful when
-paired with the {attr}`whl_modifications`.
-
-:::{versionadded} 0.38.0
-:::
-""",
-            mandatory = False,
-        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """
@@ -798,20 +748,6 @@ If we are in synchronous mode, then we will use the first result that we
 find in case extra indexes are specified.
 """,
             default = True,
-        ),
-        "parse_all_requirements_files": attr.bool(
-            default = True,
-            doc = """\
-A temporary flag to enable users to make `pip` extension result always
-the same independent of the whether transitive dependencies use {bzl:attr}`experimental_index_url` or not.
-
-This enables users to migrate to a solution that fixes
-[#2268](https://github.com/bazelbuild/rules_python/issues/2268).
-
-::::{deprecated} 0.38.0
-This is a transition flag and will be removed in a subsequent release.
-::::
-""",
         ),
         "python_version": attr.string(
             mandatory = True,
@@ -953,53 +889,6 @@ the BUILD files for wheels.
             attrs = _pip_parse_ext_attrs(),
             doc = """\
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
-This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
-The exception is it does not use the arg 'repo_prefix'.  We set the repository
-prefix for the user and the alias arg is always True in bzlmod.
-""",
-        ),
-        "whl_mods": tag_class(
-            attrs = _whl_mod_attrs(),
-            doc = """\
-This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
-JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
-create different modifications based on the type of attribute. Previously to bzlmod these
-JSON files where referred to as annotations, and were renamed to whl_modifications in this
-extension.
-""",
-        ),
-    },
-)
-
-pypi_internal = module_extension(
-    doc = """\
-This extension is used to make dependencies from pypi available.
-For now this is intended to be used internally so that usage of the `pip`
-extension in `rules_python` does not affect the evaluations of the extension
-for the consumers.
-pip.parse:
-To use, call `pip.parse()` and specify `hub_name` and your requirements file.
-Dependencies will be downloaded and made available in a repo named after the
-`hub_name` argument.
-Each `pip.parse()` call configures a particular Python version. Multiple calls
-can be made to configure different Python versions, and will be grouped by
-the `hub_name` argument. This allows the same logical name, e.g. `@pypi//numpy`
-to automatically resolve to different, Python version-specific, libraries.
-pip.whl_mods:
-This tag class is used to help create JSON files to describe modifications to
-the BUILD files for wheels.
-
-TODO: will be removed before 1.0.
-""",
-    implementation = _pip_non_reproducible,
-    tag_classes = {
-        "override": _override_tag,
-        "parse": tag_class(
-            attrs = _pip_parse_ext_attrs(
-                experimental_index_url = "https://pypi.org/simple",
-            ),
-            doc = """\
-This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
 This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
 The exception is it does not use the arg 'repo_prefix'.  We set the repository
 prefix for the user and the alias arg is always True in bzlmod.

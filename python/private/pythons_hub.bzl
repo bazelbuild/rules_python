@@ -86,7 +86,6 @@ _interpreters_bzl_template = """
 INTERPRETER_LABELS = {{
 {interpreter_labels}
 }}
-DEFAULT_PYTHON_VERSION = "{default_python_version}"
 """
 
 _line_for_hub_template = """\
@@ -125,8 +124,6 @@ def _hub_repo_impl(rctx):
     rctx.file(
         "interpreters.bzl",
         _interpreters_bzl_template.format(
-            # TODO @aignas 2024-09-28: before 1.0 remove the value from here
-            default_python_version = rctx.attr.default_python_version,
             interpreter_labels = interpreter_labels,
         ),
         executable = False,

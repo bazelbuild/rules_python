@@ -30,19 +30,19 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* Nothing changed.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* Nothing fixed.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* Nothing added.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* Nothing removed.
 -->
 
 {#v0-0-0}
@@ -52,19 +52,86 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+
+**Breaking**:
+* (toolchains) stop exposing config settings in python toolchain alias repos.
+  Please consider depending on the flags defined in
+  `//python/config_setting/...` and the `@platforms` package instead.
+* (toolchains) consumers who were depending on the `MACOS_NAME` and the `arch`
+  attribute in the `PLATFORMS` list, please update your code to respect the new
+  values. The values now correspond to the values available in the
+  `@platforms//` package constraint values.
+* (toolchains) `host_platform` and `interpreter` constants are no longer created
+  in the `toolchain` generated alias `.bzl` files. If you need to access the
+  host interpreter during the `repository_rule` evaluation, please use the
+  `@python_{version}_host//:python` targets created by
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
+  bzlmod extension.
+* (bzlmod) `pip.parse.parse_all_requirements_files` attribute has been removed.
+  See notes in the previous versions about what to do.
+
+Other changes:
+* (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
+* (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* (toolchains) stop depending on `uname` to get the value of the host platform.
+* (pypi): Correctly handle multiple versions of the same package in the requirements
+  files which is useful when including different PyTorch builds (e.g. <pytorch+cpu> vs <pytorch+cu118> ) for different target platforms.
+  Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
+* (uv): Correct the sha256sum for the `uv` binary for aarch64-apple-darwin.
+  Fixes ([2411](https://github.com/bazelbuild/rules_python/issues/2411)).
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* (gazelle): Parser failures will now be logged to the terminal. Additional
+  details can be logged by setting `GAZELLE_VERBOSE=1`.
+* (toolchains) allow users to select which variant of the support host toolchain
+  they would like to use through
+  `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
+  example, this allows one to use `freethreaded` python interpreter in the
+  `repository_rule` to build a wheel from `sdist`.
+* (toolchain) The python interpreters targeting `muslc` libc have been added
+  for the latest toolchain versions for each minor Python version. You can control
+  the toolchain selection by using the
+  {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* (pypi): Remove `pypi_install_dependencies` macro that has been included in
+  {bzl:obj}`py_repositories` for a long time.
+* (bzlmod): Remove `DEFAULT_PYTHON_VERSION` from `interpreters.bzl` file. If
+  you need the version, please use it from the `versions.bzl` file instead.
+
+{#v0-40-0}
+## [0.40.0] - 2024-11-17
+
+[0.40.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.40.0
+
+{#v0-40-changed}
+### Changed
+* Nothing changed.
+
+{#v0-40-fixed}
+### Fixed
+* (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
+  ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
+
+{#v0-40-added}
+### Added
+* Nothing added.
+
+{#v0-40-removed}
+### Removed
+* (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
+  Please use `requirements_linux.txt` instead.
+* (python_repository) Use bazel's built in `zstd` support and remove attributes
+  for customizing the `zstd` binary to be used for `zstd` archives in the
+  {bzl:obj}`python_repository` repository_rule. This affects the
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` callers in the `WORKSPACE`.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13
@@ -149,7 +216,7 @@ Unreleased changes template.
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. To opt into this behavior, set
-  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  `pip.parse.parse_all_requirements_files`, which will become the
   default in future releases leading up to `1.0.0`. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
   issue is that it may break `bazel query` and in these use cases it is
