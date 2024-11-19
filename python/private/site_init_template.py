@@ -20,7 +20,7 @@ import sys
 _IMPORTS_STR = "%imports%"
 # Though the import all value is the correct literal, we quote it
 # so this file is parsable by tools.
-_IMPORT_ALL = True if "%import_all%" == "True" else False
+_IMPORT_ALL = "%import_all%" == "True"
 _WORKSPACE_NAME = "%workspace_name%"
 # runfiles-relative path to this file
 _SELF_RUNFILES_RELATIVE_PATH = "%site_init_runfiles_path%"
