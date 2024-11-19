@@ -77,7 +77,12 @@ func ParseCode(code []byte, path string) (*sitter.Node, error) {
 			for i := 0; i < int(root.ChildCount()); i++ {
 				child := root.Child(i)
 				if child.IsError() {
+					// Example logs:
+					// gazelle: Parse error at {Row:1 Column:0}:
+					// def search_one_more_level[T]():
 					log.Printf("Parse error at %+v:\n%+v", child.StartPoint(), child.Content(code))
+					// Log the internal tree-sitter representation of what was parsed. Eg:
+					// gazelle: The above was parsed as: (ERROR (identifier) (call function: (list (identifier)) arguments: (argument_list)))
 					log.Printf("The above was parsed as: %v", child.String())
 				}
 			}
