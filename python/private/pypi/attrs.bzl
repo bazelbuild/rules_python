@@ -141,16 +141,6 @@ Special values: `host` (for generating deps for the host platform only) and
 NOTE: this is not for cross-compiling Python wheels but rather for parsing the `whl` METADATA correctly.
 """,
     ),
-    "extra_pip_args": attr.string_list(
-        doc = """Extra arguments to pass on to pip. Must not contain spaces.
-
-Supports environment variables using the syntax `$VARNAME` or
-`${VARNAME}` (expanding to empty string if unset) or
-`${VARNAME:-default}` (expanding to default if the variable is unset
-or empty in the environment), if `"VARNAME"` is listed in the
-`envsubst` attribute. See also `envsubst`.
-""",
-    ),
     "extra_hub_aliases": attr.string_list_dict(
         doc = """\
 Extra aliases to make for specific wheels in the hub repo. This is useful when
@@ -160,6 +150,16 @@ paired with the {attr}`whl_modifications`.
 :::
 """,
         mandatory = False,
+    ),
+    "extra_pip_args": attr.string_list(
+        doc = """Extra arguments to pass on to pip. Must not contain spaces.
+
+Supports environment variables using the syntax `$VARNAME` or
+`${VARNAME}` (expanding to empty string if unset) or
+`${VARNAME:-default}` (expanding to default if the variable is unset
+or empty in the environment), if `"VARNAME"` is listed in the
+`envsubst` attribute. See also `envsubst`.
+""",
     ),
     "isolated": attr.bool(
         doc = """\
