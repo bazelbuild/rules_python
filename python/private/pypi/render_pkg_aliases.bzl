@@ -68,16 +68,18 @@ def _repr_actual(aliases):
     actual = {}
     for alias, repo in aliases.items():
         if alias.filename:
+            kwargs = {
+                k: v
+                for k, v in {
+                    "filename": alias.filename,
+                    "target_platforms": alias.target_platforms,
+                    "version": alias.version,
+                }.items()
+                if v
+            }
+
             config_setting = """whl_config_setting(\n{}\n)""".format(
-                render.indent("\n".join([
-                    "{} = {},".format(k, repr(v))
-                    for k, v in {
-                        "filename": alias.filename,
-                        "target_platforms": alias.target_platforms,
-                        "version": alias.version,
-                    }.items()
-                    if v
-                ])),
+                render.indent(render.kwargs(kwargs)),
             )
         else:
             config_setting = repr(
@@ -87,7 +89,7 @@ def _repr_actual(aliases):
 
     return render.indent(render.dict(actual, key_repr = lambda x: x)).lstrip()
 
-def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None, **kwargs):
+def _render_common_aliases(*, name, aliases, **kwargs):
     actual_repr = _repr_actual(aliases)
     extra_loads = ""
     if "whl_config_setting" in actual_repr:
@@ -102,22 +104,12 @@ package(default_visibility = ["//visibility:public"])
 pkg_aliases(
     name = "{name}",
     actual = {actual},
-    group_name = {group_name},
-    extra_aliases = {extra_aliases},
-{kwargs})""".format(
+    {kwargs}
+)""".format(
         extra_loads = extra_loads,
         name = name,
         actual = actual_repr,
-        group_name = repr(group_name),
-        extra_aliases = repr(extra_aliases),
-        kwargs = "" if not kwargs else (
-            render.indent(
-                "\n".join([
-                    "{} = {},".format(k, repr(v))
-                    for k, v in kwargs.items()
-                ]),
-            ) + "\n"
-        ),
+        kwargs = render.indent(render.kwargs(kwargs)).lstrip(),
     )
 
 def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases = {}, **kwargs):
@@ -199,27 +191,25 @@ def render_multiplatform_pkg_aliases(*, aliases, **kwargs):
         osx_versions = flag_versions.get("osx_versions", []),
         **kwargs
     )
-    contents["_config/BUILD.bazel"] = _render_config_settings(**flag_versions)
+    contents["_config/BUILD.bazel"] = _render_config_settings(
+        glibc_versions = flag_versions.get("glibc_versions", []),
+        muslc_versions = flag_versions.get("muslc_versions", []),
+        osx_versions = flag_versions.get("osx_versions", []),
+        python_versions = flag_versions.get("python_versions", []),
+        target_platforms = flag_versions.get("target_platforms", []),
+        visibility = ["//:__subpackages__"],
+    )
     return contents
 
-def _render_config_settings(python_versions = [], target_platforms = [], osx_versions = [], glibc_versions = [], muslc_versions = []):
+def _render_config_settings(**kwargs):
     return """\
 load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings")
 
 config_settings(
     name = "config_settings",
-    glibc_versions = {glibc_versions},
-    muslc_versions = {muslc_versions},
-    osx_versions = {osx_versions},
-    python_versions = {python_versions},
-    target_platforms = {target_platforms},
-    visibility = ["//:__subpackages__"],
+{kwargs}
 )""".format(
-        glibc_versions = render.indent(render.list(glibc_versions)).lstrip(),
-        muslc_versions = render.indent(render.list(muslc_versions)).lstrip(),
-        osx_versions = render.indent(render.list(osx_versions)).lstrip(),
-        python_versions = render.indent(render.list(python_versions)).lstrip(),
-        target_platforms = render.indent(render.list(target_platforms)).lstrip(),
+        kwargs = render.indent(render.kwargs(kwargs, value_repr = render.list)),
     )
 
 def get_whl_flag_versions(settings):

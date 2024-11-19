@@ -56,8 +56,8 @@ package(default_visibility = ["//visibility:public"])
 pkg_aliases(
     name = "foo",
     actual = "pypi_foo",
-    group_name = None,
     extra_aliases = [],
+    group_name = None,
 )"""
 
     env.expect.that_dict(actual).contains_exactly({want_key: want_content})
@@ -97,9 +97,9 @@ pkg_aliases(
             version = "3.2",
         ): "filename_repo",
     },
-    group_name = None,
     extra_aliases = [],
     glibc_versions = [],
+    group_name = None,
     muslc_versions = [],
     osx_versions = [],
 )"""

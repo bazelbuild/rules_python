@@ -124,6 +124,18 @@ def _render_tuple(items, *, value_repr = repr):
         ")",
     ])
 
+def _render_kwargs(items, *, value_repr = repr):
+    if not items:
+        return ""
+
+    return "\n".join(sorted(
+        [
+            "{} = {},".format(k, _indent(value_repr(v)).lstrip())
+            for k, v in items.items()
+        ],
+        key = lambda key: (key == "name", key),
+    ))
+
 def _toolchain_prefix(index, name, pad_length):
     """Prefixes the given name with the index, padded with zeros to ensure lexicographic sorting.
 
@@ -143,6 +155,7 @@ render = struct(
     dict = _render_dict,
     hanging_indent = _hanging_indent,
     indent = _indent,
+    kwargs = _render_kwargs,
     left_pad_zero = _left_pad_zero,
     list = _render_list,
     select = _render_select,
