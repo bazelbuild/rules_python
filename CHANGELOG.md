@@ -52,7 +52,7 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (pypi) extra_hub_aliases now works with pip_parse in WORKSPACE files.
 
 {#v0-0-0-fixed}
 ### Fixed
