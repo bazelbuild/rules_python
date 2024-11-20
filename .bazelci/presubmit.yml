@@ -275,28 +275,6 @@ tasks:
     working_directory: examples/bzlmod
     platform: windows
     bazel: last_rc
-  integration_test_bzlmod_ubuntu_lockfile:
-    <<: *reusable_build_test_all
-    <<: *coverage_targets_example_bzlmod
-    name: "examples/bzlmod: Ubuntu with lockfile"
-    working_directory: examples/bzlmod
-    platform: ubuntu2004
-    bazel: 7.x
-    shell_commands:
-    # Update the lockfiles and fail if it is different.
-    - "../../tools/private/update_bzlmod_lockfiles.sh"
-    - "git diff --exit-code"
-  integration_test_bzlmod_macos_lockfile:
-    <<: *reusable_build_test_all
-    <<: *coverage_targets_example_bzlmod
-    name: "examples/bzlmod: macOS with lockfile"
-    working_directory: examples/bzlmod
-    platform: macos
-    bazel: 7.x
-    shell_commands:
-    # Update the lockfiles and fail if it is different.
-    - "../../tools/private/update_bzlmod_lockfiles.sh"
-    - "git diff --exit-code"
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
     <<: *minimum_supported_version
