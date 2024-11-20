@@ -56,3 +56,9 @@ stderr.
 
 When `1`, debug information about coverage behavior is printed to stderr.
 :::
+
+
+:::{envvar} RULES_PYTHON_GAZELLE_VERBOSE
+
+When `1`, debug information from gazelle is printed to stderr.
+:::
