@@ -189,10 +189,10 @@ def rules_python_internal_deps():
     http_archive(
         name = "rules_java",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_java/releases/download/6.3.0/rules_java-6.3.0.tar.gz",
-            "https://github.com/bazelbuild/rules_java/releases/download/6.3.0/rules_java-6.3.0.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_java/releases/download/8.3.1/rules_java-8.3.1.tar.gz",
+            "https://github.com/bazelbuild/rules_java/releases/download/8.3.1/rules_java-8.3.1.tar.gz",
         ],
-        sha256 = "29ba147c583aaf5d211686029842c5278e12aaea86f66bd4a9eb5e525b7f2701",
+        sha256 = "ee786b943e00da4fea7c233e70e5f5b8a01cc69b9341b3f49169f174fe0df1c5",
     )
 
     RULES_JVM_EXTERNAL_TAG = "5.2"
@@ -224,9 +224,9 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "rules_cc",
-        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.14/rules_cc-0.0.14.tar.gz"],
-        sha256 = "906e89286acc67c20819c3c88b3283de0d5868afda33635d70acae0de9777bb7",
-        strip_prefix = "rules_cc-0.0.14",
+        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
+        sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
+        strip_prefix = "rules_cc-0.0.16",
     )
 
     http_archive(
