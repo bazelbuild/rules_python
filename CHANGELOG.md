@@ -74,6 +74,7 @@ Unreleased changes template.
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 * (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
+* (gazelle): Update to latest version of go-tree-sitter which supports python 3.12 syntax.
 
 {#v0-0-0-fixed}
 ### Fixed

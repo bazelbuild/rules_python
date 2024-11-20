@@ -1,6 +1,6 @@
 module github.com/bazelbuild/rules_python/gazelle
 
-go 1.19
+go 1.23
 
 require (
 	github.com/bazelbuild/bazel-gazelle v0.31.1
@@ -9,7 +9,6 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/emirpasic/gods v1.18.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/smacker/go-tree-sitter v0.0.0-20240422154435-0628b34cbf9c
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/sync v0.2.0
 	gopkg.in/yaml.v2 v2.4.0
