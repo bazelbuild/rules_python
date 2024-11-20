@@ -188,7 +188,7 @@ def go_deps():
     go_repository(
         name = "com_github_smacker_go_tree_sitter",
         importpath = "github.com/smacker/go-tree-sitter",
-        patch_args = ["-p1", "--fuzz=10", "--verbose"],
+        patch_args = ["-p1"],
         patches = ["//:patches/0001-go-tree-sitter-build.patch"],
         sum = "h1:6C8qej6f1bStuePVkLSFxoU22XBS165D3klxlzRg8F4=",
         version = "v0.0.0-20240827094217-dd81d9e9be82",
