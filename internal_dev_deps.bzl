@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Dependencies that are needed for rules_python tests and tools."""
+"""Dependencies that are needed for development and testing of rules_python itself."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive", _http_file = "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
@@ -32,7 +32,13 @@ def http_file(name, **kwargs):
     )
 
 def rules_python_internal_deps():
-    """Fetches all required dependencies for rules_python tests and tools."""
+    """Fetches all required dependencies for developing/testing rules_python itself.
+
+    Setup of these dependencies is done by `internal_dev_setup.bzl`
+
+    For dependencies needed by *users* of rules_python, see
+    python/private/py_repositories.bzl.
+    """
 
     http_archive(
         name = "bazel_skylib",

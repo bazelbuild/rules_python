@@ -17,7 +17,7 @@ workspace(name = "rules_python")
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
-load("//:internal_deps.bzl", "rules_python_internal_deps")
+load("//:internal_dev_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
 
@@ -37,7 +37,7 @@ load("@stardoc_maven//:defs.bzl", stardoc_pinned_maven_install = "pinned_maven_i
 
 stardoc_pinned_maven_install()
 
-load("//:internal_setup.bzl", "rules_python_internal_setup")
+load("//:internal_dev_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
