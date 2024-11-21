@@ -36,7 +36,7 @@ _TARGET_COMPATIBLE_WITH = select({
     "@platforms//os:linux": [],
     "@platforms//os:macos": [],
     "//conditions:default": ["@platforms//:incompatible"],
-}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
+}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
 # See README.md for instructions. Short version:
 # * `bazel run //docs:docs.serve` in a separate terminal
