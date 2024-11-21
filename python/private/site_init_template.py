@@ -27,9 +27,6 @@ _SELF_RUNFILES_RELATIVE_PATH = "%site_init_runfiles_path%"
 # Runfiles-relative path to the coverage tool entry point, if any.
 _COVERAGE_TOOL = "%coverage_tool%"
 
-# True if coverage was requested and successfully setup
-COVERAGE_SETUP = False
-
 
 def _is_verbose():
     return bool(os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"))
@@ -128,7 +125,6 @@ def _search_path(name):
 
 
 def _setup_sys_path():
-    global COVERAGE_SETUP
     seen = set(sys.path)
     python_path_entries = []
 
@@ -161,6 +157,7 @@ def _setup_sys_path():
     # for something, though it could be another program executing this one or
     # one executed by this one (e.g. an extension module).
     # NOTE: Coverage is added last to allow user dependencies to override it.
+    coverage_setup = False
     if os.environ.get("COVERAGE_DIR"):
         cov_tool = _COVERAGE_TOOL
         if cov_tool:
@@ -185,7 +182,7 @@ def _setup_sys_path():
             # the runfiles directory, which must not be replaced.
             # CoverageScript.do_execute() undoes this sys.path[0] setting.
             _maybe_add_path(coverage_dir)
-            COVERAGE_SETUP = True
+            coverage_setup = True
         else:
             _print_verbose_coverage(
                 "Coverage was enabled, but python coverage tool was not configured."
@@ -193,7 +190,7 @@ def _setup_sys_path():
                 + "https://rules-python.readthedocs.io/en/latest/coverage.html"
             )
 
-    return None
+    return coverage_setup
 
 
-_setup_sys_path()
+COVERAGE_SETUP = _setup_sys_path()

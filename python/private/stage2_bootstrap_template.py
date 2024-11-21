@@ -391,10 +391,13 @@ def main():
     # user import accidentally triggering the site-packages logic above.
     sys.path[0:0] = prepend_path_entries
 
-    # todo: also check COVERAGE_DIR env var
-    import _bazel_site_init
+    if os.environ.get("COVERAGE_DIR"):
+        import _bazel_site_init
+        coverage_enabled = _bazel_site_init.COVERAGE_SETUP
+    else:
+        coverage_enabled = False
 
-    with _maybe_collect_coverage(enable=_bazel_site_init.COVERAGE_SETUP):
+    with _maybe_collect_coverage(enable=coverage_enabled):
         # The first arg is this bootstrap, so drop that for the re-invocation.
         _run_py(main_filename, args=sys.argv[1:])
         sys.exit(0)
