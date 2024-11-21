@@ -60,7 +60,9 @@ def py_repositories():
         urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.1.0/rules_cc-0.1.0.tar.gz"],
     )
 
-    # Needed by rules_cc, triggerred by @rules_java_prebuilt in Bazel by using @rules_cc//cc:defs.bzl
+    # Needed by rules_cc, triggered by @rules_java_prebuilt in Bazel by using @rules_cc//cc:defs.bzl
+    # NOTE: This name must be com_google_protobuf until Bazel drops WORKSPACE
+    # support; Bazel itself has references to com_google_protobuf.
     http_archive(
         name = "com_google_protobuf",
         sha256 = "23082dca1ca73a1e9c6cbe40097b41e81f71f3b4d6201e36c134acc30a1b3660",
