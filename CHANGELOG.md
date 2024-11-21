@@ -74,6 +74,8 @@ Unreleased changes template.
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 * (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
+* (binaries/tests) For {obj}`--bootstrap_impl=script`, a binary-specific (but
+  otherwise empty) virtual env is used to customize `sys.path` initialization.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -83,6 +85,9 @@ Other changes:
   Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
 * (uv): Correct the sha256sum for the `uv` binary for aarch64-apple-darwin.
   Fixes ([2411](https://github.com/bazelbuild/rules_python/issues/2411)).
+* (binaries/tests) ({obj}`--bootstrap_impl=scipt`) Using `sys.executable` will
+  use the same `sys.path` setup as the calling binary.
+  ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
 
 {#v0-0-0-added}
 ### Added
@@ -97,6 +102,9 @@ Other changes:
   for the latest toolchain versions for each minor Python version. You can control
   the toolchain selection by using the
   {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
+* (providers) Added {obj}`py_runtime_info.site_init_template` and
+  {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
+  initialize the interpreter via venv startup hooks.
 
 {#v0-0-0-removed}
 ### Removed

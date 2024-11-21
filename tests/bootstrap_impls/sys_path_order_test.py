@@ -35,9 +35,9 @@ class SysPathOrderTest(unittest.TestCase):
         for i, value in enumerate(sys.path):
             # The runtime's root repo may be added to sys.path, but it
             # counts as a user directory, not stdlib directory.
-            if value == sys.prefix:
+            if value in (sys.prefix, sys.base_prefix):
                 category = "user"
-            elif value.startswith(sys.prefix):
+            elif value.startswith(sys.base_prefix):
                 # The runtime's site-package directory might be called
                 # dist-packages when using Debian's system python.
                 if os.path.basename(value).endswith("-packages"):
@@ -67,19 +67,29 @@ class SysPathOrderTest(unittest.TestCase):
             self.fail(
                 "Failed to find position for one of:\n"
                 + f"{last_stdlib=} {first_user=} {first_runtime_site=}\n"
+                + f"for sys.prefix={sys.prefix}\n"
+                + f"for sys.exec_prefix={sys.exec_prefix}\n"
+                + f"for sys.base_prefix={sys.base_prefix}\n"
                 + f"for sys.path:\n{sys_path_str}"
             )
 
         if os.environ["BOOTSTRAP"] == "script":
             self.assertTrue(
                 last_stdlib < first_user < first_runtime_site,
-                f"Expected {last_stdlib=} < {first_user=} < {first_runtime_site=}\n"
+                "Expected overall order to be (stdlib, user imports, runtime site) "
+                + f"with {last_stdlib=} < {first_user=} < {first_runtime_site=}\n"
+                + f"for sys.prefix={sys.prefix}\n"
+                + f"for sys.exec_prefix={sys.exec_prefix}\n"
+                + f"for sys.base_prefix={sys.base_prefix}\n"
                 + f"for sys.path:\n{sys_path_str}",
             )
         else:
             self.assertTrue(
                 first_user < last_stdlib < first_runtime_site,
                 f"Expected {first_user=} < {last_stdlib=} < {first_runtime_site=}\n"
+                + f"for sys.prefix={sys.prefix}\n"
+                + f"for sys.exec_prefix={sys.exec_prefix}\n"
+                + f"for sys.base_prefix={sys.base_prefix}\n"
                 + f"for sys.path:\n{sys_path_str}",
             )
 

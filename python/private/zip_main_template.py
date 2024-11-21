@@ -23,8 +23,12 @@ import subprocess
 import tempfile
 import zipfile
 
+# runfiles-relative path
 _STAGE2_BOOTSTRAP = "%stage2_bootstrap%"
+# runfiles-relative path
 _PYTHON_BINARY = "%python_binary%"
+# runfiles-relative path, absolute path, or single word
+_PYTHON_BINARY_ACTUAL = "%python_binary_actual%"
 _WORKSPACE_NAME = "%workspace_name%"
 
 
@@ -257,9 +261,36 @@ def main():
         "Cannot exec() %r: file not readable." % main_filename
     )
 
-    program = python_program = find_python_binary(module_space)
+    python_program = find_python_binary(module_space)
     if python_program is None:
         raise AssertionError("Could not find python binary: " + _PYTHON_BINARY)
+
+    # The python interpreter should always be under runfiles, but double check.
+    # We don't want to accidentally create symlinks elsewhere.
+    if not python_program.startswith(module_space):
+        raise AssertionError(
+            "Program's venv binary not under runfiles: {python_program}"
+        )
+
+    if os.path.isabs(_PYTHON_BINARY_ACTUAL):
+        symlink_to = _PYTHON_BINARY_ACTUAL
+    elif "/" in _PYTHON_BINARY_ACTUAL:
+        symlink_to = os.path.join(module_space, _PYTHON_BINARY_ACTUAL)
+    else:
+        symlink_to = search_path(_PYTHON_BINARY_ACTUAL)
+        if not symlink_to:
+            raise AssertionError(
+                f"Python interpreter to use not found on PATH: {_PYTHON_BINARY_ACTUAL}"
+            )
+
+    # The bin/ directory may not exist if it is empty.
+    os.makedirs(os.path.dirname(python_program), exist_ok=True)
+    try:
+        os.symlink(_PYTHON_BINARY_ACTUAL, python_program)
+    except OSError as e:
+        raise Exception(
+            f"Unable to create venv python interpreter symlink: {python_program} -> {PYTHON_BINARY_ACTUAL}"
+        ) from e
 
     # Some older Python versions on macOS (namely Python 3.7) may unintentionally
     # leave this environment variable set after starting the interpreter, which
