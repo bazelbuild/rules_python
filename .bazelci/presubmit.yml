@@ -142,7 +142,7 @@ tasks:
     platform: macos
   windows_workspace:
     <<: *reusable_config
-    <<: *common_workspace_flags_min_bazel
+    <<: *common_workspace_flags
     name: "Default: Windows, workspace"
     platform: windows
 
