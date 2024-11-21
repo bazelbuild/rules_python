@@ -9,7 +9,7 @@ class GeneratorTest(unittest.TestCase):
         whl = pathlib.Path(
             pathlib.Path(__file__).parent, "testdata", "pytest-7.1.1-py3-none-any.whl"
         )
-        gen = Generator(None, None, {})
+        gen = Generator(None, None, {}, False)
         gen.dig_wheel(whl)
         self.assertLessEqual(
             {
@@ -27,12 +27,25 @@ class GeneratorTest(unittest.TestCase):
             "testdata",
             "django_types-0.15.0-py3-none-any.whl",
         )
-        gen = Generator(None, None, {})
+        gen = Generator(None, None, {}, True)
         gen.dig_wheel(whl)
         self.assertLessEqual(
             {
                 "django_types": "django_types",
             }.items(),
+            gen.mapping.items(),
+        )
+
+    def test_stub_excluded(self):
+        whl = pathlib.Path(
+            pathlib.Path(__file__).parent
+            / "testdata"
+            / "django_types-0.15.0-py3-none-any.whl"
+        )
+        gen = Generator(None, None, {}, False)
+        gen.dig_wheel(whl)
+        self.assertEqual(
+            {}.items(),
             gen.mapping.items(),
         )
 

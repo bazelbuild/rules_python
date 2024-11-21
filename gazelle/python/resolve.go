@@ -195,7 +195,6 @@ func (py *Resolver) Resolve(
 						typeModule := fmt.Sprintf("%s_types", strings.ToLower(distributionName))
 						if dep, _, ok := cfg.FindThirdPartyDependency(typeModule); ok {
 							deps.Add(dep)
-
 						}
 						stubModule := fmt.Sprintf("%s_stubs", strings.ToLower(distributionName))
 						if dep, _, ok := cfg.FindThirdPartyDependency(stubModule); ok {

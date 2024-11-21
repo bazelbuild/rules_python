@@ -32,6 +32,7 @@ def _modules_mapping_impl(ctx):
     )
     args.add("--output_file", modules_mapping.path)
     args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
+    args.add_all("--include_stub_packages", ctx.attr.include_stub_packages)
     args.add_all("--wheels", [whl.path for whl in all_wheels.to_list()])
     ctx.actions.run(
         inputs = all_wheels.to_list(),
@@ -53,6 +54,11 @@ modules_mapping = rule(
         "modules_mapping_name": attr.string(
             default = "modules_mapping.json",
             doc = "The name for the output JSON file.",
+            mandatory = False,
+        ),
+        "include_stub_packages": attr.bool(
+            default = False,
+            doc = "Whether to include stub packages in the mapping.",
             mandatory = False,
         ),
         "wheels": attr.label_list(
