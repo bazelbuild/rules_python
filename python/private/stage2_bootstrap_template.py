@@ -386,9 +386,6 @@ def main():
 
     sys.stdout.flush()
 
-    # NOTE: The sys.path must be modified before coverage is imported/activated
-    # NOTE: Perform this after the user imports are appended. This avoids a
-    # user import accidentally triggering the site-packages logic above.
     sys.path[0:0] = prepend_path_entries
 
     if os.environ.get("COVERAGE_DIR"):
