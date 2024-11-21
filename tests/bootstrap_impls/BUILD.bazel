@@ -57,7 +57,7 @@ py_reconfig_test(
     srcs = ["sys_path_order_test.py"],
     bootstrap_impl = "script",
     env = {"BOOTSTRAP": "script"},
-    imports = ["./site-packages"],
+    imports = ["./USER_IMPORT/site-packages"],
     main = "sys_path_order_test.py",
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )
@@ -76,5 +76,14 @@ sh_py_run_test(
     bootstrap_impl = "script",
     py_src = "bin.py",
     sh_src = "inherit_pythonsafepath_env_test.sh",
+    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
+sh_py_run_test(
+    name = "sys_executable_inherits_sys_path",
+    bootstrap_impl = "script",
+    imports = ["./MARKER"],
+    py_src = "call_sys_exe.py",
+    sh_src = "sys_executable_inherits_sys_path_test.sh",
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )

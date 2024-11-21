@@ -136,7 +136,7 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs["env"] = kwargs.get("env")
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
-    inner_name = "_{}_inner" + name
+    inner_name = "_{}_inner".format(name)
     _py_reconfig_test(
         name = name,
         target = inner_name,
@@ -149,6 +149,14 @@ def py_reconfig_test(*, name, **kwargs):
     )
 
 def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
+    """Run a py_binary within a sh_test.
+
+    Args:
+        name: name of the sh_test and base name of inner targets.
+        sh_src: .sh file to run as a test
+        py_src: .py file for the py_binary
+        **kwargs: additional kwargs passed onto py_binary and/or sh_test
+    """
     bin_name = "_{}_bin".format(name)
     sh_test(
         name = name,
@@ -162,6 +170,12 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
         },
     )
 
+    py_binary_kwargs = {
+        key: kwargs.pop(key)
+        for key in ("imports", "deps")
+        if key in kwargs
+    }
+
     _py_reconfig_binary(
         name = bin_name,
         tags = ["manual"],
@@ -174,6 +188,7 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
         srcs = [py_src],
         main = py_src,
         tags = ["manual"],
+        **py_binary_kwargs
     )
 
 def _current_build_settings_impl(ctx):
