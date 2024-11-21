@@ -1,4 +1,4 @@
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:sphinx_docs_library.bzl", "sphinx_docs_library")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
@@ -14,7 +14,7 @@ _TARGET_COMPATIBLE_WITH = select({
     "@platforms//os:linux": [],
     "@platforms//os:macos": [],
     "//conditions:default": ["@platforms//:incompatible"],
-}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
+}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
 sphinx_docs_library(
     name = "docs_lib",
