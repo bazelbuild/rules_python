@@ -70,12 +70,15 @@ Unreleased changes template.
   bzlmod extension.
 * (bzlmod) `pip.parse.parse_all_requirements_files` attribute has been removed.
   See notes in the previous versions about what to do.
+* (deps) rules_cc 0.1.0 (workspace) and 0.0.16 (bzlmod).
+* (deps) protobuf 29.0-rc2 (workspace; bzlmod already specifying that version).
 
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 * (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
 * (binaries/tests) For {obj}`--bootstrap_impl=script`, a binary-specific (but
   otherwise empty) virtual env is used to customize `sys.path` initialization.
+* (deps) bazel_skylib 1.7.0 (workspace; bzlmod already specifying that version)
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -88,6 +91,8 @@ Other changes:
 * (binaries/tests) ({obj}`--bootstrap_impl=scipt`) Using `sys.executable` will
   use the same `sys.path` setup as the calling binary.
   ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
+* (workspace) Corrected protobuf's name to com_google_protobuf, the name is
+  hardcoded in Bazel, WORKSPACE mode.
 
 {#v0-0-0-added}
 ### Added
