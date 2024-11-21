@@ -92,7 +92,7 @@ Other changes:
 {#v0-0-0-added}
 ### Added
 * (gazelle): Parser failures will now be logged to the terminal. Additional
-  details can be logged by setting `GAZELLE_VERBOSE=1`.
+  details can be logged by setting `RULES_PYTHON_GAZELLE_VERBOSE=1`.
 * (toolchains) allow users to select which variant of the support host toolchain
   they would like to use through
   `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
