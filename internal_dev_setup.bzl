@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Setup for rules_python tests and tools."""
+"""WORKSPACE setup for development and testing of rules_python itself."""
 
 load("@bazel_features//:deps.bzl", "bazel_features_deps")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
@@ -30,7 +30,7 @@ load("//python/private:pythons_hub.bzl", "hub_repo")  # buildifier: disable=bzl-
 load("//python/private/pypi:deps.bzl", "pypi_deps")  # buildifier: disable=bzl-visibility
 
 def rules_python_internal_setup():
-    """Setup for rules_python tests and tools."""
+    """Setup for development and testing of rules_python itself."""
 
     internal_config_repo(name = "rules_python_internal")
     hub_repo(
