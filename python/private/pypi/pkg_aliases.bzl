@@ -154,7 +154,7 @@ def pkg_aliases(
 
 def _normalize_versions(name, versions):
     if not versions:
-        return versions
+        return []
 
     if _VERSION_NONE in versions:
         fail("a sentinel version found in '{}', check render_pkg_aliases for bugs".format(name))
@@ -164,9 +164,9 @@ def _normalize_versions(name, versions):
 def multiplatform_whl_aliases(
         *,
         aliases = [],
-        glibc_versions = None,
-        muslc_versions = None,
-        osx_versions = None):
+        glibc_versions = [],
+        muslc_versions = [],
+        osx_versions = []):
     """convert a list of aliases from filename to config_setting ones.
 
     Args:
