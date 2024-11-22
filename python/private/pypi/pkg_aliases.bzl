@@ -30,6 +30,12 @@ load(
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
+# This value is used as sentinel value in the alias/config setting machinery
+# for libc and osx versions. If we encounter this version in this part of the
+# code, then it means that we have a bug in rules_python and that we should fix
+# it. It is more of an internal consistency check.
+_VERSION_NONE = (0, 0)
+
 _NO_MATCH_ERROR_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
 
@@ -150,8 +156,8 @@ def _normalize_versions(name, versions):
     if not versions:
         return versions
 
-    if (0, 0) in versions:
-        fail("Invalid version in '{}': cannot specify (0, 0) as a value".format(name))
+    if _VERSION_NONE in versions:
+        fail("a sentinel version found in '{}', check render_pkg_aliases for bugs".format(name))
 
     return sorted(versions)
 
@@ -284,17 +290,6 @@ def get_filename_config_settings(
     setting_supported_versions = {}
 
     if filename.endswith(".whl"):
-        if (0, 0) in glibc_versions:
-            fail("Invalid version in 'glibc_versions': cannot specify (0, 0) as a value")
-        if (0, 0) in muslc_versions:
-            fail("Invalid version in 'muslc_versions': cannot specify (0, 0) as a value")
-        if (0, 0) in osx_versions:
-            fail("Invalid version in 'osx_versions': cannot specify (0, 0) as a value")
-
-        glibc_versions = sorted(glibc_versions)
-        muslc_versions = sorted(muslc_versions)
-        osx_versions = sorted(osx_versions)
-
         parsed = parse_whl_name(filename)
         if parsed.python_tag == "py2.py3":
             py = "py"
