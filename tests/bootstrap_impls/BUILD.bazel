@@ -80,7 +80,7 @@ sh_py_run_test(
     imports = ["./MARKER"],
     py_src = "call_sys_exe.py",
     sh_src = "sys_executable_inherits_sys_path_test.sh",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 relative_path_test_suite(name = "relative_path_tests")
