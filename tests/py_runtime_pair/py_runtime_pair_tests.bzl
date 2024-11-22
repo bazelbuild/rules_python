@@ -76,6 +76,9 @@ def _test_basic_impl(env, target):
 _tests.append(_test_basic)
 
 def _test_builtin_py_info_accepted(name):
+    if not BuiltinPyRuntimeInfo:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         _provides_builtin_py_runtime_info,
         name = name + "_runtime",

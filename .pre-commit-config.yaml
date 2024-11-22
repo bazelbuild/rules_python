@@ -49,9 +49,3 @@ repos:
         entry: bazel run @rules_bazel_integration_test//tools:update_deleted_packages
         files: ^((examples|tests)/.*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc)$
         pass_filenames: false
-      - id: update-bzlmod-lockfiles
-        name: Update bzlmod lockfiles
-        language: script
-        entry: ./tools/private/update_bzlmod_lockfiles.sh
-        files: ^python/
-        pass_filenames: false

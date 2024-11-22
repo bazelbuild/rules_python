@@ -3,9 +3,9 @@
 * @rickeylev @aignas
 
 # Directory containing the Gazelle extension and Go code.
-/gazelle/ @f0rmiga
-/examples/build_file_generation/ @f0rmiga
+/gazelle/ @dougthor42 @aignas
+/examples/build_file_generation/ @dougthor42 @aignas
 
 # PyPI integration related code
-/python/private/pypi/ @aignas @groodt
-/tests/pypi/ @aignas @groodt
+/python/private/pypi/ @rickeylev @aignas @groodt
+/tests/pypi/ @rickeylev @aignas @groodt

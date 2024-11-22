@@ -15,16 +15,17 @@
 """render_pkg_aliases tests"""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
+load(
+    "//python/private/pypi:pkg_aliases.bzl",
+    "get_filename_config_settings",
+)  # buildifier: disable=bzl-visibility
 load(
     "//python/private/pypi:render_pkg_aliases.bzl",
-    "get_filename_config_settings",
     "get_whl_flag_versions",
-    "multiplatform_whl_aliases",
     "render_multiplatform_pkg_aliases",
     "render_pkg_aliases",
-    "whl_alias",
 )  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:whl_config_setting.bzl", "whl_config_setting")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -42,9 +43,7 @@ _tests.append(_test_empty)
 def _test_legacy_aliases(env):
     actual = render_pkg_aliases(
         aliases = {
-            "foo": [
-                whl_alias(repo = "pypi_foo"),
-            ],
+            "foo": "pypi_foo",
         },
     )
 
@@ -57,8 +56,6 @@ package(default_visibility = ["//visibility:public"])
 pkg_aliases(
     name = "foo",
     actual = "pypi_foo",
-    group_name = None,
-    extra_aliases = [],
 )"""
 
     env.expect.that_dict(actual).contains_exactly({want_key: want_content})
@@ -69,15 +66,24 @@ def _test_bzlmod_aliases(env):
     # Use this function as it is used in pip_repository
     actual = render_multiplatform_pkg_aliases(
         aliases = {
-            "bar-baz": [
-                whl_alias(version = "3.2", repo = "pypi_32_bar_baz", config_setting = "//:my_config_setting"),
-            ],
+            "bar-baz": {
+                whl_config_setting(
+                    version = "3.2",
+                    config_setting = "//:my_config_setting",
+                ): "pypi_32_bar_baz",
+                whl_config_setting(
+                    version = "3.2",
+                    filename = "foo-0.0.0-py3-none-any.whl",
+                ): "filename_repo",
+            },
         },
+        extra_hub_aliases = {"bar_baz": ["foo"]},
     )
 
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
 load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
+load("@rules_python//python/private/pypi:whl_config_setting.bzl", "whl_config_setting")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -85,9 +91,12 @@ pkg_aliases(
     name = "bar_baz",
     actual = {
         "//:my_config_setting": "pypi_32_bar_baz",
+        whl_config_setting(
+            filename = "foo-0.0.0-py3-none-any.whl",
+            version = "3.2",
+        ): "filename_repo",
     },
-    group_name = None,
-    extra_aliases = [],
+    extra_aliases = ["foo"],
 )"""
 
     env.expect.that_str(actual.pop("_config/BUILD.bazel")).equals(
@@ -96,11 +105,7 @@ load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings"
 
 config_settings(
     name = "config_settings",
-    glibc_versions = [],
-    muslc_versions = [],
-    osx_versions = [],
     python_versions = ["3.2"],
-    target_platforms = [],
     visibility = ["//:__subpackages__"],
 )""",
     )
@@ -112,14 +117,14 @@ _tests.append(_test_bzlmod_aliases)
 def _test_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
         aliases = {
-            "bar": [
-                whl_alias(version = "3.1", repo = "pypi_31_bar"),
-                whl_alias(version = "3.2", repo = "pypi_32_bar"),
-            ],
-            "foo": [
-                whl_alias(version = "3.1", repo = "pypi_32_foo"),
-                whl_alias(version = "3.2", repo = "pypi_31_foo"),
-            ],
+            "bar": {
+                whl_config_setting(version = "3.1"): "pypi_31_bar",
+                whl_config_setting(version = "3.2"): "pypi_32_bar",
+            },
+            "foo": {
+                whl_config_setting(version = "3.1"): "pypi_32_foo",
+                whl_config_setting(version = "3.2"): "pypi_31_foo",
+            },
         },
     )
 
@@ -135,18 +140,18 @@ _tests.append(_test_aliases_are_created_for_all_wheels)
 def _test_aliases_with_groups(env):
     actual = render_pkg_aliases(
         aliases = {
-            "bar": [
-                whl_alias(version = "3.1", repo = "pypi_31_bar"),
-                whl_alias(version = "3.2", repo = "pypi_32_bar"),
-            ],
-            "baz": [
-                whl_alias(version = "3.1", repo = "pypi_31_baz"),
-                whl_alias(version = "3.2", repo = "pypi_32_baz"),
-            ],
-            "foo": [
-                whl_alias(version = "3.1", repo = "pypi_32_foo"),
-                whl_alias(version = "3.2", repo = "pypi_31_foo"),
-            ],
+            "bar": {
+                whl_config_setting(version = "3.1"): "pypi_31_bar",
+                whl_config_setting(version = "3.2"): "pypi_32_bar",
+            },
+            "baz": {
+                whl_config_setting(version = "3.1"): "pypi_31_baz",
+                whl_config_setting(version = "3.2"): "pypi_32_baz",
+            },
+            "foo": {
+                whl_config_setting(version = "3.1"): "pypi_32_foo",
+                whl_config_setting(version = "3.2"): "pypi_31_foo",
+            },
         },
         requirement_cycles = {
             "group": ["bar", "baz"],
@@ -175,7 +180,7 @@ _tests.append(_test_aliases_with_groups)
 
 def _test_empty_flag_versions(env):
     got = get_whl_flag_versions(
-        aliases = [],
+        settings = [],
     )
     want = {}
     env.expect.that_dict(got).contains_exactly(want)
@@ -184,10 +189,10 @@ _tests.append(_test_empty_flag_versions)
 
 def _test_get_python_versions(env):
     got = get_whl_flag_versions(
-        aliases = [
-            whl_alias(repo = "foo", version = "3.3"),
-            whl_alias(repo = "foo", version = "3.2"),
-        ],
+        settings = {
+            whl_config_setting(version = "3.3"): "foo",
+            whl_config_setting(version = "3.2"): "foo",
+        },
     )
     want = {
         "python_versions": ["3.2", "3.3"],
@@ -198,9 +203,9 @@ _tests.append(_test_get_python_versions)
 
 def _test_get_python_versions_with_target_platforms(env):
     got = get_whl_flag_versions(
-        aliases = [
-            whl_alias(repo = "foo", version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
-            whl_alias(repo = "foo", version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
+        settings = [
+            whl_config_setting(repo = "foo", version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
+            whl_config_setting(repo = "foo", version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
         ],
     )
     want = {
@@ -216,8 +221,8 @@ _tests.append(_test_get_python_versions_with_target_platforms)
 
 def _test_get_python_versions_from_filenames(env):
     got = get_whl_flag_versions(
-        aliases = [
-            whl_alias(
+        settings = [
+            whl_config_setting(
                 repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-" + plat + ".whl",
@@ -254,8 +259,8 @@ _tests.append(_test_get_python_versions_from_filenames)
 
 def _test_get_flag_versions_from_alias_target_platforms(env):
     got = get_whl_flag_versions(
-        aliases = [
-            whl_alias(
+        settings = [
+            whl_config_setting(
                 repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-" + plat + ".whl",
@@ -264,7 +269,7 @@ def _test_get_flag_versions_from_alias_target_platforms(env):
                 "windows_x86_64",
             ]
         ] + [
-            whl_alias(
+            whl_config_setting(
                 repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-any.whl",
@@ -466,227 +471,6 @@ def _test_cp37_abi3_manylinux_2_17_musllinux_1_1_aarch64(env):
     )
 
 _tests.append(_test_cp37_abi3_manylinux_2_17_musllinux_1_1_aarch64)
-
-def _test_multiplatform_whl_aliases_empty(env):
-    # Check that we still work with an empty requirements.txt
-    got = multiplatform_whl_aliases(aliases = [])
-    env.expect.that_collection(got).contains_exactly([])
-
-_tests.append(_test_multiplatform_whl_aliases_empty)
-
-def _test_multiplatform_whl_aliases_nofilename(env):
-    aliases = [
-        whl_alias(
-            repo = "foo",
-            config_setting = "//:label",
-            version = "3.1",
-        ),
-    ]
-    got = multiplatform_whl_aliases(aliases = aliases)
-    env.expect.that_collection(got).contains_exactly(aliases)
-
-_tests.append(_test_multiplatform_whl_aliases_nofilename)
-
-def _test_multiplatform_whl_aliases_nofilename_target_platforms(env):
-    aliases = [
-        whl_alias(
-            repo = "foo",
-            config_setting = "//:ignored",
-            version = "3.1",
-            target_platforms = [
-                "cp31_linux_x86_64",
-                "cp31_linux_aarch64",
-            ],
-        ),
-    ]
-
-    got = multiplatform_whl_aliases(aliases = aliases)
-
-    want = [
-        whl_alias(config_setting = "//_config:is_cp3.1_linux_x86_64", repo = "foo", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_linux_aarch64", repo = "foo", version = "3.1"),
-    ]
-    env.expect.that_collection(got).contains_exactly(want)
-
-_tests.append(_test_multiplatform_whl_aliases_nofilename_target_platforms)
-
-def _test_multiplatform_whl_aliases_filename(env):
-    aliases = [
-        whl_alias(
-            repo = "foo-py3-0.0.3",
-            filename = "foo-0.0.3-py3-none-any.whl",
-            version = "3.2",
-        ),
-        whl_alias(
-            repo = "foo-py3-0.0.1",
-            filename = "foo-0.0.1-py3-none-any.whl",
-            version = "3.1",
-        ),
-        whl_alias(
-            repo = "foo-0.0.2",
-            filename = "foo-0.0.2-py3-none-any.whl",
-            version = "3.1",
-            target_platforms = [
-                "cp31_linux_x86_64",
-                "cp31_linux_aarch64",
-            ],
-        ),
-    ]
-    got = multiplatform_whl_aliases(
-        aliases = aliases,
-        glibc_versions = [],
-        muslc_versions = [],
-        osx_versions = [],
-    )
-    want = [
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_any", repo = "foo-py3-0.0.1", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_any_linux_aarch64", repo = "foo-0.0.2", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_any_linux_x86_64", repo = "foo-0.0.2", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.2_py3_none_any", repo = "foo-py3-0.0.3", version = "3.2"),
-    ]
-    env.expect.that_collection(got).contains_exactly(want)
-
-_tests.append(_test_multiplatform_whl_aliases_filename)
-
-def _test_multiplatform_whl_aliases_filename_versioned(env):
-    aliases = [
-        whl_alias(
-            repo = "glibc-2.17",
-            filename = "foo-0.0.1-py3-none-manylinux_2_17_x86_64.whl",
-            version = "3.1",
-        ),
-        whl_alias(
-            repo = "glibc-2.18",
-            filename = "foo-0.0.1-py3-none-manylinux_2_18_x86_64.whl",
-            version = "3.1",
-        ),
-        whl_alias(
-            repo = "musl",
-            filename = "foo-0.0.1-py3-none-musllinux_1_1_x86_64.whl",
-            version = "3.1",
-        ),
-    ]
-    got = multiplatform_whl_aliases(
-        aliases = aliases,
-        glibc_versions = [(2, 17), (2, 18)],
-        muslc_versions = [(1, 1), (1, 2)],
-        osx_versions = [],
-    )
-    want = [
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_manylinux_2_17_x86_64", repo = "glibc-2.17", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_manylinux_2_18_x86_64", repo = "glibc-2.18", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_manylinux_x86_64", repo = "glibc-2.17", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_musllinux_1_1_x86_64", repo = "musl", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_musllinux_1_2_x86_64", repo = "musl", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_cp3.1_py3_none_musllinux_x86_64", repo = "musl", version = "3.1"),
-    ]
-    env.expect.that_collection(got).contains_exactly(want)
-
-_tests.append(_test_multiplatform_whl_aliases_filename_versioned)
-
-def _mock_alias(container):
-    return lambda name, **kwargs: container.append(name)
-
-def _mock_config_setting(container):
-    def _inner(name, flag_values = None, constraint_values = None, **_):
-        if flag_values or constraint_values:
-            container.append(name)
-            return
-
-        fail("At least one of 'flag_values' or 'constraint_values' needs to be set")
-
-    return _inner
-
-def _test_config_settings_exist_legacy(env):
-    aliases = [
-        whl_alias(
-            repo = "repo",
-            version = "3.11",
-            target_platforms = [
-                "cp311_linux_aarch64",
-                "cp311_linux_x86_64",
-            ],
-        ),
-    ]
-    available_config_settings = []
-    config_settings(
-        python_versions = ["3.11"],
-        native = struct(
-            alias = _mock_alias(available_config_settings),
-            config_setting = _mock_config_setting(available_config_settings),
-        ),
-        target_platforms = [
-            "linux_aarch64",
-            "linux_x86_64",
-        ],
-    )
-
-    got_aliases = multiplatform_whl_aliases(
-        aliases = aliases,
-    )
-    got = [a.config_setting.partition(":")[-1] for a in got_aliases]
-
-    env.expect.that_collection(available_config_settings).contains_at_least(got)
-
-_tests.append(_test_config_settings_exist_legacy)
-
-def _test_config_settings_exist(env):
-    for py_tag in ["py2.py3", "py3", "py311", "cp311"]:
-        if py_tag == "py2.py3":
-            abis = ["none"]
-        elif py_tag.startswith("py"):
-            abis = ["none", "abi3"]
-        else:
-            abis = ["none", "abi3", "cp311"]
-
-        for abi_tag in abis:
-            for platform_tag, kwargs in {
-                "any": {},
-                "macosx_11_0_arm64": {
-                    "osx_versions": [(11, 0)],
-                    "target_platforms": ["osx_aarch64"],
-                },
-                "manylinux_2_17_x86_64": {
-                    "glibc_versions": [(2, 17), (2, 18)],
-                    "target_platforms": ["linux_x86_64"],
-                },
-                "manylinux_2_18_x86_64": {
-                    "glibc_versions": [(2, 17), (2, 18)],
-                    "target_platforms": ["linux_x86_64"],
-                },
-                "musllinux_1_1_aarch64": {
-                    "muslc_versions": [(1, 2), (1, 1), (1, 0)],
-                    "target_platforms": ["linux_aarch64"],
-                },
-            }.items():
-                aliases = [
-                    whl_alias(
-                        repo = "repo",
-                        filename = "foo-0.0.1-{}-{}-{}.whl".format(py_tag, abi_tag, platform_tag),
-                        version = "3.11",
-                    ),
-                ]
-                available_config_settings = []
-                config_settings(
-                    python_versions = ["3.11"],
-                    native = struct(
-                        alias = _mock_alias(available_config_settings),
-                        config_setting = _mock_config_setting(available_config_settings),
-                    ),
-                    **kwargs
-                )
-
-                got_aliases = multiplatform_whl_aliases(
-                    aliases = aliases,
-                    glibc_versions = kwargs.get("glibc_versions", []),
-                    muslc_versions = kwargs.get("muslc_versions", []),
-                    osx_versions = kwargs.get("osx_versions", []),
-                )
-                got = [a.config_setting.partition(":")[-1] for a in got_aliases]
-
-                env.expect.that_collection(available_config_settings).contains_at_least(got)
-
-_tests.append(_test_config_settings_exist)
 
 def render_pkg_aliases_test_suite(name):
     """Create the test suite.
