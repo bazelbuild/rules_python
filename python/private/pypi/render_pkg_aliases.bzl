@@ -61,38 +61,39 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
+def _repr_dict(*, value_repr = repr, **kwargs):
+    return {k: value_repr(v) for k, v in kwargs.items() if v}
+
+def _repr_config_setting(alias):
+    if alias.filename:
+        return render.call(
+            "whl_config_setting",
+            **_repr_dict(
+                filename = alias.filename,
+                target_platforms = alias.target_platforms,
+                version = alias.version,
+            )
+        )
+    else:
+        return repr(
+            alias.config_setting or ("//_config:is_python_" + alias.version),
+        )
+
 def _repr_actual(aliases):
     if type(aliases) == type(""):
         return repr(aliases)
-
-    actual = {}
-    for alias, repo in aliases.items():
-        if alias.filename:
-            kwargs = {
-                k: v
-                for k, v in {
-                    "filename": alias.filename,
-                    "target_platforms": alias.target_platforms,
-                    "version": alias.version,
-                }.items()
-                if v
-            }
-
-            config_setting = """whl_config_setting(\n{}\n)""".format(
-                render.indent(render.kwargs(kwargs)),
-            )
-        else:
-            config_setting = repr(
-                alias.config_setting or ("//_config:is_python_" + alias.version),
-            )
-        actual[config_setting] = repo
-
-    return render.indent(render.dict(actual, key_repr = lambda x: x)).lstrip()
+    else:
+        return render.dict(aliases, key_repr = _repr_config_setting)
 
 def _render_common_aliases(*, name, aliases, **kwargs):
-    actual_repr = _repr_actual(aliases)
+    pkg_aliases = render.call(
+        "pkg_aliases",
+        name = repr(name),
+        actual = _repr_actual(aliases),
+        **_repr_dict(**kwargs)
+    )
     extra_loads = ""
-    if "whl_config_setting" in actual_repr:
+    if "whl_config_setting" in pkg_aliases:
         extra_loads = """load("@rules_python//python/private/pypi:whl_config_setting.bzl", "whl_config_setting")"""
         extra_loads += "\n"
 
@@ -101,15 +102,9 @@ load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 {extra_loads}
 package(default_visibility = ["//visibility:public"])
 
-pkg_aliases(
-    name = "{name}",
-    actual = {actual},
-    {kwargs}
-)""".format(
+{aliases}""".format(
+        aliases = pkg_aliases,
         extra_loads = extra_loads,
-        name = name,
-        actual = actual_repr,
-        kwargs = render.indent(render.kwargs(kwargs)).lstrip(),
     )
 
 def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases = {}, **kwargs):
@@ -205,12 +200,11 @@ def _render_config_settings(**kwargs):
     return """\
 load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings")
 
-config_settings(
-    name = "config_settings",
-{kwargs}
-)""".format(
-        kwargs = render.indent(render.kwargs(kwargs, value_repr = render.list)),
-    )
+{}""".format(render.call(
+        "config_settings",
+        name = repr("config_settings"),
+        **_repr_dict(value_repr = render.list, **kwargs)
+    ))
 
 def get_whl_flag_versions(settings):
     """Return all of the flag versions that is used by the settings

@@ -56,8 +56,6 @@ package(default_visibility = ["//visibility:public"])
 pkg_aliases(
     name = "foo",
     actual = "pypi_foo",
-    extra_aliases = [],
-    group_name = None,
 )"""
 
     env.expect.that_dict(actual).contains_exactly({want_key: want_content})
@@ -79,6 +77,7 @@ def _test_bzlmod_aliases(env):
                 ): "filename_repo",
             },
         },
+        extra_hub_aliases = {"bar_baz": ["foo"]},
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -97,11 +96,7 @@ pkg_aliases(
             version = "3.2",
         ): "filename_repo",
     },
-    extra_aliases = [],
-    glibc_versions = [],
-    group_name = None,
-    muslc_versions = [],
-    osx_versions = [],
+    extra_aliases = ["foo"],
 )"""
 
     env.expect.that_str(actual.pop("_config/BUILD.bazel")).equals(
@@ -110,11 +105,7 @@ load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings"
 
 config_settings(
     name = "config_settings",
-    glibc_versions = [],
-    muslc_versions = [],
-    osx_versions = [],
     python_versions = ["3.2"],
-    target_platforms = [],
     visibility = ["//:__subpackages__"],
 )""",
     )

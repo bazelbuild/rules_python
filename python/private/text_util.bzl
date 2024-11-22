@@ -128,13 +128,16 @@ def _render_kwargs(items, *, value_repr = repr):
     if not items:
         return ""
 
-    return "\n".join(sorted(
-        [
-            "{} = {},".format(k, _indent(value_repr(v)).lstrip())
-            for k, v in items.items()
-        ],
-        key = lambda key: (key == "name", key),
-    ))
+    return "\n".join([
+        "{} = {},".format(k, value_repr(v)).lstrip()
+        for k, v in items.items()
+    ])
+
+def _render_call(fn_name, **kwargs):
+    if not kwargs:
+        return fn_name + "()"
+
+    return "{}(\n{}\n)".format(fn_name, _indent(_render_kwargs(kwargs, value_repr = lambda x: x)))
 
 def _toolchain_prefix(index, name, pad_length):
     """Prefixes the given name with the index, padded with zeros to ensure lexicographic sorting.
@@ -153,6 +156,7 @@ def _left_pad_zero(index, length):
 render = struct(
     alias = _render_alias,
     dict = _render_dict,
+    call = _render_call,
     hanging_indent = _hanging_indent,
     indent = _indent,
     kwargs = _render_kwargs,
