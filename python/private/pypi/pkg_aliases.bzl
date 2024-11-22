@@ -332,10 +332,12 @@ def get_filename_config_settings(
     }
 
     if suffixes or target_platforms or versioned:
+        target_platforms = target_platforms or []
+        suffixes = suffixes or [_non_versioned_platform(p) for p in target_platforms]
         return [
             ":is_cp{}{}_{}".format(python_version, p, s)
             for p in prefixes
-            for s in suffixes or [_non_versioned_platform(p) for p in target_platforms or []]
+            for s in suffixes
         ], versioned
     else:
         return [":is_cp{}{}".format(python_version, p) for p in prefixes], setting_supported_versions
