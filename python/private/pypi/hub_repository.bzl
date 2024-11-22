@@ -29,7 +29,7 @@ def _impl(rctx):
     bzl_packages = rctx.attr.packages or rctx.attr.whl_map.keys()
     aliases = render_multiplatform_pkg_aliases(
         aliases = {
-            key: _whl_aliases(values)
+            key: _whl_config_settings_from_json(values)
             for key, values in rctx.attr.whl_map.items()
         },
         extra_hub_aliases = rctx.attr.extra_hub_aliases,
@@ -95,14 +95,14 @@ in the pip.parse tag class.
     implementation = _impl,
 )
 
-def _whl_aliases(repo_mapping_json):
-    """Inverse of whl_aliases
+def _whl_config_settings_from_json(repo_mapping_json):
+    """Deserialize the serialized values with whl_config_settings_to_json.
 
     Args:
         repo_mapping_json: {type}`str`
 
     Returns:
-        What `whl_aliases` accepts.
+        What `whl_config_settings_to_json` accepts.
     """
     return {
         whl_config_setting(**v): repo
@@ -110,7 +110,7 @@ def _whl_aliases(repo_mapping_json):
         for v in values
     }
 
-def whl_aliases(repo_mapping):
+def whl_config_settings_to_json(repo_mapping):
     """A function to serialize the aliases so that `hub_repository` can accept them.
 
     Args:

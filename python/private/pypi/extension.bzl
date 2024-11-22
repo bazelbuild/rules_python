@@ -23,7 +23,7 @@ load("//python/private:semver.bzl", "semver")
 load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
-load(":hub_repository.bzl", "hub_repository", "whl_aliases")
+load(":hub_repository.bzl", "hub_repository", "whl_config_settings_to_json")
 load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
@@ -641,8 +641,8 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             extra_hub_aliases = mods.extra_aliases.get(hub_name, {}),
             whl_map = {
-                key: whl_aliases(aliases)
-                for key, aliases in whl_map.items()
+                key: whl_config_settings_to_json(values)
+                for key, values in whl_map.items()
             },
             packages = mods.exposed_packages.get(hub_name, []),
             groups = mods.hub_group_map.get(hub_name),
