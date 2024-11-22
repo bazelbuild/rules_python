@@ -18,8 +18,9 @@ class LocalToolchainTest(unittest.TestCase):
             [shell_path, "-c", "import sys; print(sys.executable)"],
             text=True,
         )
-        expected = expected.strip()
-        self.assertEqual(expected, sys.executable)
+        expected = expected.strip().lower()
+        # Normalize case: Windows may have case differences
+        self.assertEqual(expected.lower(), sys.executable.lower())
 
 
 if __name__ == "__main__":

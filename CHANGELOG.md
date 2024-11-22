@@ -68,10 +68,17 @@ Unreleased changes template.
   {bzl:obj}`python_register_toolchains` and
   {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
   bzlmod extension.
+* (bzlmod) `pip.parse.parse_all_requirements_files` attribute has been removed.
+  See notes in the previous versions about what to do.
+* (deps) rules_cc 0.1.0 (workspace) and 0.0.16 (bzlmod).
+* (deps) protobuf 29.0-rc2 (workspace; bzlmod already specifying that version).
 
 Other changes:
 * (python_repository) Start honoring the `strip_prefix` field for `zstd` archives.
 * (pypi) {bzl:obj}`pip_parse.extra_hub_aliases` now works in WORKSPACE files.
+* (binaries/tests) For {obj}`--bootstrap_impl=script`, a binary-specific (but
+  otherwise empty) virtual env is used to customize `sys.path` initialization.
+* (deps) bazel_skylib 1.7.0 (workspace; bzlmod already specifying that version)
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -81,11 +88,16 @@ Other changes:
   Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
 * (uv): Correct the sha256sum for the `uv` binary for aarch64-apple-darwin.
   Fixes ([2411](https://github.com/bazelbuild/rules_python/issues/2411)).
+* (binaries/tests) ({obj}`--bootstrap_impl=scipt`) Using `sys.executable` will
+  use the same `sys.path` setup as the calling binary.
+  ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
+* (workspace) Corrected protobuf's name to com_google_protobuf, the name is
+  hardcoded in Bazel, WORKSPACE mode.
 
 {#v0-0-0-added}
 ### Added
 * (gazelle): Parser failures will now be logged to the terminal. Additional
-  details can be logged by setting `GAZELLE_VERBOSE=1`.
+  details can be logged by setting `RULES_PYTHON_GAZELLE_VERBOSE=1`.
 * (toolchains) allow users to select which variant of the support host toolchain
   they would like to use through
   `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
@@ -95,6 +107,9 @@ Other changes:
   for the latest toolchain versions for each minor Python version. You can control
   the toolchain selection by using the
   {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
+* (providers) Added {obj}`py_runtime_info.site_init_template` and
+  {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
+  initialize the interpreter via venv startup hooks.
 
 {#v0-0-0-removed}
 ### Removed
@@ -214,7 +229,7 @@ Other changes:
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. To opt into this behavior, set
-  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  `pip.parse.parse_all_requirements_files`, which will become the
   default in future releases leading up to `1.0.0`. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
   issue is that it may break `bazel query` and in these use cases it is

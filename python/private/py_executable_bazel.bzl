@@ -81,6 +81,9 @@ the `srcs` of Python targets as required.
         "_py_toolchain_type": attr.label(
             default = TARGET_TOOLCHAIN_TYPE,
         ),
+        "_python_version_flag": attr.label(
+            default = "//python/config_settings:python_version",
+        ),
         "_windows_launcher_maker": attr.label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
@@ -177,6 +180,8 @@ def _create_executable(
     else:
         base_executable_name = executable.basename
 
+    venv = None
+
     # The check for stage2_bootstrap_template is to support legacy
     # BuiltinPyRuntimeInfo providers, which is likely to come from
     # @bazel_tools//tools/python:autodetecting_toolchain, the toolchain used
@@ -184,6 +189,13 @@ def _create_executable(
     if (BootstrapImplFlag.get_value(ctx) == BootstrapImplFlag.SCRIPT and
         runtime_details.effective_runtime and
         hasattr(runtime_details.effective_runtime, "stage2_bootstrap_template")):
+        venv = _create_venv(
+            ctx,
+            output_prefix = base_executable_name,
+            imports = imports,
+            runtime_details = runtime_details,
+        )
+
         stage2_bootstrap = _create_stage2_bootstrap(
             ctx,
             output_prefix = base_executable_name,
@@ -192,11 +204,12 @@ def _create_executable(
             imports = imports,
             runtime_details = runtime_details,
         )
-        extra_runfiles = ctx.runfiles([stage2_bootstrap])
+        extra_runfiles = ctx.runfiles([stage2_bootstrap] + venv.files_without_interpreter)
         zip_main = _create_zip_main(
             ctx,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
+            venv = venv,
         )
     else:
         stage2_bootstrap = None
@@ -272,6 +285,7 @@ def _create_executable(
             zip_file = zip_file,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
+            venv = venv,
         )
     elif bootstrap_output:
         _create_stage1_bootstrap(
@@ -282,6 +296,7 @@ def _create_executable(
             is_for_zip = False,
             imports = imports,
             main_py = main_py,
+            venv = venv,
         )
     else:
         # Otherwise, this should be the Windows case of launcher + zip.
@@ -296,13 +311,20 @@ def _create_executable(
                 build_zip_enabled = build_zip_enabled,
             ))
 
+    # The interpreter is added this late in the process so that it isn't
+    # added to the zipped files.
+    if venv:
+        extra_runfiles = extra_runfiles.merge(ctx.runfiles([venv.interpreter]))
     return create_executable_result_struct(
         extra_files_to_build = depset(extra_files_to_build),
         output_groups = {"python_zip_file": depset([zip_file])},
         extra_runfiles = extra_runfiles,
     )
 
-def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details):
+def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
+    python_binary = _runfiles_root_path(ctx, venv.interpreter.short_path)
+    python_binary_actual = _runfiles_root_path(ctx, venv.interpreter_actual_path)
+
     # The location of this file doesn't really matter. It's added to
     # the zip file as the top-level __main__.py file and not included
     # elsewhere.
@@ -311,7 +333,8 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details):
         template = runtime_details.effective_runtime.zip_main_template,
         output = output,
         substitutions = {
-            "%python_binary%": runtime_details.executable_interpreter_path,
+            "%python_binary%": python_binary,
+            "%python_binary_actual%": python_binary_actual,
             "%stage2_bootstrap%": "{}/{}".format(
                 ctx.workspace_name,
                 stage2_bootstrap.short_path,
@@ -320,6 +343,82 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details):
         },
     )
     return output
+
+# Create a venv the executable can use.
+# For venv details and the venv startup process, see:
+# * https://docs.python.org/3/library/venv.html
+# * https://snarky.ca/how-virtual-environments-work/
+# * https://github.com/python/cpython/blob/main/Modules/getpath.py
+# * https://github.com/python/cpython/blob/main/Lib/site.py
+def _create_venv(ctx, output_prefix, imports, runtime_details):
+    venv = "_{}.venv".format(output_prefix.lstrip("_"))
+
+    # The pyvenv.cfg file must be present to trigger the venv site hooks.
+    # Because it's paths are expected to be absolute paths, we can't reliably
+    # put much in it. See https://github.com/python/cpython/issues/83650
+    pyvenv_cfg = ctx.actions.declare_file("{}/pyvenv.cfg".format(venv))
+    ctx.actions.write(pyvenv_cfg, "")
+
+    runtime = runtime_details.effective_runtime
+    if runtime.interpreter:
+        py_exe_basename = paths.basename(runtime.interpreter.short_path)
+
+        # Even though ctx.actions.symlink() is used, using
+        # declare_symlink() is required to ensure that the resulting file
+        # in runfiles is always a symlink. An RBE implementation, for example,
+        # may choose to write what symlink() points to instead.
+        interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
+        interpreter_actual_path = runtime.interpreter.short_path
+        parent = "/".join([".."] * (interpreter_actual_path.count("/") + 1))
+        rel_path = parent + "/" + interpreter_actual_path
+        ctx.actions.symlink(output = interpreter, target_path = rel_path)
+    else:
+        py_exe_basename = paths.basename(runtime.interpreter_path)
+        interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
+        ctx.actions.symlink(output = interpreter, target_path = runtime.interpreter_path)
+        interpreter_actual_path = runtime.interpreter_path
+
+    if runtime.interpreter_version_info:
+        version = "{}.{}".format(
+            runtime.interpreter_version_info.major,
+            runtime.interpreter_version_info.minor,
+        )
+    else:
+        version_flag = ctx.attr._python_version_flag[config_common.FeatureFlagInfo].value
+        version_flag_parts = version_flag.split(".")[0:2]
+        version = "{}.{}".format(*version_flag_parts)
+
+    # See site.py logic: free-threaded builds append "t" to the venv lib dir name
+    if "t" in runtime.abi_flags:
+        version += "t"
+
+    site_packages = "{}/lib/python{}/site-packages".format(venv, version)
+    pth = ctx.actions.declare_file("{}/bazel.pth".format(site_packages))
+    ctx.actions.write(pth, "import _bazel_site_init\n")
+
+    site_init = ctx.actions.declare_file("{}/_bazel_site_init.py".format(site_packages))
+    computed_subs = ctx.actions.template_dict()
+    computed_subs.add_joined("%imports%", imports, join_with = ":", map_each = _map_each_identity)
+    ctx.actions.expand_template(
+        template = runtime.site_init_template,
+        output = site_init,
+        substitutions = {
+            "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
+            "%site_init_runfiles_path%": "{}/{}".format(ctx.workspace_name, site_init.short_path),
+            "%workspace_name%": ctx.workspace_name,
+        },
+        computed_substitutions = computed_subs,
+    )
+
+    return struct(
+        interpreter = interpreter,
+        # Runfiles-relative path or absolute path
+        interpreter_actual_path = interpreter_actual_path,
+        files_without_interpreter = [pyvenv_cfg, pth, site_init],
+    )
+
+def _map_each_identity(v):
+    return v
 
 def _create_stage2_bootstrap(
         ctx,
@@ -363,6 +462,13 @@ def _create_stage2_bootstrap(
     )
     return output
 
+def _runfiles_root_path(ctx, path):
+    # The ../ comes from short_path for files in other repos.
+    if path.startswith("../"):
+        return path[3:]
+    else:
+        return "{}/{}".format(ctx.workspace_name, path)
+
 def _create_stage1_bootstrap(
         ctx,
         *,
@@ -371,12 +477,24 @@ def _create_stage1_bootstrap(
         stage2_bootstrap = None,
         imports = None,
         is_for_zip,
-        runtime_details):
+        runtime_details,
+        venv = None):
     runtime = runtime_details.effective_runtime
+
+    if venv:
+        python_binary_path = _runfiles_root_path(ctx, venv.interpreter.short_path)
+    else:
+        python_binary_path = runtime_details.executable_interpreter_path
+
+    if is_for_zip and venv:
+        python_binary_actual = _runfiles_root_path(ctx, venv.interpreter_actual_path)
+    else:
+        python_binary_actual = ""
 
     subs = {
         "%is_zipfile%": "1" if is_for_zip else "0",
-        "%python_binary%": runtime_details.executable_interpreter_path,
+        "%python_binary%": python_binary_path,
+        "%python_binary_actual%": python_binary_actual,
         "%target%": str(ctx.label),
         "%workspace_name%": ctx.workspace_name,
     }
@@ -447,6 +565,7 @@ def _create_windows_exe_launcher(
     )
 
 def _create_zip_file(ctx, *, output, original_nonzip_executable, zip_main, runfiles):
+    """Create a Python zipapp (zip with __main__.py entry point)."""
     workspace_name = ctx.workspace_name
     legacy_external_runfiles = _py_builtins.get_legacy_external_runfiles(ctx)
 
@@ -524,7 +643,14 @@ def _get_zip_runfiles_path(path, workspace_name, legacy_external_runfiles):
         zip_runfiles_path = paths.normalize("{}/{}".format(workspace_name, path))
     return "{}/{}".format(_ZIP_RUNFILES_DIRECTORY_NAME, zip_runfiles_path)
 
-def _create_executable_zip_file(ctx, *, output, zip_file, stage2_bootstrap, runtime_details):
+def _create_executable_zip_file(
+        ctx,
+        *,
+        output,
+        zip_file,
+        stage2_bootstrap,
+        runtime_details,
+        venv):
     prelude = ctx.actions.declare_file(
         "{}_zip_prelude.sh".format(output.basename),
         sibling = output,
@@ -536,6 +662,7 @@ def _create_executable_zip_file(ctx, *, output, zip_file, stage2_bootstrap, runt
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
             is_for_zip = True,
+            venv = venv,
         )
     else:
         ctx.actions.write(prelude, "#!/usr/bin/env python3\n")

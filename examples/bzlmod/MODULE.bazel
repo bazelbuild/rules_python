@@ -19,7 +19,7 @@ bazel_dep(name = "protobuf", version = "27.0", repo_name = "com_google_protobuf"
 
 # Only needed to make rules_python's CI happy. rules_java 8.3.0+ is needed so
 # that --java_runtime_version=remotejdk_11 works with Bazel 8.
-bazel_dep(name = "rules_java", version = "8.3.0")
+bazel_dep(name = "rules_java", version = "8.3.1")
 
 # Only needed to make rules_python's CI happy. A test verifies that
 # MODULE.bazel.lock is cross-platform friendly, and there are transitive
@@ -231,9 +231,6 @@ pip.parse(
         "host",
     ],
     hub_name = "pip",
-    # Parse all requirements files for the same lock file on all OSes, this will
-    # become the default with 1.0 release
-    parse_all_requirements_files = True,
     python_version = "3.10",
     # The requirements files for each platform that we want to support.
     requirements_by_platform = {

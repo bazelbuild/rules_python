@@ -6,7 +6,7 @@ module(
 
 bazel_dep(name = "bazel_features", version = "1.9.1")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "rules_cc", version = "0.0.14")
+bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "platforms", version = "0.0.4")
 
 # Those are loaded only when using py_proto_library
@@ -54,7 +54,7 @@ register_toolchains("@pythons_hub//:all")
 #####################
 # Install twine for our own runfiles wheel publishing and allow bzlmod users to use it.
 
-pip = use_extension("//python/private/pypi:pip.bzl", "pip_internal")
+pip = use_extension("//python/extensions:pip.bzl", "pip")
 pip.parse(
     # NOTE @aignas 2024-10-26: We have an integration test that depends on us
     # being able to build sdists for this hub, so explicitly set this to False.
