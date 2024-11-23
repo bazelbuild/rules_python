@@ -191,6 +191,7 @@ def _create_executable(
         hasattr(runtime_details.effective_runtime, "stage2_bootstrap_template")):
         venv = _create_venv(
             ctx,
+            executable = executable,
             output_prefix = base_executable_name,
             imports = imports,
             runtime_details = runtime_details,
@@ -350,7 +351,7 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
 # * https://snarky.ca/how-virtual-environments-work/
 # * https://github.com/python/cpython/blob/main/Modules/getpath.py
 # * https://github.com/python/cpython/blob/main/Lib/site.py
-def _create_venv(ctx, output_prefix, imports, runtime_details):
+def _create_venv(ctx, executable, output_prefix, imports, runtime_details):
     venv = "_{}.venv".format(output_prefix.lstrip("_"))
 
     # The pyvenv.cfg file must be present to trigger the venv site hooks.
@@ -368,8 +369,12 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
         # in runfiles is always a symlink. An RBE implementation, for example,
         # may choose to write what symlink() points to instead.
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
-        interpreter_actual_path = runtime.interpreter.short_path
-        parent = "/".join([".."] * (interpreter_actual_path.count("/") + 1))
+        interpreter_actual_path = runtime.interpreter.short_path  # Always relative to .runfiles/${workspace}
+
+        escapes = 2  # To escape out of ${target}.venv/bin
+        escapes += executable.short_path.count("/") # To escape into .runfiles/${workspace}
+
+        parent = "/".join([".."] * escapes)
         rel_path = parent + "/" + interpreter_actual_path
         ctx.actions.symlink(output = interpreter, target_path = rel_path)
     else:
