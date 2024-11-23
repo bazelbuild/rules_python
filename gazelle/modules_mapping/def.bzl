@@ -31,8 +31,8 @@ def _modules_mapping_impl(ctx):
         transitive = [dep[DefaultInfo].files for dep in ctx.attr.wheels] + [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.wheels],
     )
     args.add("--output_file", modules_mapping.path)
+    args.add("--include_stub_packages", ctx.attr.include_stub_packages)
     args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
-    args.add_all("--include_stub_packages", ctx.attr.include_stub_packages)
     args.add_all("--wheels", [whl.path for whl in all_wheels.to_list()])
     ctx.actions.run(
         inputs = all_wheels.to_list(),
