@@ -372,7 +372,7 @@ def _create_venv(ctx, executable, output_prefix, imports, runtime_details):
         interpreter_actual_path = runtime.interpreter.short_path  # Always relative to .runfiles/${workspace}
 
         escapes = 2  # To escape out of ${target}.venv/bin
-        escapes += executable.short_path.count("/") # To escape into .runfiles/${workspace}
+        escapes += executable.short_path.count("/")  # To escape into .runfiles/${workspace}
 
         parent = "/".join([".."] * escapes)
         rel_path = parent + "/" + interpreter_actual_path
