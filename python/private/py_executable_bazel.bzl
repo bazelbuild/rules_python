@@ -191,7 +191,6 @@ def _create_executable(
         hasattr(runtime_details.effective_runtime, "stage2_bootstrap_template")):
         venv = _create_venv(
             ctx,
-            executable = executable,
             output_prefix = base_executable_name,
             imports = imports,
             runtime_details = runtime_details,
@@ -345,13 +344,34 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
     )
     return output
 
+
+# Return a relative path from one path to another, where both paths are each
+# relative paths from a common root.
+def _relative_path(from_, to):
+    from_parts = from_.split("/")
+    to_parts = to.split("/")
+
+    # Strip common "../" parts from both paths
+    # (no while loops in starlark :( )
+    n = max(len(from_parts), len(to_parts))
+    for _ in range(n):
+        if from_parts[0] == ".." and to_parts[0] == "..":
+            from_parts.pop(0)
+            to_parts.pop(0)
+        else:
+            break
+
+    parent = "/".join([".."] * len(from_parts))
+    return "/".join([parent] + to_parts)
+
+
 # Create a venv the executable can use.
 # For venv details and the venv startup process, see:
 # * https://docs.python.org/3/library/venv.html
 # * https://snarky.ca/how-virtual-environments-work/
 # * https://github.com/python/cpython/blob/main/Modules/getpath.py
 # * https://github.com/python/cpython/blob/main/Lib/site.py
-def _create_venv(ctx, executable, output_prefix, imports, runtime_details):
+def _create_venv(ctx, output_prefix, imports, runtime_details):
     venv = "_{}.venv".format(output_prefix.lstrip("_"))
 
     # The pyvenv.cfg file must be present to trigger the venv site hooks.
@@ -369,13 +389,9 @@ def _create_venv(ctx, executable, output_prefix, imports, runtime_details):
         # in runfiles is always a symlink. An RBE implementation, for example,
         # may choose to write what symlink() points to instead.
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
-        interpreter_actual_path = runtime.interpreter.short_path  # Always relative to .runfiles/${workspace}
-
-        escapes = 2  # To escape out of ${target}.venv/bin
-        escapes += executable.short_path.count("/")  # To escape into .runfiles/${workspace}
-
-        parent = "/".join([".."] * escapes)
-        rel_path = parent + "/" + interpreter_actual_path
+        interpreter_actual_path = runtime.interpreter.short_path
+        venv_bin_dir = paths.dirname(interpreter.short_path)
+        rel_path = _relative_path(from_=venv_bin_dir, to=interpreter_actual_path)
         ctx.actions.symlink(output = interpreter, target_path = rel_path)
     else:
         py_exe_basename = paths.basename(runtime.interpreter_path)
