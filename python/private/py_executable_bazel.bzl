@@ -347,22 +347,26 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
 
 # Return a relative path from one path to another, where both paths are each
 # relative paths from a common root.
-def _relative_path(from_, to):
+def relative_path(from_, to):
     from_parts = from_.split("/")
     to_parts = to.split("/")
 
-    # Strip common "../" parts from both paths
+    # Strip common leading parts from both paths
     # (no while loops in starlark :( )
-    n = max(len(from_parts), len(to_parts))
+    n = min(len(from_parts), len(to_parts))
     for _ in range(n):
-        if from_parts[0] == ".." and to_parts[0] == "..":
+        if from_parts[0] == to_parts[0]:
             from_parts.pop(0)
             to_parts.pop(0)
         else:
             break
 
-    parent = "/".join([".."] * len(from_parts))
-    return "/".join([parent] + to_parts)
+    # Impossible to compute a relative path without knowing what ".." is
+    if from_parts and from_parts[0] == "..":
+        fail("cannot compute relative path from '%s' to '%s'", from_, to)
+
+    parts = ([".."] * len(from_parts)) + to_parts
+    return "/".join(parts)
 
 
 # Create a venv the executable can use.
@@ -391,7 +395,7 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
         interpreter_actual_path = runtime.interpreter.short_path
         venv_bin_dir = paths.dirname(interpreter.short_path)
-        rel_path = _relative_path(from_=venv_bin_dir, to=interpreter_actual_path)
+        rel_path = relative_path(from_=venv_bin_dir, to=interpreter_actual_path)
         ctx.actions.symlink(output = interpreter, target_path = rel_path)
     else:
         py_exe_basename = paths.basename(runtime.interpreter_path)

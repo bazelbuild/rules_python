@@ -87,3 +87,7 @@ sh_py_run_test(
     sh_src = "sys_executable_inherits_sys_path_test.sh",
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )
+
+load(":venv_relative_path_tests.bzl", "relative_path_test_suite")
+
+relative_path_test_suite("relative_path_test")
