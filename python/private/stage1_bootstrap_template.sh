@@ -135,6 +135,7 @@ fi
 if [[ ! -x "$python_exe" ]]; then
   if [[ ! -e "$python_exe" ]]; then
     echo >&2 "ERROR: Python interpreter not found: $python_exe"
+    ls -l $python_exe >&2
     exit 1
   elif [[ ! -x "$python_exe" ]]; then
     echo >&2 "ERROR: Python interpreter not executable: $python_exe"
