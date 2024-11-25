@@ -347,6 +347,17 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
 # Return a relative path from one path to another, where both paths are each
 # relative paths from a common root.
 def relative_path(from_, to):
+    """Compute a relative path from one path to another.
+
+    Args:
+        from_: {type}`str` the starting directory. Note that it should be
+            a directory because relative-symlinks are relative to the
+            directory the symlink resides in.
+        to: {type}`str` the path that `from_` wants to point to
+
+    Returns:
+        {type}`str` a relative path
+    """
     from_parts = from_.split("/")
     to_parts = to.split("/")
 

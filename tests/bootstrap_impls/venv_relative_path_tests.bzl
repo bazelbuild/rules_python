@@ -14,7 +14,7 @@
 
 "Unit tests for yaml.bzl"
 
-load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load("//python/private:py_executable_bazel.bzl", "relative_path")  # buildifier: disable=bzl-visibility
 
 def _relative_path_test_impl(ctx):
@@ -117,5 +117,5 @@ relative_path_test = unittest.make(
     attrs = {},
 )
 
-def relative_path_test_suite(name):
+def relative_path_test_suite(*, name):
     unittest.suite(name, relative_path_test)
