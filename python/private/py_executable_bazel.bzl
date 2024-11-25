@@ -344,8 +344,6 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
     )
     return output
 
-# Return a relative path from one path to another, where both paths are each
-# relative paths from a common root.
 def relative_path(from_, to):
     """Compute a relative path from one path to another.
 
