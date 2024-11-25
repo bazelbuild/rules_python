@@ -323,7 +323,7 @@ def _create_executable(
 
 def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
     python_binary = _runfiles_root_path(ctx, venv.interpreter.short_path)
-    python_binary_actual = _runfiles_root_path(ctx, venv.interpreter_actual_path)
+    python_binary_actual = venv.interpreter_actual_path
 
     # The location of this file doesn't really matter. It's added to
     # the zip file as the top-level __main__.py file and not included
@@ -343,6 +343,37 @@ def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
         },
     )
     return output
+
+def relative_path(from_, to):
+    """Compute a relative path from one path to another.
+
+    Args:
+        from_: {type}`str` the starting directory. Note that it should be
+            a directory because relative-symlinks are relative to the
+            directory the symlink resides in.
+        to: {type}`str` the path that `from_` wants to point to
+
+    Returns:
+        {type}`str` a relative path
+    """
+    from_parts = from_.split("/")
+    to_parts = to.split("/")
+
+    # Strip common leading parts from both paths
+    n = min(len(from_parts), len(to_parts))
+    for _ in range(n):
+        if from_parts[0] == to_parts[0]:
+            from_parts.pop(0)
+            to_parts.pop(0)
+        else:
+            break
+
+    # Impossible to compute a relative path without knowing what ".." is
+    if from_parts and from_parts[0] == "..":
+        fail("cannot compute relative path from '%s' to '%s'", from_, to)
+
+    parts = ([".."] * len(from_parts)) + to_parts
+    return paths.join(*parts)
 
 # Create a venv the executable can use.
 # For venv details and the venv startup process, see:
@@ -368,9 +399,15 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
         # in runfiles is always a symlink. An RBE implementation, for example,
         # may choose to write what symlink() points to instead.
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
-        interpreter_actual_path = runtime.interpreter.short_path
-        parent = "/".join([".."] * (interpreter_actual_path.count("/") + 1))
-        rel_path = parent + "/" + interpreter_actual_path
+
+        interpreter_actual_path = _runfiles_root_path(ctx, runtime.interpreter.short_path)
+        rel_path = relative_path(
+            # dirname is necessary because a relative symlink is relative to
+            # the directory the symlink resides within.
+            from_ = paths.dirname(_runfiles_root_path(ctx, interpreter.short_path)),
+            to = interpreter_actual_path,
+        )
+
         ctx.actions.symlink(output = interpreter, target_path = rel_path)
     else:
         py_exe_basename = paths.basename(runtime.interpreter_path)
@@ -412,7 +449,7 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
 
     return struct(
         interpreter = interpreter,
-        # Runfiles-relative path or absolute path
+        # Runfiles root relative path or absolute path
         interpreter_actual_path = interpreter_actual_path,
         files_without_interpreter = [pyvenv_cfg, pth, site_init],
     )
@@ -462,12 +499,22 @@ def _create_stage2_bootstrap(
     )
     return output
 
-def _runfiles_root_path(ctx, path):
-    # The ../ comes from short_path for files in other repos.
-    if path.startswith("../"):
-        return path[3:]
+def _runfiles_root_path(ctx, short_path):
+    """Compute a runfiles-root relative path from `File.short_path`
+
+    Args:
+        ctx: current target ctx
+        short_path: str, a main-repo relative path from `File.short_path`
+
+    Returns:
+        {type}`str`, a runflies-root relative path
+    """
+
+    # The ../ comes from short_path is for files in other repos.
+    if short_path.startswith("../"):
+        return short_path[3:]
     else:
-        return "{}/{}".format(ctx.workspace_name, path)
+        return "{}/{}".format(ctx.workspace_name, short_path)
 
 def _create_stage1_bootstrap(
         ctx,
@@ -487,7 +534,7 @@ def _create_stage1_bootstrap(
         python_binary_path = runtime_details.executable_interpreter_path
 
     if is_for_zip and venv:
-        python_binary_actual = _runfiles_root_path(ctx, venv.interpreter_actual_path)
+        python_binary_actual = venv.interpreter_actual_path
     else:
         python_binary_actual = ""
 

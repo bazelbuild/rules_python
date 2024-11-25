@@ -14,6 +14,7 @@
 
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test", "sh_py_run_test")
+load(":venv_relative_path_tests.bzl", "relative_path_test_suite")
 
 _SUPPORTS_BOOTSTRAP_SCRIPT = select({
     "@platforms//os:windows": ["@platforms//:incompatible"],
@@ -87,3 +88,5 @@ sh_py_run_test(
     sh_src = "sys_executable_inherits_sys_path_test.sh",
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )
+
+relative_path_test_suite(name = "relative_path_tests")
