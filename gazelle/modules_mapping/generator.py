@@ -154,7 +154,7 @@ if __name__ == "__main__":
         description="Generates the modules mapping used by the Gazelle manifest.",
     )
     parser.add_argument("--output_file", type=str)
-    parser.add_argument("--include_stub_packages", type=bool)
+    parser.add_argument("--include_stub_packages", action="store_true")
     parser.add_argument("--exclude_patterns", nargs="+", default=[])
     parser.add_argument("--wheels", nargs="+", default=[])
     args = parser.parse_args()
