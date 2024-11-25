@@ -89,4 +89,4 @@ sh_py_run_test(
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
-relative_path_test_suite(name = "relative_path_test")
+relative_path_test_suite(name = "relative_path_tests")

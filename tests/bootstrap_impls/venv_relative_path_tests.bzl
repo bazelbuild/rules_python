@@ -12,110 +12,93 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"Unit tests for yaml.bzl"
+"Unit tests for relative_path computation"
 
-load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
+load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:py_executable_bazel.bzl", "relative_path")  # buildifier: disable=bzl-visibility
 
-def _relative_path_test_impl(ctx):
-    env = unittest.begin(ctx)
+_tests = []
 
+def _relative_path_test(env):
     # Basic test cases
 
-    asserts.equals(
-        env,
-        "../../c/d",
+    env.expect.that_str(
         relative_path(
             from_ = "a/b",
             to = "c/d",
         ),
-    )
+    ).equals("../../c/d")
 
-    asserts.equals(
-        env,
-        "../../c/d",
+    env.expect.that_str(
         relative_path(
             from_ = "../a/b",
             to = "../c/d",
         ),
-    )
+    ).equals("../../c/d")
 
-    asserts.equals(
-        env,
-        "../../../c/d",
+    env.expect.that_str(
         relative_path(
             from_ = "../a/b",
             to = "../../c/d",
         ),
-    )
+    ).equals("../../../c/d")
 
-    asserts.equals(
-        env,
-        "../../d",
+    env.expect.that_str(
         relative_path(
             from_ = "a/b/c",
             to = "a/d",
         ),
-    )
-
-    asserts.equals(
-        env,
-        "d/e",
+    ).equals("../../d")
+    env.expect.that_str(
         relative_path(
             from_ = "a/b/c",
             to = "a/b/c/d/e",
         ),
-    )
+    ).equals("d/e")
 
     # Real examples
 
     # external py_binary uses external python runtime
-    asserts.equals(
-        env,
-        "../../../../../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+    env.expect.that_str(
         relative_path(
-            from_ = "../rules_python~/python/private/_py_console_script_gen_py.venv/bin",
-            to = "../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+            from_ = "other_repo~/python/private/_py_console_script_gen_py.venv/bin",
+            to = "rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
         ),
+    ).equals(
+        "../../../../../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
     )
 
     # internal py_binary uses external python runtime
-    asserts.equals(
-        env,
-        "../../../../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+    env.expect.that_str(
         relative_path(
-            from_ = "test/version_default.venv/bin",
-            to = "../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+            from_ = "_main/test/version_default.venv/bin",
+            to = "rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
         ),
+    ).equals(
+        "../../../../rules_python~~python~python_3_9_x86_64-unknown-linux-gnu/bin/python3",
     )
 
     # external py_binary uses internal python runtime
-    # asserts.equals(
-    #    env,
-    #    "???",
-    #    relative_path(
-    #        from_ = "../rules_python~/python/private/_py_console_script_gen_py.venv/bin",
-    #        to = "python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
-    #    ),
-    #)
-    # ^ TODO: Technically we can infer ".." to be the workspace name?
-
-    # internal py_binary uses internal python runtime
-    asserts.equals(
-        env,
-        "../../../python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+    env.expect.that_str(
         relative_path(
-            from_ = "scratch/main.venv/bin",
-            to = "python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+            from_ = "other_repo~/python/private/_py_console_script_gen_py.venv/bin",
+            to = "_main/python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
         ),
+    ).equals(
+        "../../../../../_main/python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
     )
 
-    return unittest.end(env)
+    # internal py_binary uses internal python runtime
+    env.expect.that_str(
+        relative_path(
+            from_ = "_main/scratch/main.venv/bin",
+            to = "_main/python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+        ),
+    ).equals(
+        "../../../python/python_3_9_x86_64-unknown-linux-gnu/bin/python3",
+    )
 
-relative_path_test = unittest.make(
-    _relative_path_test_impl,
-    attrs = {},
-)
+_tests.append(_relative_path_test)
 
 def relative_path_test_suite(*, name):
-    unittest.suite(name, relative_path_test)
+    test_suite(name = name, basic_tests = _tests)
