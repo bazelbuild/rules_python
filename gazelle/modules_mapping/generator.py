@@ -38,7 +38,10 @@ class Generator:
     def dig_wheel(self, whl):
         # Skip stubs and types wheels.
         wheel_name = get_wheel_name(whl)
-        if wheel_name.endswith(("_stubs", "_types")) and self.include_stub_packages:
+        if self.include_stub_packages and (
+            wheel_name.endswith(("_stubs", "_types"))
+            or wheel_name.startswith(("types_", "stubs_"))
+        ):
             self.mapping[wheel_name.lower()] = wheel_name.lower()
             return
         with zipfile.ZipFile(whl, "r") as zip_file:

@@ -51,14 +51,14 @@ modules_mapping = rule(
             doc = "A set of regex patterns to match against each calculated module path. By default, exclude the modules starting with underscores.",
             mandatory = False,
         ),
-        "modules_mapping_name": attr.string(
-            default = "modules_mapping.json",
-            doc = "The name for the output JSON file.",
-            mandatory = False,
-        ),
         "include_stub_packages": attr.bool(
             default = False,
             doc = "Whether to include stub packages in the mapping.",
+            mandatory = False,
+        ),
+        "modules_mapping_name": attr.string(
+            default = "modules_mapping.json",
+            doc = "The name for the output JSON file.",
             mandatory = False,
         ),
         "wheels": attr.label_list(

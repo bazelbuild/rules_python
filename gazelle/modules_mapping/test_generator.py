@@ -6,9 +6,7 @@ from generator import Generator
 
 class GeneratorTest(unittest.TestCase):
     def test_generator(self):
-        whl = pathlib.Path(
-            pathlib.Path(__file__).parent, "testdata", "pytest-7.1.1-py3-none-any.whl"
-        )
+        whl = pathlib.Path(__file__).parent / "pytest-8.3.3-py3-none-any.whl"
         gen = Generator(None, None, {}, False)
         gen.dig_wheel(whl)
         self.assertLessEqual(
@@ -22,11 +20,7 @@ class GeneratorTest(unittest.TestCase):
         )
 
     def test_stub_generator(self):
-        whl = pathlib.Path(
-            pathlib.Path(__file__).parent,
-            "testdata",
-            "django_types-0.15.0-py3-none-any.whl",
-        )
+        whl = pathlib.Path(__file__).parent / "django_types-0.19.1-py3-none-any.whl"
         gen = Generator(None, None, {}, True)
         gen.dig_wheel(whl)
         self.assertLessEqual(
@@ -37,11 +31,7 @@ class GeneratorTest(unittest.TestCase):
         )
 
     def test_stub_excluded(self):
-        whl = pathlib.Path(
-            pathlib.Path(__file__).parent
-            / "testdata"
-            / "django_types-0.15.0-py3-none-any.whl"
-        )
+        whl = pathlib.Path(__file__).parent / "django_types-0.19.1-py3-none-any.whl"
         gen = Generator(None, None, {}, False)
         gen.dig_wheel(whl)
         self.assertEqual(
