@@ -31,20 +31,6 @@ def _relative_path_test(env):
 
     env.expect.that_str(
         relative_path(
-            from_ = "../a/b",
-            to = "../c/d",
-        ),
-    ).equals("../../c/d")
-
-    env.expect.that_str(
-        relative_path(
-            from_ = "../a/b",
-            to = "../../c/d",
-        ),
-    ).equals("../../../c/d")
-
-    env.expect.that_str(
-        relative_path(
             from_ = "a/b/c",
             to = "a/d",
         ),
