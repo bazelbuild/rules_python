@@ -360,7 +360,8 @@ def relative_path(from_, to):
     to_parts = to.split("/")
 
     # Strip common leading parts from both paths
-    for _ in range(len(to)):
+    n = min(len(from_parts), len(to_parts))
+    for _ in range(n):
         if from_parts[0] == to_parts[0]:
             from_parts.pop(0)
             to_parts.pop(0)
