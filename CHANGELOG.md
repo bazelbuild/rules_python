@@ -79,6 +79,7 @@ Other changes:
 * (binaries/tests) For {obj}`--bootstrap_impl=script`, a binary-specific (but
   otherwise empty) virtual env is used to customize `sys.path` initialization.
 * (deps) bazel_skylib 1.7.0 (workspace; bzlmod already specifying that version)
+* (deps) bazel_features 1.21.0; necessary for compatiblity with Bazel 8 rc3
 
 {#v0-0-0-fixed}
 ### Fixed
