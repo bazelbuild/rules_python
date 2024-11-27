@@ -18,6 +18,8 @@ Label attributes with defaults cannot accept None, otherwise they fall
 back to using the default. A sentinel allows detecting an intended None value.
 """
 
+load(":py_info.bzl", "PyInfo")
+
 SentinelInfo = provider(
     doc = "Indicates this was the sentinel target.",
     fields = [],
@@ -25,6 +27,6 @@ SentinelInfo = provider(
 
 def _sentinel_impl(ctx):
     _ = ctx  # @unused
-    return [SentinelInfo()]
+    return [SentinelInfo(), PyInfo(transitive_sources=depset())]
 
 sentinel = rule(implementation = _sentinel_impl)

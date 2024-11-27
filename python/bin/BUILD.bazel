@@ -1,0 +1,14 @@
+load("//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "repl",
+    srcs = ["repl.py"],
+    deps = [
+        ":repl_dep",
+    ],
+)
+
+label_flag(
+    name = "repl_dep",
+    build_setting_default = "//python:none",
+)
