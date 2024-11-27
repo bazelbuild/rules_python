@@ -73,8 +73,22 @@ def _test_bzlmod_aliases(env):
                 ): "pypi_32_bar_baz",
                 whl_config_setting(
                     version = "3.2",
+                    config_setting = "//:my_config_setting",
+                    target_platforms = [
+                        "cp32_linux_x86_64",
+                    ],
+                ): "pypi_32_bar_baz_linux_x86_64",
+                whl_config_setting(
+                    version = "3.2",
                     filename = "foo-0.0.0-py3-none-any.whl",
                 ): "filename_repo",
+                whl_config_setting(
+                    version = "3.2",
+                    filename = "foo-0.0.0-py3-none-any.whl",
+                    target_platforms = [
+                        "cp32_linux_x86_64",
+                    ],
+                ): "filename_repo_linux_x86_64",
             },
         },
         extra_hub_aliases = {"bar_baz": ["foo"]},
@@ -92,9 +106,19 @@ pkg_aliases(
     actual = {
         "//:my_config_setting": "pypi_32_bar_baz",
         whl_config_setting(
+            target_platforms = ("cp32_linux_x86_64",),
+            config_setting = "//:my_config_setting",
+            version = "3.2",
+        ): "pypi_32_bar_baz_linux_x86_64",
+        whl_config_setting(
             filename = "foo-0.0.0-py3-none-any.whl",
             version = "3.2",
         ): "filename_repo",
+        whl_config_setting(
+            filename = "foo-0.0.0-py3-none-any.whl",
+            target_platforms = ("cp32_linux_x86_64",),
+            version = "3.2",
+        ): "filename_repo_linux_x86_64",
     },
     extra_aliases = ["foo"],
 )"""
