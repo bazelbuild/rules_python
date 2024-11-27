@@ -130,6 +130,7 @@ load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings"
 config_settings(
     name = "config_settings",
     python_versions = ["3.2"],
+    target_platforms = ["linux_x86_64"],
     visibility = ["//:__subpackages__"],
 )""",
     )
@@ -228,8 +229,8 @@ _tests.append(_test_get_python_versions)
 def _test_get_python_versions_with_target_platforms(env):
     got = get_whl_flag_versions(
         settings = [
-            whl_config_setting(repo = "foo", version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
-            whl_config_setting(repo = "foo", version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
+            whl_config_setting(version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
+            whl_config_setting(version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
         ],
     )
     want = {
@@ -247,7 +248,6 @@ def _test_get_python_versions_from_filenames(env):
     got = get_whl_flag_versions(
         settings = [
             whl_config_setting(
-                repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-" + plat + ".whl",
             )
@@ -285,7 +285,6 @@ def _test_get_flag_versions_from_alias_target_platforms(env):
     got = get_whl_flag_versions(
         settings = [
             whl_config_setting(
-                repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-" + plat + ".whl",
             )
@@ -294,7 +293,6 @@ def _test_get_flag_versions_from_alias_target_platforms(env):
             ]
         ] + [
             whl_config_setting(
-                repo = "foo",
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-any.whl",
                 target_platforms = [
