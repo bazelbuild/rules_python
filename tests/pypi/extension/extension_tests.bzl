@@ -305,7 +305,7 @@ torch==2.4.1 ; platform_machine != 'x86_64'
                     ],
                     version = "3.15",
                 ),
-            ]
+            ],
         },
     }})
     pypi.whl_libraries().contains_exactly({
