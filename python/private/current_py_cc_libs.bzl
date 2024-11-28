@@ -14,6 +14,8 @@
 
 """Implementation of current_py_cc_libs rule."""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
 def _current_py_cc_libs_impl(ctx):
     py_cc_toolchain = ctx.toolchains["//python/cc:toolchain_type"].py_cc_toolchain
     return py_cc_toolchain.libs.providers_map.values()

@@ -1,4 +1,4 @@
-# Copyright 2023 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Provider for C/C++ information from the toolchain.
 
-"""Provider for C/C++ information about the Python runtime.
-
-NOTE: This is a beta-quality feature. APIs subject to change until
-https://github.com/bazelbuild/rules_python/issues/824 is considered done.
+:::{seealso}
+* {any}`Custom toolchains` for how to define custom toolchains.
+* {obj}`py_cc_toolchain` rule for defining the toolchain.
+:::
 """
 
 load("//python/private:py_cc_toolchain_info.bzl", _PyCcToolchainInfo = "PyCcToolchainInfo")

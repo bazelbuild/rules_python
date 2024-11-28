@@ -21,7 +21,8 @@ load("//python:py_binary.bzl", "py_binary")
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")  # buildifier: disable=bzl-visibility
-load("//tests:py_runtime_info_subject.bzl", "py_runtime_info_subject")
+load("//tests/support:py_runtime_info_subject.bzl", "py_runtime_info_subject")
+load("//tests/support:support.bzl", "CC_TOOLCHAIN")
 
 def _toolchain_factory(value, meta):
     return subjects.struct(
@@ -75,6 +76,9 @@ def _test_basic_impl(env, target):
 _tests.append(_test_basic)
 
 def _test_builtin_py_info_accepted(name):
+    if not BuiltinPyRuntimeInfo:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         _provides_builtin_py_runtime_info,
         name = name + "_runtime",
@@ -129,7 +133,7 @@ def _test_py_runtime_pair_and_binary(name):
         config_settings = {
             "//command_line_option:extra_toolchains": [
                 "//tests/py_runtime_pair:{}_toolchain".format(name),
-                "//tests/cc:all",
+                CC_TOOLCHAIN,
             ],
         },
     )

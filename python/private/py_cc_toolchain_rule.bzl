@@ -18,9 +18,21 @@ NOTE: This is a beta-quality feature. APIs subject to change until
 https://github.com/bazelbuild/rules_python/issues/824 is considered done.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":py_cc_toolchain_info.bzl", "PyCcToolchainInfo")
 
 def _py_cc_toolchain_impl(ctx):
+    if ctx.attr.libs:
+        libs = struct(
+            providers_map = {
+                "CcInfo": ctx.attr.libs[CcInfo],
+                "DefaultInfo": ctx.attr.libs[DefaultInfo],
+            },
+        )
+    else:
+        libs = None
+
     py_cc_toolchain = PyCcToolchainInfo(
         headers = struct(
             providers_map = {
@@ -28,16 +40,15 @@ def _py_cc_toolchain_impl(ctx):
                 "DefaultInfo": ctx.attr.headers[DefaultInfo],
             },
         ),
-        libs = struct(
-            providers_map = {
-                "CcInfo": ctx.attr.libs[CcInfo],
-                "DefaultInfo": ctx.attr.libs[DefaultInfo],
-            },
-        ),
+        libs = libs,
         python_version = ctx.attr.python_version,
     )
+    extra_kwargs = {}
+    if ctx.attr._visible_for_testing[BuildSettingInfo].value:
+        extra_kwargs["toolchain_label"] = ctx.label
     return [platform_common.ToolchainInfo(
         py_cc_toolchain = py_cc_toolchain,
+        **extra_kwargs
     )]
 
 py_cc_toolchain = rule(
@@ -53,11 +64,13 @@ py_cc_toolchain = rule(
             doc = ("Target that provides the Python runtime libraries for linking. " +
                    "Typically this is a cc_library target of `.so` files."),
             providers = [CcInfo],
-            mandatory = True,
         ),
         "python_version": attr.string(
             doc = "The Major.minor Python version, e.g. 3.11",
             mandatory = True,
+        ),
+        "_visible_for_testing": attr.label(
+            default = "//python/private:visible_for_testing",
         ),
     },
     doc = """\
@@ -65,5 +78,11 @@ A toolchain for a Python runtime's C/C++ information (e.g. headers)
 
 This rule carries information about the C/C++ side of a Python runtime, e.g.
 headers, shared libraries, etc.
+
+This provides `ToolchainInfo` with the following attributes:
+* `py_cc_toolchain`: {type}`PyCcToolchainInfo`
+* `toolchain_label`: {type}`Label` _only present when `--visibile_for_testing=True`
+  for internal testing_. The rule's label; this allows identifying what toolchain
+  implmentation was selected for testing purposes.
 """,
 )

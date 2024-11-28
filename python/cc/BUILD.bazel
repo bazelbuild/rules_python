@@ -40,7 +40,7 @@ bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = ["py_cc_toolchain.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["//python/private:py_cc_toolchain_bzl"],
+    deps = ["//python/private:py_cc_toolchain_macro_bzl"],
 )
 
 bzl_library(

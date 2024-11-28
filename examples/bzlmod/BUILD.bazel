@@ -9,20 +9,10 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@pip//:requirements.bzl", "all_data_requirements", "all_requirements", "all_whl_requirements", "requirement")
 load("@python_3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@python_versions//3.10:defs.bzl", compile_pip_requirements_3_10 = "compile_pip_requirements")
-load("@python_versions//3.9:defs.bzl", compile_pip_requirements_3_9 = "compile_pip_requirements")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
 # This stanza calls a rule that generates targets for managing pip dependencies
-# with pip-compile.
-compile_pip_requirements_3_9(
-    name = "requirements_3_9",
-    src = "requirements.in",
-    requirements_txt = "requirements_lock_3_9.txt",
-    requirements_windows = "requirements_windows_3_9.txt",
-)
-
-# This stanza calls a rule that generates targets for managing pip dependencies
-# with pip-compile.
+# with pip-compile for a particular python version.
 compile_pip_requirements_3_10(
     name = "requirements_3_10",
     timeout = "moderate",
@@ -79,16 +69,24 @@ py_test_with_transition(
 # to run some of the tests.
 # See: https://github.com/bazelbuild/bazel-skylib/blob/main/docs/build_test_doc.md
 build_test(
-    name = "all_wheels",
+    name = "all_wheels_build_test",
     targets = all_whl_requirements,
 )
 
 build_test(
-    name = "all_data_requirements",
+    name = "all_data_requirements_build_test",
     targets = all_data_requirements,
 )
 
 build_test(
-    name = "all_requirements",
+    name = "all_requirements_build_test",
     targets = all_requirements,
+)
+
+# Check the annotations API
+build_test(
+    name = "extra_annotation_targets_build_test",
+    targets = [
+        "@pip//wheel:generated_file",
+    ],
 )

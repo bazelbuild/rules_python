@@ -15,7 +15,7 @@
 """Public entry point for PyInfo."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:py_info.bzl", _starlark_PyInfo = "PyInfo")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
-load("//python/private/common:providers.bzl", _starlark_PyInfo = "PyInfo")
 
-PyInfo = _starlark_PyInfo if config.enable_pystar else BuiltinPyInfo
+PyInfo = _starlark_PyInfo if config.enable_pystar or BuiltinPyInfo == None else BuiltinPyInfo

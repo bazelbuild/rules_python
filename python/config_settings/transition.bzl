@@ -43,48 +43,50 @@ def _transition_py_impl(ctx):
         output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
-    zipfile_symlink = None
+    default_outputs = []
     if target_is_windows:
-        # Under Windows, the expected "<name>.zip" does not exist, so we have to
-        # create the symlink ourselves to achieve the same behaviour as in macOS
-        # and Linux.
-        zipfile = None
-        expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
-        for file in target[DefaultInfo].default_runfiles.files.to_list():
-            if file.short_path == expected_target_path:
-                zipfile = file
-        zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
-        ctx.actions.symlink(
-            is_executable = True,
-            output = zipfile_symlink,
-            target_file = zipfile,
-        )
+        # NOTE: Bazel 6 + host=linux + target=windows results in the .exe extension missing
+        inner_bootstrap_path = _strip_suffix(target[DefaultInfo].files_to_run.executable.short_path, ".exe")
+        inner_bootstrap = None
+        inner_zip_file_path = inner_bootstrap_path + ".zip"
+        inner_zip_file = None
+        for file in target[DefaultInfo].files.to_list():
+            if file.short_path == inner_bootstrap_path:
+                inner_bootstrap = file
+            elif file.short_path == inner_zip_file_path:
+                inner_zip_file = file
+
+        # TODO: Use `fragments.py.build_python_zip` once Bazel 6 support is dropped.
+        # Which file the Windows .exe looks for depends on the --build_python_zip file.
+        # Bazel 7+ has APIs to know the effective value of that flag, but not Bazel 6.
+        # To work around this, we treat the existence of a .zip in the default outputs
+        # to mean --build_python_zip=true.
+        if inner_zip_file:
+            suffix = ".zip"
+            underlying_launched_file = inner_zip_file
+        else:
+            suffix = ""
+            underlying_launched_file = inner_bootstrap
+
+        if underlying_launched_file:
+            launched_file_symlink = ctx.actions.declare_file(ctx.attr.name + suffix)
+            ctx.actions.symlink(
+                is_executable = True,
+                output = launched_file_symlink,
+                target_file = underlying_launched_file,
+            )
+            default_outputs.append(launched_file_symlink)
+
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
 
-    if PyInfo in target:
-        py_info = target[PyInfo]
-    elif BuiltinPyInfo in target:
-        py_info = target[BuiltinPyInfo]
-    else:
-        fail("target {} does not have rules_python PyInfo or builtin PyInfo".format(target))
-
-    if PyRuntimeInfo in target:
-        py_runtime_info = target[PyRuntimeInfo]
-    elif BuiltinPyRuntimeInfo in target:
-        py_runtime_info = target[BuiltinPyRuntimeInfo]
-    else:
-        fail("target {} does not have rules_python PyRuntimeInfo or builtin PyRuntimeInfo".format(target))
-
     providers = [
         DefaultInfo(
             executable = executable,
-            files = depset([zipfile_symlink] if zipfile_symlink else [], transitive = [target[DefaultInfo].files]),
-            runfiles = ctx.runfiles([zipfile_symlink] if zipfile_symlink else []).merge(target[DefaultInfo].default_runfiles),
+            files = depset(default_outputs, transitive = [target[DefaultInfo].files]),
+            runfiles = ctx.runfiles(default_outputs).merge(target[DefaultInfo].default_runfiles),
         ),
-        py_info,
-        py_runtime_info,
         # Ensure that the binary we're wrapping is included in code coverage.
         coverage_common.instrumented_files_info(
             ctx,
@@ -97,6 +99,15 @@ def _transition_py_impl(ctx):
         # https://github.com/bazelbuild/bazel/commit/dbdfa07e92f99497be9c14265611ad2920161483
         testing.TestEnvironment(env),
     ]
+    if PyInfo in target:
+        providers.append(target[PyInfo])
+    if BuiltinPyInfo != None and BuiltinPyInfo in target and PyInfo != BuiltinPyInfo:
+        providers.append(target[BuiltinPyInfo])
+
+    if PyRuntimeInfo in target:
+        providers.append(target[PyRuntimeInfo])
+    if BuiltinPyRuntimeInfo != None and BuiltinPyRuntimeInfo in target and PyRuntimeInfo != BuiltinPyRuntimeInfo:
+        providers.append(target[BuiltinPyRuntimeInfo])
     return providers
 
 _COMMON_ATTRS = {
@@ -164,6 +175,7 @@ _transition_py_binary = rule(
     attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     executable = True,
+    fragments = ["py"],
 )
 
 _transition_py_test = rule(
@@ -171,6 +183,7 @@ _transition_py_test = rule(
     attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     test = True,
+    fragments = ["py"],
 )
 
 def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
@@ -258,3 +271,9 @@ def py_binary(name, python_version, **kwargs):
 
 def py_test(name, python_version, **kwargs):
     return _py_rule(_py_test, _transition_py_test, name, python_version, **kwargs)
+
+def _strip_suffix(s, suffix):
+    if s.endswith(suffix):
+        return s[:-len(suffix)]
+    else:
+        return s

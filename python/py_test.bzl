@@ -15,18 +15,27 @@
 """Public entry point for py_test."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:py_test_macro.bzl", _starlark_py_test = "py_test")
 load("//python/private:register_extension_info.bzl", "register_extension_info")
 load("//python/private:util.bzl", "add_migration_tag")
-load("//python/private/common:py_test_macro_bazel.bzl", _starlark_py_test = "py_test")
 
 # buildifier: disable=native-python
 _py_test_impl = _starlark_py_test if config.enable_pystar else native.py_test
 
 def py_test(**attrs):
-    """See the Bazel core [py_test](https://docs.bazel.build/versions/master/be/python.html#py_test) documentation.
+    """Creates an executable Python program.
+
+    This is the public macro wrapping the underlying rule. Args are forwarded
+    on as-is unless otherwise specified. See
+    {rule}`py_test` for detailed attribute documentation.
+
+    This macro affects the following args:
+    * `python_version`: cannot be `PY2`
+    * `srcs_version`: cannot be `PY2` or `PY2ONLY`
+    * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes
+      **attrs: Rule attributes forwarded onto {rule}`py_test`.
     """
     if attrs.get("python_version") == "PY2":
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")

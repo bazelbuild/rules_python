@@ -39,7 +39,7 @@ def gazelle_python_manifest(
             manifest, meaning testing it is just as expensive as generating it,
             but modifying it is much less likely to result in a merge conflict.
         pip_repository_name: the name of the pip_install or pip_repository target.
-        pip_deps_repository_name: deprecated - the old pip_install target name.
+        pip_deps_repository_name: deprecated - the old {bzl:obj}`pip_parse` target name.
         manifest: the Gazelle manifest file.
             defaults to the same value as manifest.
         **kwargs: other bazel attributes passed to the generate and test targets
@@ -95,6 +95,7 @@ def gazelle_python_manifest(
             modules_mapping,
             manifest_generator_hash,
         ] + ([requirements] if requirements else []),
+        tags = ["manual"],
     )
 
     py_binary(
@@ -109,14 +110,15 @@ def gazelle_python_manifest(
             generated_manifest,
             manifest,
         ],
-        **kwargs
+        tags = kwargs.get("tags", []) + ["manual"],
+        **{k: v for k, v in kwargs.items() if k != "tags"}
     )
 
     if requirements:
         attrs = {
             "env": {
                 "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
-                "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
+                "_TEST_MANIFEST_GENERATOR_HASH": "$(rlocationpath {})".format(manifest_generator_hash),
                 "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
             },
             "size": "small",
@@ -130,7 +132,10 @@ def gazelle_python_manifest(
                 manifest_generator_hash,
             ],
             rundir = ".",
-            deps = [Label("//manifest")],
+            deps = [
+                Label("//manifest"),
+                Label("@io_bazel_rules_go//go/runfiles"),
+            ],
             # kwargs could contain test-specific attributes like size or timeout
             **dict(attrs, **kwargs)
         )

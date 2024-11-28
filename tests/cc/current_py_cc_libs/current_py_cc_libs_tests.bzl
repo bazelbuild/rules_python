@@ -14,9 +14,10 @@
 
 """Tests for current_py_cc_libs."""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
-load("//tests:cc_info_subject.bzl", "cc_info_subject")
+load("//tests/support:cc_info_subject.bzl", "cc_info_subject")
 
 _tests = []
 
@@ -26,11 +27,11 @@ def _test_current_toolchain_libs(name):
         impl = _test_current_toolchain_libs_impl,
         target = "//python/cc:current_py_cc_libs",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
+            "//command_line_option:extra_toolchains": [str(Label("//tests/support/cc_toolchains:all"))],
         },
         attrs = {
             "lib": attr.label(
-                default = "//tests/cc:libpython",
+                default = "//tests/support/cc_toolchains:libpython",
                 allow_single_file = True,
             ),
         },

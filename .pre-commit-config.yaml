@@ -16,6 +16,10 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0  # Use the ref you want to point at
+    hooks:
+      - id: check-merge-conflict
   - repo: https://github.com/keith/pre-commit-buildifier
     rev: 6.1.0
     hooks:

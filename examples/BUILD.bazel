@@ -12,4 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# The following is experimental API and currently not intended for use outside this example.
+load("@rules_python//python/uv/private:lock.bzl", "lock")  # buildifier: disable=bzl-visibility
+
 licenses(["notice"])  # Apache 2.0
+
+lock(
+    name = "bzlmod_requirements_3_9",
+    srcs = ["bzlmod/requirements.in"],
+    out = "bzlmod/requirements_lock_3_9.txt",
+    python_version = "3.9.19",
+)

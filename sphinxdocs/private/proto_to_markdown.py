@@ -80,6 +80,12 @@ def _position_iter(values: list[_T]) -> tuple[bool, bool, _T]:
         yield i == 0, i == len(values) - 1, value
 
 
+def _sort_attributes_inplace(attributes):
+    # Sort attributes so the iteration order results in a Python-syntax
+    # valid signature. Keep name first because that's convention.
+    attributes.sort(key=lambda a: (a.name != "name", bool(a.default_value), a.name))
+
+
 class _MySTRenderer:
     def __init__(
         self,
@@ -90,6 +96,15 @@ class _MySTRenderer:
         self._module = module
         self._out_stream = out_stream
         self._public_load_path = public_load_path
+        self._typedef_stack = []
+
+    def _get_colons(self):
+        # There's a weird behavior where increasing colon indents doesn't
+        # parse as nested objects correctly, so we have to reduce the
+        # number of colons based on the indent level
+        indent = 10 - len(self._typedef_stack)
+        assert indent >= 0
+        return ":::" + ":" * indent
 
     def render(self):
         self._render_module(self._module)
@@ -99,6 +114,9 @@ class _MySTRenderer:
             bzl_path = self._public_load_path
         else:
             bzl_path = "//" + self._module.file.split("//")[1]
+
+        self._write(":::{default-domain} bzl\n:::\n")
+        self._write(":::{bzl:currentfile} ", bzl_path, "\n:::\n\n")
         self._write(
             f"# {bzl_path}\n",
             "\n",
@@ -106,11 +124,10 @@ class _MySTRenderer:
             "\n\n",
         )
 
-        # Sort the objects by name
         objects = itertools.chain(
             ((r.rule_name, r, self._render_rule) for r in module.rule_info),
             ((p.provider_name, p, self._render_provider) for p in module.provider_info),
-            ((f.function_name, f, self._render_func) for f in module.func_info),
+            ((f.function_name, f, self._process_func_info) for f in module.func_info),
             ((a.aspect_name, a, self._render_aspect) for a in module.aspect_info),
             (
                 (m.extension_name, m, self._render_module_extension)
@@ -121,328 +138,403 @@ class _MySTRenderer:
                 for r in module.repository_rule_info
             ),
         )
+        # Sort by name, ignoring case. The `.TYPEDEF` string is removed so
+        # that the .TYPEDEF entries come before what is in the typedef.
+        objects = sorted(objects, key=lambda v: v[0].removesuffix(".TYPEDEF").lower())
 
-        objects = sorted(objects, key=lambda v: v[0].lower())
-
-        for _, obj, func in objects:
-            func(obj)
+        for name, obj, func in objects:
+            self._process_object(name, obj, func)
             self._write("\n")
 
+        # Close any typedefs
+        while self._typedef_stack:
+            self._typedef_stack.pop()
+            self._render_typedef_end()
+
+    def _process_object(self, name, obj, renderer):
+        # The trailing doc is added to prevent matching a common prefix
+        typedef_group = name.removesuffix(".TYPEDEF") + "."
+        while self._typedef_stack and not typedef_group.startswith(
+            self._typedef_stack[-1]
+        ):
+            self._typedef_stack.pop()
+            self._render_typedef_end()
+        renderer(obj)
+        if name.endswith(".TYPEDEF"):
+            self._typedef_stack.append(typedef_group)
+
     def _render_aspect(self, aspect: stardoc_output_pb2.AspectInfo):
-        aspect_anchor = _anchor_id(aspect.aspect_name)
-        self._write(
-            _block_attrs(".starlark-object"),
-            f"## {aspect.aspect_name}\n\n",
-            "_Propagates on attributes:_ ",  # todo add link here
-            ", ".join(sorted(f"`{attr}`" for attr in aspect.aspect_attribute)),
-            "\n\n",
-            aspect.doc_string.strip(),
-            "\n\n",
-        )
+        _sort_attributes_inplace(aspect.attribute)
+        self._write("::::::{bzl:aspect} ", aspect.aspect_name, "\n\n")
+        edges = ", ".join(sorted(f"`{attr}`" for attr in aspect.aspect_attribute))
+        self._write(":aspect-attributes: ", edges, "\n\n")
+        self._write(aspect.doc_string.strip(), "\n\n")
 
         if aspect.attribute:
-            self._render_attributes(aspect_anchor, aspect.attribute)
-        self._write("\n")
+            self._render_attributes(aspect.attribute)
+            self._write("\n")
+        self._write("::::::\n")
 
     def _render_module_extension(self, mod_ext: stardoc_output_pb2.ModuleExtensionInfo):
-        self._write(
-            _block_attrs(".starlark-object"),
-            f"## {mod_ext.extension_name}\n\n",
-        )
-
+        self._write("::::::{bzl:module-extension} ", mod_ext.extension_name, "\n\n")
         self._write(mod_ext.doc_string.strip(), "\n\n")
 
-        mod_ext_anchor = _anchor_id(mod_ext.extension_name)
         for tag in mod_ext.tag_class:
             tag_name = f"{mod_ext.extension_name}.{tag.tag_name}"
-            tag_anchor = f"{mod_ext_anchor}_{tag.tag_name}"
-            self._write(
-                _block_attrs(".starlark-module-extension-tag-class"),
-                f"### {tag_name}\n\n",
-            )
+            tag_name = f"{tag.tag_name}"
+            self._write(":::::{bzl:tag-class} ")
+
+            _sort_attributes_inplace(tag.attribute)
             self._render_signature(
                 tag_name,
-                tag_anchor,
                 tag.attribute,
                 get_name=lambda a: a.name,
                 get_default=lambda a: a.default_value,
             )
 
-            self._write(tag.doc_string.strip(), "\n\n")
-            self._render_attributes(tag_anchor, tag.attribute)
-            self._write("\n")
+            if doc_string := tag.doc_string.strip():
+                self._write(doc_string, "\n\n")
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string and tag.attribute:
+                self.write("\n")
+            self._render_attributes(tag.attribute)
+            self._write(":::::\n")
+        self._write("::::::\n")
 
     def _render_repository_rule(self, repo_rule: stardoc_output_pb2.RepositoryRuleInfo):
-        self._write(
-            _block_attrs(".starlark-object"),
-            f"## {repo_rule.rule_name}\n\n",
-        )
-        repo_anchor = _anchor_id(repo_rule.rule_name)
+        self._write("::::::{bzl:repo-rule} ")
+        _sort_attributes_inplace(repo_rule.attribute)
         self._render_signature(
             repo_rule.rule_name,
-            repo_anchor,
             repo_rule.attribute,
             get_name=lambda a: a.name,
             get_default=lambda a: a.default_value,
         )
         self._write(repo_rule.doc_string.strip(), "\n\n")
         if repo_rule.attribute:
-            self._render_attributes(repo_anchor, repo_rule.attribute)
+            self._render_attributes(repo_rule.attribute)
         if repo_rule.environ:
-            self._write(
-                "**ENVIRONMENT VARIABLES** ",
-                _link_here_icon(repo_anchor + "_env"),
-                "\n",
-            )
-            for name in sorted(repo_rule.environ):
-                self._write(f"* `{name}`\n")
+            self._write(":envvars: ", ", ".join(sorted(repo_rule.environ)))
         self._write("\n")
 
     def _render_rule(self, rule: stardoc_output_pb2.RuleInfo):
         rule_name = rule.rule_name
-        rule_anchor = _anchor_id(rule_name)
-        self._write(
-            _block_attrs(".starlark-object"),
-            f"## {rule_name}\n\n",
-        )
-
+        _sort_attributes_inplace(rule.attribute)
+        self._write("::::{bzl:rule} ")
         self._render_signature(
             rule_name,
-            rule_anchor,
             rule.attribute,
             get_name=lambda r: r.name,
             get_default=lambda r: r.default_value,
         )
-
         self._write(rule.doc_string.strip(), "\n\n")
 
-        if len(rule.advertised_providers.provider_name) == 0:
-            self._write("_Provides_: no providers advertised.")
-        else:
-            self._write(
-                "_Provides_: ",
-                ", ".join(rule.advertised_providers.provider_name),
-            )
-        self._write("\n\n")
+        if rule.advertised_providers.provider_name:
+            self._write(":provides: ")
+            self._write(" | ".join(rule.advertised_providers.provider_name))
+            self._write("\n")
+        self._write("\n")
 
         if rule.attribute:
-            self._render_attributes(rule_anchor, rule.attribute)
+            self._render_attributes(rule.attribute)
+            self._write("\n")
+        self._write("::::\n")
 
     def _rule_attr_type_string(self, attr: stardoc_output_pb2.AttributeInfo) -> str:
         if attr.type == _AttributeType.NAME:
-            return _link("Name", ref="target-name")
+            return "Name"
         elif attr.type == _AttributeType.INT:
-            return _link("int", ref="int")
+            return "int"
         elif attr.type == _AttributeType.LABEL:
-            return _link("label", ref="attr-label")
+            return "label"
         elif attr.type == _AttributeType.STRING:
-            return _link("string", ref="str")
+            return "str"
         elif attr.type == _AttributeType.STRING_LIST:
-            return "list of " + _link("string", ref="str")
+            return "list[str]"
         elif attr.type == _AttributeType.INT_LIST:
-            return "list of " + _link("int", ref="int")
+            return "list[int]"
         elif attr.type == _AttributeType.LABEL_LIST:
-            return "list of " + _link("label", ref="attr-label") + "s"
+            return "list[label]"
         elif attr.type == _AttributeType.BOOLEAN:
-            return _link("bool", ref="bool")
+            return "bool"
         elif attr.type == _AttributeType.LABEL_STRING_DICT:
-            return "dict of {key} to {value}".format(
-                key=_link("label", ref="attr-label"), value=_link("string", ref="str")
-            )
+            return "dict[label, str]"
         elif attr.type == _AttributeType.STRING_DICT:
-            return "dict of {key} to {value}".format(
-                key=_link("string", ref="str"), value=_link("string", ref="str")
-            )
+            return "dict[str, str]"
         elif attr.type == _AttributeType.STRING_LIST_DICT:
-            return "dict of {key} to list of {value}".format(
-                key=_link("string", ref="str"), value=_link("string", ref="str")
-            )
+            return "dict[str, list[str]]"
         elif attr.type == _AttributeType.OUTPUT:
-            return _link("label", ref="attr-label")
+            return "label"
         elif attr.type == _AttributeType.OUTPUT_LIST:
-            return "list of " + _link("label", ref="attr-label")
+            return "list[label]"
         else:
             # If we get here, it means the value was unknown for some reason.
             # Rather than error, give some somewhat understandable value.
             return _AttributeType.Name(attr.type)
 
-    def _render_func(self, func: stardoc_output_pb2.StarlarkFunctionInfo):
-        func_name = func.function_name
-        func_anchor = _anchor_id(func_name)
+    def _process_func_info(self, func):
+        if func.function_name.endswith(".TYPEDEF"):
+            self._render_typedef_start(func)
+        else:
+            self._render_func(func)
+
+    def _render_typedef_start(self, func):
         self._write(
-            _block_attrs(".starlark-object"),
-            f"## {func_name}\n\n",
+            self._get_colons(),
+            "{bzl:typedef} ",
+            func.function_name.removesuffix(".TYPEDEF"),
+            "\n",
         )
+        if func.doc_string:
+            self._write(func.doc_string.strip(), "\n")
 
-        parameters = [param for param in func.parameter if param.name != "self"]
+    def _render_typedef_end(self):
+        self._write(self._get_colons(), "\n\n")
 
-        self._render_signature(
-            func_name,
-            func_anchor,
-            parameters,
-            get_name=lambda p: p.name,
-            get_default=lambda p: p.default_value,
-        )
+    def _render_func(self, func: stardoc_output_pb2.StarlarkFunctionInfo):
+        self._write(self._get_colons(), "{bzl:function} ")
 
-        self._write(func.doc_string.strip(), "\n\n")
+        parameters = self._render_func_signature(func)
+
+        doc_string = func.doc_string.strip()
+        if doc_string:
+            self._write(doc_string, "\n\n")
 
         if parameters:
-            self._write(
-                _block_attrs(f"{func_anchor}_parameters"),
-                "**PARAMETERS** ",
-                _link_here_icon(f"{func_anchor}_parameters"),
-                "\n\n",
-            )
-            entries = []
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string:
+                self._write("\n")
             for param in parameters:
-                entries.append(
-                    [
-                        f"{func_anchor}_{param.name}",
-                        param.name,
-                        f"(_default `{param.default_value}`_) "
-                        if param.default_value
-                        else "",
-                        param.doc_string if param.doc_string else "_undocumented_",
-                    ]
-                )
-            self._render_field_list(entries)
+                self._write(f":arg {param.name}:\n")
+                if param.default_value:
+                    default_value = self._format_default_value(param.default_value)
+                    self._write("  {default-value}`", default_value, "`\n")
+                if param.doc_string:
+                    self._write("  ", _indent_block_text(param.doc_string), "\n")
+                else:
+                    self._write("  _undocumented_\n")
+                self._write("\n")
 
-        if getattr(func, "return").doc_string:
-            return_doc = _indent_block_text(getattr(func, "return").doc_string)
-            self._write(
-                _block_attrs(f"{func_anchor}_returns"),
-                "RETURNS",
-                _link_here_icon(func_anchor + "_returns"),
-                "\n",
-                ": ",
-                return_doc,
-                "\n",
-            )
+        if return_doc := getattr(func, "return").doc_string:
+            self._write(":returns:\n")
+            self._write("  ", _indent_block_text(return_doc), "\n")
         if func.deprecated.doc_string:
-            self._write(
-                "\n\n**DEPRECATED**\n\n", func.deprecated.doc_string.strip(), "\n"
-            )
+            self._write(":::::{deprecated}: unknown\n")
+            self._write("  ", _indent_block_text(func.deprecated.doc_string), "\n")
+            self._write(":::::\n")
+        self._write(self._get_colons(), "\n")
+
+    def _render_func_signature(self, func):
+        func_name = func.function_name
+        if self._typedef_stack:
+            func_name = func.function_name.removeprefix(self._typedef_stack[-1])
+        self._write(f"{func_name}(")
+        # TODO: Have an "is method" directive in the docstring to decide if
+        # the self parameter should be removed.
+        parameters = [param for param in func.parameter if param.name != "self"]
+
+        # Unfortunately, the stardoc info is incomplete and inaccurate:
+        # * The position of the `*args` param is wrong; it'll always
+        #   be last (or second to last, if kwargs is present).
+        # * Stardoc doesn't explicitly tell us if an arg is `*args` or
+        #   `**kwargs`. Hence f(*args) or f(**kwargs) is ambigiguous.
+        # See these issues:
+        # https://github.com/bazelbuild/stardoc/issues/226
+        # https://github.com/bazelbuild/stardoc/issues/225
+        #
+        # Below, we try to take what info we have and infer what the original
+        # signature was. In short:
+        # * A default=empty, mandatory=false arg is either *args or **kwargs
+        # * If two of those are seen, the first is *args and the second is
+        #   **kwargs. Recall, however, the position of *args is mis-represented.
+        # * If a single default=empty, mandatory=false arg is found, then
+        #   it's ambiguous as to whether its *args or **kwargs. To figure
+        #   that out, we:
+        #   * If it's not the last arg, then it must be *args. In practice,
+        #     this never occurs due to #226 above.
+        #   * If we saw a mandatory arg after an optional arg, then *args
+        #     was supposed to be between them (otherwise it wouldn't be
+        #     valid syntax).
+        #   * Otherwise, it's ambiguous. We just guess by looking at the
+        #     parameter name.
+        var_args = None
+        var_kwargs = None
+        saw_mandatory_after_optional = False
+        first_mandatory_after_optional_index = None
+        optionals_started = False
+        for i, p in enumerate(parameters):
+            optionals_started = optionals_started or not p.mandatory
+            if p.mandatory and optionals_started:
+                saw_mandatory_after_optional = True
+                if first_mandatory_after_optional_index is None:
+                    first_mandatory_after_optional_index = i
+
+            if not p.default_value and not p.mandatory:
+                if var_args is None:
+                    var_args = (i, p)
+                else:
+                    var_kwargs = p
+
+        if var_args and not var_kwargs:
+            if var_args[0] != len(parameters) - 1:
+                pass
+            elif saw_mandatory_after_optional:
+                var_kwargs = var_args[1]
+                var_args = None
+            elif var_args[1].name in ("kwargs", "attrs"):
+                var_kwargs = var_args[1]
+                var_args = None
+
+        # Partial workaround for
+        # https://github.com/bazelbuild/stardoc/issues/226: `*args` renders last
+        if var_args and var_kwargs and first_mandatory_after_optional_index is not None:
+            parameters.pop(var_args[0])
+            parameters.insert(first_mandatory_after_optional_index, var_args[1])
+
+        # The only way a mandatory-after-optional can occur is
+        # if there was `*args` before it. But if we didn't see it,
+        # it must have been the unbound `*` symbol, which stardoc doesn't
+        # tell us exists.
+        if saw_mandatory_after_optional and not var_args:
+            self._write("*, ")
+        for _, is_last, p in _position_iter(parameters):
+            if var_args and p.name == var_args[1].name:
+                self._write("*")
+            elif var_kwargs and p.name == var_kwargs.name:
+                self._write("**")
+            self._write(p.name)
+            if p.default_value:
+                self._write("=", self._format_default_value(p.default_value))
+            if not is_last:
+                self._write(", ")
+        self._write(")\n")
+        return parameters
 
     def _render_provider(self, provider: stardoc_output_pb2.ProviderInfo):
-        self._write(
-            _block_attrs(".starlark-object"),
-            f"## {provider.provider_name}\n\n",
-        )
-
-        provider_anchor = _anchor_id(provider.provider_name)
-        self._render_signature(
-            provider.provider_name,
-            provider_anchor,
-            provider.field_info,
-            get_name=lambda f: f.name,
-        )
+        self._write("::::::{bzl:provider} ", provider.provider_name, "\n")
+        if provider.origin_key:
+            self._render_origin_key_option(provider.origin_key)
+        self._write("\n")
 
         self._write(provider.doc_string.strip(), "\n\n")
 
-        if provider.field_info:
-            self._write(
-                _block_attrs(provider_anchor),
-                "**FIELDS** ",
-                _link_here_icon(provider_anchor + "_fields"),
-                "\n",
-                "\n",
-            )
-            entries = []
-            for field in provider.field_info:
-                entries.append(
-                    [
-                        f"{provider_anchor}_{field.name}",
-                        field.name,
-                        field.doc_string,
-                    ]
-                )
-            self._render_field_list(entries)
-
-    def _render_attributes(
-        self, base_anchor: str, attributes: list[stardoc_output_pb2.AttributeInfo]
-    ):
-        self._write(
-            _block_attrs(f"{base_anchor}_attributes"),
-            "**ATTRIBUTES** ",
-            _link_here_icon(f"{base_anchor}_attributes"),
-            "\n",
+        self._write(":::::{bzl:function} ")
+        provider.field_info.sort(key=lambda f: f.name)
+        self._render_signature(
+            "<init>",
+            provider.field_info,
+            get_name=lambda f: f.name,
         )
-        entries = []
-        for attr in attributes:
-            anchor = f"{base_anchor}_{attr.name}"
-            required = "required" if attr.mandatory else "optional"
-            attr_type = self._rule_attr_type_string(attr)
-            default = f", default `{attr.default_value}`" if attr.default_value else ""
-            providers_parts = []
-            if attr.provider_name_group:
-                providers_parts.append("\n\n_Required providers_: ")
-            if len(attr.provider_name_group) == 1:
-                provider_group = attr.provider_name_group[0]
-                if len(provider_group.provider_name) == 1:
-                    providers_parts.append(provider_group.provider_name[0])
-                else:
-                    providers_parts.extend(
-                        ["all of ", _join_csv_and(provider_group.provider_name)]
-                    )
-            elif len(attr.provider_name_group) > 1:
-                providers_parts.append("any of \n")
-                for group in attr.provider_name_group:
-                    providers_parts.extend(["* ", _join_csv_and(group.provider_name)])
-            if providers_parts:
-                providers_parts.append("\n")
+        # TODO: Add support for provider.init once our Bazel version supports
+        # that field
+        self._write(":::::\n")
 
-            entries.append(
-                [
-                    anchor,
-                    attr.name,
-                    f"_({required} {attr_type}{default})_\n",
-                    attr.doc_string,
-                    *providers_parts,
-                ]
-            )
-        self._render_field_list(entries)
+        for field in provider.field_info:
+            self._write(":::::{bzl:provider-field} ", field.name, "\n")
+            self._write(field.doc_string.strip())
+            self._write("\n")
+            self._write(":::::\n")
+        self._write("::::::\n")
+
+    def _render_attributes(self, attributes: list[stardoc_output_pb2.AttributeInfo]):
+        for attr in attributes:
+            attr_type = self._rule_attr_type_string(attr)
+            self._write(f":attr {attr.name}:\n")
+            if attr.default_value:
+                self._write("  {bzl:default-value}`%s`\n" % attr.default_value)
+            self._write("  {type}`%s`\n" % attr_type)
+            self._write("  ", _indent_block_text(attr.doc_string), "\n")
+            self._write("  :::{bzl:attr-info} Info\n")
+            if attr.mandatory:
+                self._write("  :mandatory:\n")
+            self._write("  :::\n")
+            self._write("\n")
+
+            if attr.provider_name_group:
+                self._write("  {required-providers}`")
+                for _, outer_is_last, provider_group in _position_iter(
+                    attr.provider_name_group
+                ):
+                    pairs = list(
+                        zip(
+                            provider_group.origin_key,
+                            provider_group.provider_name,
+                            strict=True,
+                        )
+                    )
+                    if len(pairs) > 1:
+                        self._write("[")
+                    for _, inner_is_last, (origin_key, name) in _position_iter(pairs):
+                        if origin_key.file == "<native>":
+                            origin = origin_key.name
+                        else:
+                            origin = f"{origin_key.file}%{origin_key.name}"
+                        # We have to use "title <ref>" syntax because the same
+                        # name might map to different origins. Stardoc gives us
+                        # the provider's actual name, not the name of the symbol
+                        # used in the source.
+                        self._write(f"'{name} <{origin}>'")
+                        if not inner_is_last:
+                            self._write(", ")
+
+                    if len(pairs) > 1:
+                        self._write("]")
+
+                    if not outer_is_last:
+                        self._write(" | ")
+                self._write("`\n")
+
+            self._write("\n")
 
     def _render_signature(
         self,
         name: str,
-        base_anchor: str,
         parameters: list[_T],
         *,
         get_name: Callable[_T, str],
         get_default: Callable[_T, str] = lambda v: None,
     ):
-        self._write(_block_attrs(".starlark-signature"), name, "(")
+        self._write(name, "(")
         for _, is_last, param in _position_iter(parameters):
             param_name = get_name(param)
-            self._write(_link(param_name, f"{base_anchor}_{param_name}"))
+            self._write(f"{param_name}")
             default_value = get_default(param)
             if default_value:
+                default_value = self._format_default_value(default_value)
                 self._write(f"={default_value}")
             if not is_last:
-                self._write(",\n")
+                self._write(", ")
         self._write(")\n\n")
 
-    def _render_field_list(self, entries: list[list[str]]):
-        """Render a list of field lists.
+    def _render_origin_key_option(self, origin_key, indent=""):
+        self._write(
+            indent,
+            ":origin-key: ",
+            self._format_option_value(f"{origin_key.file}%{origin_key.name}"),
+            "\n",
+        )
 
-        Args:
-            entries: list of field list entries. Each element is 3
-                pieces: an anchor, field description, and one or more
-                text strings for the body of the field list entry.
-        """
-        for anchor, description, *body_pieces in entries:
-            body_pieces = [_block_attrs(anchor), *body_pieces]
-            self._write(
-                ":",
-                _span(description + _link_here_icon(anchor)),
-                ":\n  ",
-                # The text has to be indented to be associated with the block correctly.
-                "".join(body_pieces).strip().replace("\n", "\n  "),
-                "\n",
-            )
-        # Ensure there is an empty line after the field list, otherwise
-        # the next line of content will fold into the field list
-        self._write("\n")
+    def _format_default_value(self, default_value):
+        # Handle <function foo from //baz:bar.bzl>
+        # For now, just use quotes for lack of a better option
+        if default_value.startswith("<"):
+            return f"'{default_value}'"
+        elif default_value.startswith("Label("):
+            # Handle Label(*, "@some//label:target")
+            start_quote = default_value.find('"')
+            end_quote = default_value.rfind('"')
+            return default_value[start_quote : end_quote + 1]
+        else:
+            return default_value
+
+    def _format_option_value(self, value):
+        # Leading @ symbols are special markup; escape them.
+        if value.startswith("@"):
+            return "\\" + value
+        else:
+            return value
 
     def _write(self, *lines: str):
         self._out_stream.writelines(lines)
@@ -452,21 +544,15 @@ def _convert(
     *,
     proto: pathlib.Path,
     output: pathlib.Path,
-    footer: pathlib.Path,
     public_load_path: str,
 ):
-    if footer:
-        footer_content = footer.read_text()
-
     module = stardoc_output_pb2.ModuleInfo.FromString(proto.read_bytes())
     with output.open("wt", encoding="utf8") as out_stream:
         _MySTRenderer(module, out_stream, public_load_path).render()
-        out_stream.write(footer_content)
 
 
 def _create_parser():
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
-    parser.add_argument("--footer", dest="footer", type=pathlib.Path)
     parser.add_argument("--proto", dest="proto", type=pathlib.Path)
     parser.add_argument("--output", dest="output", type=pathlib.Path)
     parser.add_argument("--public-load-path", dest="public_load_path")
@@ -478,7 +564,6 @@ def main(args):
     _convert(
         proto=options.proto,
         output=options.output,
-        footer=options.footer,
         public_load_path=options.public_load_path,
     )
     return 0

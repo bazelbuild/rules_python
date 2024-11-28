@@ -1,13 +1,6 @@
-load("//python:pip.bzl", "compile_pip_requirements")
 load("//python/config_settings:transition.bzl", "py_binary")
 load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
-
-compile_pip_requirements(
-    name = "requirements",
-    src = "requirements.in",
-    requirements_darwin = "requirements_darwin.txt",
-    requirements_windows = "requirements_windows.txt",
-)
+load("//tools/private:publish_deps.bzl", "publish_deps")
 
 py_console_script_binary(
     name = "twine",
@@ -26,9 +19,24 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
-        "requirements.txt",
         "requirements_darwin.txt",
+        "requirements_linux.txt",
+        "requirements_universal.txt",
         "requirements_windows.txt",
     ],
-    visibility = ["//tools:__pkg__"],
+    visibility = ["//tools:__subpackages__"],
+)
+
+# Run bazel run //private:requirements.update to update the outs
+publish_deps(
+    name = "requirements",
+    srcs = ["requirements.in"],
+    outs = {
+        "requirements_darwin.txt": "macos",
+        "requirements_linux.txt": "linux",
+        "requirements_universal.txt": "",  # universal
+        "requirements_windows.txt": "windows",
+    },
+    upgrade = True,
+    visibility = ["//private:__pkg__"],
 )

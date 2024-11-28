@@ -89,6 +89,10 @@ def FindPythonBinary(module_space):
   """Finds the real Python binary if it's not a normal absolute path."""
   return FindBinary(module_space, PYTHON_BINARY)
 
+def PrintVerbose(*args):
+  if os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"):
+    print("bootstrap:", *args, file=sys.stderr, flush=True)
+
 def PrintVerboseCoverage(*args):
   """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
   if os.environ.get("VERBOSE_COVERAGE"):
@@ -376,7 +380,10 @@ def _RunExecv(python_program, main_filename, args, env):
   # type: (str, str, list[str], dict[str, str]) -> ...
   """Executes the given Python file using the various environment settings."""
   os.environ.update(env)
-  os.execv(python_program, [python_program, main_filename] + args)
+  PrintVerbose("RunExecv: environ:", os.environ)
+  argv = [python_program, main_filename] + args
+  PrintVerbose("RunExecv: argv:", python_program, argv)
+  os.execv(python_program, argv)
 
 def _RunForCoverage(python_program, main_filename, args, env,
                     coverage_entrypoint, workspace):

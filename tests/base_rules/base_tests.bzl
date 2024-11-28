@@ -18,8 +18,8 @@ load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility
-load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load("//tests/base_rules:util.bzl", pt_util = "util")
+load("//tests/support:py_info_subject.bzl", "py_info_subject")
 
 _tests = []
 
@@ -43,7 +43,7 @@ _produces_builtin_py_info = rule(
 )
 
 def _produces_py_info_impl(ctx):
-    return _create_py_info(ctx, BuiltinPyInfo)
+    return _create_py_info(ctx, PyInfo)
 
 _produces_py_info = rule(
     implementation = _produces_py_info_impl,
@@ -86,6 +86,9 @@ def _py_info_propagation_test_impl(env, target, provider_type):
     info.imports().contains("custom-import")
 
 def _test_py_info_propagation_builtin(name, config):
+    if not BuiltinPyInfo:
+        rt_util.skip_test(name = name)
+        return
     _py_info_propagation_setup(
         name,
         config,

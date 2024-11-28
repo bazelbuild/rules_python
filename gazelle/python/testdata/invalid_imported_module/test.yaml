@@ -16,7 +16,20 @@
 expect:
   exit_code: 1
   stderr: |
-    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module": "grpc" at line 16 from "__init__.py" is an invalid dependency: possible solutions:
+    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module":
+
+    "__init__.py", line 15: multiple targets (//foo:bar_1, //foo:bar_2) may be imported with "foo.bar": possible solutions:
+    	1. Disambiguate the above multiple targets by removing duplicate srcs entries.
+    	2. Use the '# gazelle:resolve py foo.bar TARGET_LABEL' BUILD file directive to resolve to one of the above targets.
+
+    "__init__.py", line 15: "foo" is an invalid dependency: possible solutions:
     	1. Add it as a dependency in the requirements.txt file.
-    	2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.
+    	2. Use the '# gazelle:resolve py foo TARGET_LABEL' BUILD file directive to resolve to a known dependency.
+    	3. Ignore it with a comment '# gazelle:ignore foo' in the Python file.
+
+    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module":
+
+    "__init__.py", line 18: "grpc" is an invalid dependency: possible solutions:
+    	1. Add it as a dependency in the requirements.txt file.
+    	2. Use the '# gazelle:resolve py grpc TARGET_LABEL' BUILD file directive to resolve to a known dependency.
     	3. Ignore it with a comment '# gazelle:ignore grpc' in the Python file.

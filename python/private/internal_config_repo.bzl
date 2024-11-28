@@ -24,6 +24,9 @@ _ENABLE_PYSTAR_DEFAULT = "1"
 _CONFIG_TEMPLATE = """\
 config = struct(
   enable_pystar = {enable_pystar},
+  BuiltinPyInfo = getattr(getattr(native, "legacy_globals", None), "PyInfo", {builtin_py_info_symbol}),
+  BuiltinPyRuntimeInfo = getattr(getattr(native, "legacy_globals", None), "PyRuntimeInfo", {builtin_py_runtime_info_symbol}),
+  BuiltinPyCcLinkParamsProvider = getattr(getattr(native, "legacy_globals", None), "PyCcLinkParamsProvider", {builtin_py_cc_link_params_provider}),
 )
 """
 
@@ -65,8 +68,20 @@ def _internal_config_repo_impl(rctx):
     else:
         enable_pystar = False
 
+    if not native.bazel_version or int(native.bazel_version.split(".")[0]) >= 8:
+        builtin_py_info_symbol = "None"
+        builtin_py_runtime_info_symbol = "None"
+        builtin_py_cc_link_params_provider = "None"
+    else:
+        builtin_py_info_symbol = "PyInfo"
+        builtin_py_runtime_info_symbol = "PyRuntimeInfo"
+        builtin_py_cc_link_params_provider = "PyCcLinkParamsProvider"
+
     rctx.file("rules_python_config.bzl", _CONFIG_TEMPLATE.format(
         enable_pystar = enable_pystar,
+        builtin_py_info_symbol = builtin_py_info_symbol,
+        builtin_py_runtime_info_symbol = builtin_py_runtime_info_symbol,
+        builtin_py_cc_link_params_provider = builtin_py_cc_link_params_provider,
     ))
 
     if enable_pystar:
@@ -92,6 +107,7 @@ def _internal_config_repo_impl(rctx):
 
 internal_config_repo = repository_rule(
     implementation = _internal_config_repo_impl,
+    configure = True,
     environ = [_ENABLE_PYSTAR_ENVVAR_NAME],
 )
 

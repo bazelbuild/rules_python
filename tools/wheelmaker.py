@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import argparse
 import base64
+import csv
 import hashlib
+import io
 import os
 import re
 import stat
@@ -208,14 +210,23 @@ class _WhlFile(zipfile.ZipFile):
         """Write RECORD file to the distribution."""
         record_path = self.distinfo_path("RECORD")
         entries = self._record + [(record_path, b"", b"")]
-        contents = b""
-        for filename, digest, size in entries:
-            if isinstance(filename, str):
-                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
-            contents += b"%s,%s,%s\n" % (filename, digest, size)
+        with io.StringIO() as contents_io:
+            writer = csv.writer(contents_io, lineterminator="\n")
+            for filename, digest, size in entries:
+                if isinstance(filename, str):
+                    filename = filename.lstrip("/")
+                writer.writerow(
+                    (
+                        c
+                        if isinstance(c, str)
+                        else c.decode("utf-8", "surrogateescape")
+                        for c in (filename, digest, size)
+                    )
+                )
 
-        self.add_string(record_path, contents)
-        return contents
+            contents = contents_io.getvalue()
+            self.add_string(record_path, contents)
+            return contents.encode("utf-8", "surrogateescape")
 
 
 class WheelMaker(object):
@@ -227,6 +238,7 @@ class WheelMaker(object):
         python_tag,
         abi,
         platform,
+        compress,
         outfile=None,
         strip_path_prefixes=None,
     ):
@@ -238,6 +250,7 @@ class WheelMaker(object):
         self._platform = platform
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes
+        self._compress = compress
         self._wheelname_fragment_distribution_name = escape_filename_distribution_name(
             self._name
         )
@@ -254,6 +267,7 @@ class WheelMaker(object):
             mode="w",
             distribution_prefix=self._distribution_prefix,
             strip_path_prefixes=self._strip_path_prefixes,
+            compression=zipfile.ZIP_DEFLATED if self._compress else zipfile.ZIP_STORED,
         )
         return self
 
@@ -389,6 +403,11 @@ def parse_args() -> argparse.Namespace:
         "--out", type=str, default=None, help="Override name of ouptut file"
     )
     output_group.add_argument(
+        "--no_compress",
+        action="store_true",
+        help="Disable compression of the final archive",
+    )
+    output_group.add_argument(
         "--name_file",
         type=Path,
         help="A file where the canonical name of the " "wheel will be written",
@@ -516,6 +535,7 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
+        compress=not arguments.no_compress,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
@@ -537,9 +557,34 @@ def main() -> None:
 
         # Search for any `Requires-Dist` entries that refer to other files and
         # expand them.
+
+        def get_new_requirement_line(reqs_text, extra):
+            req = Requirement(reqs_text.strip())
+            if req.marker:
+                if extra:
+                    return f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
+                else:
+                    return f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
+            else:
+                return f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
+
         for meta_line in metadata.splitlines():
-            if not meta_line.startswith("Requires-Dist: @"):
+            if not meta_line.startswith("Requires-Dist: "):
                 continue
+
+            if not meta_line[len("Requires-Dist: ") :].startswith("@"):
+                # This is a normal requirement.
+                package, _, extra = meta_line[len("Requires-Dist: ") :].rpartition(";")
+                if not package:
+                    # This is when the package requirement does not have markers.
+                    continue
+                extra = extra.strip()
+                metadata = metadata.replace(
+                    meta_line, get_new_requirement_line(package, extra)
+                )
+                continue
+
+            # This is a requirement that refers to a file.
             file, _, extra = meta_line[len("Requires-Dist: @") :].partition(";")
             extra = extra.strip()
 
@@ -552,20 +597,7 @@ def main() -> None:
                 # Strip any comments
                 reqs_text, _, _ = reqs_text.partition("#")
 
-                req = Requirement(reqs_text.strip())
-                if req.marker:
-                    if extra:
-                        reqs.append(
-                            f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
-                        )
-                    else:
-                        reqs.append(
-                            f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
-                        )
-                else:
-                    reqs.append(
-                        f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
-                    )
+                reqs.append(get_new_requirement_line(reqs_text, extra))
 
             metadata = metadata.replace(meta_line, "\n".join(reqs))
 

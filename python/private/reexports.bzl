@@ -30,11 +30,12 @@ inaccessible. So instead we access the builtin here and export it under a
 different name. Then we can load it from elsewhere.
 """
 
-# Don't use underscore prefix, since that would make the symbol local to this
-# file only. Use a non-conventional name to emphasize that this is not a public
-# symbol.
-# buildifier: disable=name-conventions
-BuiltinPyInfo = PyInfo
+load("@rules_python_internal//:rules_python_config.bzl", "config")
 
+# NOTE: May be None (Bazel 8 autoloading rules_python)
 # buildifier: disable=name-conventions
-BuiltinPyRuntimeInfo = PyRuntimeInfo
+BuiltinPyInfo = config.BuiltinPyInfo
+
+# NOTE: May be None (Bazel 8 autoloading rules_python)
+# buildifier: disable=name-conventions
+BuiltinPyRuntimeInfo = config.BuiltinPyRuntimeInfo

@@ -16,9 +16,39 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
-    "bazel_integration_tests",
+    "bazel_integration_test",
     "integration_test_utils",
 )
+load("//python:py_test.bzl", "py_test")
+
+def _test_runner(*, name, bazel_version, py_main, bzlmod, gazelle_plugin):
+    if py_main:
+        test_runner = "{}_bazel_{}_py_runner".format(name, bazel_version)
+        py_test(
+            name = test_runner,
+            srcs = [py_main],
+            main = py_main,
+            deps = [":runner_lib"],
+            # Hide from ... patterns; should only be run as part
+            # of the bazel integration test
+            tags = ["manual"],
+        )
+        return test_runner
+
+    if bazel_version.startswith("6") and not bzlmod:
+        if gazelle_plugin:
+            return "//tests/integration:bazel_6_4_workspace_test_runner_gazelle_plugin"
+        else:
+            return "//tests/integration:bazel_6_4_workspace_test_runner"
+
+    if bzlmod and gazelle_plugin:
+        return "//tests/integration:test_runner_gazelle_plugin"
+    elif bzlmod:
+        return "//tests/integration:test_runner"
+    elif gazelle_plugin:
+        return "//tests/integration:workspace_test_runner_gazelle_plugin"
+    else:
+        return "//tests/integration:workspace_test_runner"
 
 def rules_python_integration_test(
         name,
@@ -26,6 +56,8 @@ def rules_python_integration_test(
         bzlmod = True,
         gazelle_plugin = False,
         tags = None,
+        py_main = None,
+        bazel_versions = None,
         **kwargs):
     """Runs a bazel-in-bazel integration test.
 
@@ -37,18 +69,14 @@ def rules_python_integration_test(
             disable bzlmod.
         gazelle_plugin: Whether the test uses the gazelle plugin.
         tags: Test tags.
+        py_main: Optional `.py` file to run tests using. When specified, a
+            python based test runner is used, and this source file is the main
+            entry point and responsible for executing tests.
+        bazel_versions: `list[str] | None`, the bazel versions to test. I
+            not specified, defaults to all configured bazel versions.
         **kwargs: Passed to the upstream `bazel_integration_tests` rule.
     """
     workspace_path = workspace_path or name.removesuffix("_test")
-    if bzlmod:
-        if gazelle_plugin:
-            test_runner = "//tests/integration:test_runner_gazelle_plugin"
-        else:
-            test_runner = "//tests/integration:test_runner"
-    elif gazelle_plugin:
-        test_runner = "//tests/integration:workspace_test_runner_gazelle_plugin"
-    else:
-        test_runner = "//tests/integration:workspace_test_runner"
 
     # Because glob expansion happens at loading time, the bazel-* symlinks
     # in the workspaces can recursively expand to tens-of-thousands of entries,
@@ -70,27 +98,35 @@ def rules_python_integration_test(
         ],
     )
     kwargs.setdefault("size", "enormous")
-    bazel_integration_tests(
-        name = name,
-        workspace_path = workspace_path,
-        test_runner = test_runner,
-        bazel_versions = bazel_binaries.versions.all,
-        workspace_files = [name + "_workspace_files"],
-        # Override the tags so that the `manual` tag isn't applied.
-        tags = (tags or []) + [
-            # These tests are very heavy weight, so much so that only a couple
-            # can be run in parallel without harming their reliability,
-            # overall runtime, and the system's stability. Unfortunately,
-            # there doesn't appear to be a way to tell Bazel to limit their
-            # concurrency, only disable it entirely with exclusive.
-            "exclusive",
-            # The default_test_runner() assumes it can write to the user's home
-            # directory for caching purposes. Give it access.
-            "no-sandbox",
-            # The CI RBE setup can't successfully run these tests remotely.
-            "no-remote-exec",
-            # A special tag is used so CI can run them as a separate job.
-            "integration-test",
-        ],
-        **kwargs
-    )
+    for bazel_version in bazel_versions or bazel_binaries.versions.all:
+        test_runner = _test_runner(
+            name = name,
+            bazel_version = bazel_version,
+            py_main = py_main,
+            bzlmod = bzlmod,
+            gazelle_plugin = gazelle_plugin,
+        )
+        bazel_integration_test(
+            name = "{}_bazel_{}".format(name, bazel_version),
+            workspace_path = workspace_path,
+            test_runner = test_runner,
+            bazel_version = bazel_version,
+            workspace_files = [name + "_workspace_files"],
+            # Override the tags so that the `manual` tag isn't applied.
+            tags = (tags or []) + [
+                # These tests are very heavy weight, so much so that only a couple
+                # can be run in parallel without harming their reliability,
+                # overall runtime, and the system's stability. Unfortunately,
+                # there doesn't appear to be a way to tell Bazel to limit their
+                # concurrency, only disable it entirely with exclusive.
+                "exclusive",
+                # The default_test_runner() assumes it can write to the user's home
+                # directory for caching purposes. Give it access.
+                "no-sandbox",
+                # The CI RBE setup can't successfully run these tests remotely.
+                "no-remote-exec",
+                # A special tag is used so CI can run them as a separate job.
+                "integration-test",
+            ],
+            **kwargs
+        )

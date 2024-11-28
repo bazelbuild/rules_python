@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//sphinxdocs/private:sphinx.bzl", "repeated_string_list_flag")
 
 package(
@@ -31,10 +32,25 @@ repeated_string_list_flag(
     build_setting_default = [],
 )
 
+# Whether to add the `-q` arg to Sphinx invocations, which determines if
+# stdout has any output or not (logging INFO messages and progress messages).
+# If true, add `-q`. If false, don't add `-q`. This is mostly useful for
+# debugging invocations or developing extensions.
+bool_flag(
+    name = "quiet",
+    build_setting_default = True,
+)
+
 bzl_library(
     name = "sphinx_bzl",
     srcs = ["sphinx.bzl"],
     deps = ["//sphinxdocs/private:sphinx_bzl"],
+)
+
+bzl_library(
+    name = "sphinx_docs_library_bzl",
+    srcs = ["sphinx_docs_library.bzl"],
+    deps = ["//sphinxdocs/private:sphinx_docs_library_macro_bzl"],
 )
 
 bzl_library(

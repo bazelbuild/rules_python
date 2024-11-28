@@ -27,11 +27,11 @@ def readthedocs_install(name, docs, **kwargs):
     for more information.
 
     Args:
-        name: (str) name of the installer
-        docs: (label list) list of targets that generate directories to copy
+        name: {type}`Name` name of the installer
+        docs: {type}`list[label]` list of targets that generate directories to copy
             into the directories readthedocs expects final output in. This
-            is typically a single `sphinx_stardocs` target.
-        **kwargs: (dict) additional kwargs to pass onto the installer
+            is typically a single {obj}`sphinx_stardocs` target.
+        **kwargs: {type}`dict` additional kwargs to pass onto the installer
     """
     add_tag(kwargs, "@rules_python//sphinxdocs:readthedocs_install")
     py_binary(
@@ -43,6 +43,6 @@ def readthedocs_install(name, docs, **kwargs):
             "$(rlocationpaths {})".format(d)
             for d in docs
         ],
-        deps = ["//python/runfiles"],
+        deps = [Label("//python/runfiles")],
         **kwargs
     )

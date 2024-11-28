@@ -14,6 +14,7 @@
 
 import os
 import pathlib
+import re
 import sys
 import unittest
 
@@ -63,16 +64,47 @@ class ExampleTest(unittest.TestCase):
             first_item.endswith("coverage"),
             f"Expected the first item in sys.path '{first_item}' to not be related to coverage",
         )
+
+        # We're trying to make sure that the coverage library added by the
+        # toolchain is _after_ any user-provided dependencies. This lets users
+        # override what coverage version they're using.
+        first_coverage_index = None
+        last_user_dep_index = None
+        for i, path in enumerate(sys.path):
+            if re.search("rules_python.*[~+]pip[~+]", path):
+                last_user_dep_index = i
+            if first_coverage_index is None and re.search(
+                ".*rules_python.*[~+]python[~+].*coverage.*", path
+            ):
+                first_coverage_index = i
+
         if os.environ.get("COVERAGE_MANIFEST"):
-            # we are running under the 'bazel coverage :test'
-            self.assertTrue(
-                "_coverage" in last_item,
-                f"Expected {last_item} to be related to coverage",
+            self.assertIsNotNone(
+                first_coverage_index,
+                "Expected to find toolchain coverage, but "
+                + f"it was not found.\nsys.path:\n{all_paths}",
             )
-            self.assertEqual(pathlib.Path(last_item).name, "coverage")
+            self.assertIsNotNone(
+                last_user_dep_index,
+                "Expected to find at least one user dep, "
+                + "but none were found.\nsys.path:\n{all_paths}",
+            )
+            # we are running under the 'bazel coverage :test'
+            self.assertGreater(
+                first_coverage_index,
+                last_user_dep_index,
+                "Expected coverage provided by the toolchain to be after "
+                + "user provided dependencies.\n"
+                + f"Found coverage at index: {first_coverage_index}\n"
+                + f"Last user dep at index: {last_user_dep_index}\n"
+                + f"Full sys.path:\n{all_paths}",
+            )
         else:
-            self.assertFalse(
-                "coverage" in last_item, f"Expected coverage tooling to not be present"
+            self.assertIsNone(
+                first_coverage_index,
+                "Expected toolchain coverage to not be present\n"
+                + f"Found coverage at index: {first_coverage_index}\n"
+                + f"Full sys.path:\n{all_paths}",
             )
 
     def test_main(self):

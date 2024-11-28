@@ -26,18 +26,19 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
 func TestGazelleManifestIsUpdated(t *testing.T) {
 	requirementsPath := os.Getenv("_TEST_REQUIREMENTS")
 	if requirementsPath == "" {
-		t.Fatalf("_TEST_REQUIREMENTS must be set")
+		t.Fatal("_TEST_REQUIREMENTS must be set")
 	}
 
 	manifestPath := os.Getenv("_TEST_MANIFEST")
 	if manifestPath == "" {
-		t.Fatalf("_TEST_MANIFEST must be set")
+		t.Fatal("_TEST_MANIFEST must be set")
 	}
 
 	manifestFile := new(manifest.File)
@@ -49,7 +50,12 @@ func TestGazelleManifestIsUpdated(t *testing.T) {
 		t.Fatal("failed to find the Gazelle manifest file integrity")
 	}
 
-	manifestGeneratorHashPath := os.Getenv("_TEST_MANIFEST_GENERATOR_HASH")
+	manifestGeneratorHashPath, err := runfiles.Rlocation(
+		os.Getenv("_TEST_MANIFEST_GENERATOR_HASH"))
+	if err != nil {
+		t.Fatalf("failed to resolve runfiles path of manifest: %v", err)
+	}
+
 	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
 	if err != nil {
 		t.Fatalf("opening %q: %v", manifestGeneratorHashPath, err)

@@ -20,12 +20,14 @@ current_py_cc_libs_test_suite(name = "current_py_cc_libs_tests")
 cc_test(
     name = "python_libs_linking_test",
     srcs = ["python_libs_linking_test.cc"],
-    # Mac and Windows fail with linking errors, but its not clear why; someone
-    # with more C + Mac/Windows experience will have to figure it out.
+    # Windows fails with linking errors, but its not clear why; someone
+    # with more C + Windows experience will have to figure it out.
     # - rickeylev@
-    target_compatible_with = [
-        "@platforms//os:linux",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:osx": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     deps = [
         "@rules_python//python/cc:current_py_cc_headers",
         "@rules_python//python/cc:current_py_cc_libs",

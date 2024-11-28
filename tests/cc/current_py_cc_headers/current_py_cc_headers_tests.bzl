@@ -14,9 +14,11 @@
 
 """Tests for current_py_cc_headers."""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
-load("//tests:cc_info_subject.bzl", "cc_info_subject")
+load("//tests/support:cc_info_subject.bzl", "cc_info_subject")
+load("//tests/support:support.bzl", "CC_TOOLCHAIN")
 
 _tests = []
 
@@ -26,11 +28,11 @@ def _test_current_toolchain_headers(name):
         impl = _test_current_toolchain_headers_impl,
         target = "//python/cc:current_py_cc_headers",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
+            "//command_line_option:extra_toolchains": [CC_TOOLCHAIN],
         },
         attrs = {
             "header": attr.label(
-                default = "//tests/cc:fake_header.h",
+                default = "//tests/support/cc_toolchains:fake_header.h",
                 allow_single_file = True,
             ),
         },
@@ -57,7 +59,7 @@ def _test_current_toolchain_headers_impl(env, target):
 
     # Check that the forward DefaultInfo looks correct
     env.expect.that_target(target).runfiles().contains_predicate(
-        matching.str_matches("*/cc/data.txt"),
+        matching.str_matches("*/cc_toolchains/data.txt"),
     )
 
 _tests.append(_test_current_toolchain_headers)

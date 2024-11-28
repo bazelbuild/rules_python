@@ -21,6 +21,7 @@ use_repo(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
+    download_only = True,
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",

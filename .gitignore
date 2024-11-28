@@ -43,6 +43,9 @@ user.bazelrc
 *.swp
 *.swo
 
+# CLion
+.clwb
+
 # Python cache
 **/__pycache__/
 

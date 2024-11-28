@@ -14,9 +14,10 @@
 
 """Implementation of py_runtime_pair."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
-load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
+load(":reexports.bzl", "BuiltinPyRuntimeInfo")
+load(":util.bzl", "IS_BAZEL_7_OR_HIGHER")
 
 def _py_runtime_pair_impl(ctx):
     if ctx.attr.py2_runtime != None:
@@ -40,9 +41,14 @@ def _py_runtime_pair_impl(ctx):
     #     fail("Using Python 2 is not supported and disabled; see " +
     #          "https://github.com/bazelbuild/bazel/issues/15684")
 
+    extra_kwargs = {}
+    if ctx.attr._visible_for_testing[BuildSettingInfo].value:
+        extra_kwargs["toolchain_label"] = ctx.label
+
     return [platform_common.ToolchainInfo(
         py2_runtime = py2_runtime,
         py3_runtime = py3_runtime,
+        **extra_kwargs
     )]
 
 def _get_py_runtime_info(target):
@@ -50,7 +56,7 @@ def _get_py_runtime_info(target):
     # py_binary (implemented in Java) performs a type check on the provider
     # value to verify it is an instance of the Java-implemented PyRuntimeInfo
     # class.
-    if IS_BAZEL_7_OR_HIGHER and PyRuntimeInfo in target:
+    if (IS_BAZEL_7_OR_HIGHER and PyRuntimeInfo in target) or BuiltinPyRuntimeInfo == None:
         return target[PyRuntimeInfo]
     else:
         return target[BuiltinPyRuntimeInfo]
@@ -64,13 +70,15 @@ def _is_py2_disabled(ctx):
         return False
     return ctx.fragments.py.disable_py2
 
+_MaybeBuiltinPyRuntimeInfo = [[BuiltinPyRuntimeInfo]] if BuiltinPyRuntimeInfo != None else []
+
 py_runtime_pair = rule(
     implementation = _py_runtime_pair_impl,
     attrs = {
         # The two runtimes are used by the py_binary at runtime, and so need to
         # be built for the target platform.
         "py2_runtime": attr.label(
-            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
+            providers = [[PyRuntimeInfo]] + _MaybeBuiltinPyRuntimeInfo,
             cfg = "target",
             doc = """\
 The runtime to use for Python 2 targets. Must have `python_version` set to
@@ -78,12 +86,15 @@ The runtime to use for Python 2 targets. Must have `python_version` set to
 """,
         ),
         "py3_runtime": attr.label(
-            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
+            providers = [[PyRuntimeInfo]] + _MaybeBuiltinPyRuntimeInfo,
             cfg = "target",
             doc = """\
 The runtime to use for Python 3 targets. Must have `python_version` set to
 `PY3`.
 """,
+        ),
+        "_visible_for_testing": attr.label(
+            default = "//python/private:visible_for_testing",
         ),
     },
     fragments = ["py"],
@@ -98,15 +109,12 @@ unusable for building Python code using that version.
 Usually the wrapped runtimes are declared using the `py_runtime` rule, but any
 rule returning a `PyRuntimeInfo` provider may be used.
 
-This rule returns a `platform_common.ToolchainInfo` provider with the following
-schema:
+This rule returns a {obj}`ToolchainInfo` provider with fields:
 
-```python
-platform_common.ToolchainInfo(
-    py2_runtime = <PyRuntimeInfo or None>,
-    py3_runtime = <PyRuntimeInfo or None>,
-)
-```
+* `py2_runtime`: {type}`PyRuntimeInfo | None`, runtime information for a
+  Python 2 runtime.
+* `py3_runtime`: {type}`PyRuntimeInfo | None`. runtime information for a
+  Python 3 runtime.
 
 Example usage:
 

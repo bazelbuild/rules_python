@@ -1,4 +1,4 @@
-load("@bazel_gazelle//:def.bzl", "DEFAULT_LANGUAGES", "gazelle", "gazelle_binary")
+load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # Gazelle configuration options.
 # See https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
@@ -6,19 +6,13 @@ load("@bazel_gazelle//:def.bzl", "DEFAULT_LANGUAGES", "gazelle", "gazelle_binary
 # gazelle:exclude bazel-out
 gazelle(
     name = "gazelle",
-    gazelle = ":gazelle_binary",
-)
-
-gazelle_binary(
-    name = "gazelle_binary",
-    languages = DEFAULT_LANGUAGES + ["//python"],
 )
 
 gazelle(
     name = "gazelle_update_repos",
     args = [
         "-from_file=go.mod",
-        "-to_macro=deps.bzl%gazelle_deps",
+        "-to_macro=deps.bzl%go_deps",
         "-prune",
     ],
     command = "update-repos",

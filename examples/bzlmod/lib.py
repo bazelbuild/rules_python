@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tabulate import tabulate
 import sphinx  # noqa
+from tabulate import tabulate
+
 
 def main(table):
     return tabulate(table)

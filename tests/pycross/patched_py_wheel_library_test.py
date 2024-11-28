@@ -23,7 +23,9 @@ RUNFILES = runfiles.Create()
 class TestPyWheelLibrary(unittest.TestCase):
     def setUp(self):
         self.extraction_dir = Path(
-            RUNFILES.Rlocation("rules_python/tests/pycross/patched_extracted_wheel_for_testing")
+            RUNFILES.Rlocation(
+                "rules_python/tests/pycross/patched_extracted_wheel_for_testing"
+            )
         )
         self.assertTrue(self.extraction_dir.exists(), self.extraction_dir)
         self.assertTrue(self.extraction_dir.is_dir(), self.extraction_dir)

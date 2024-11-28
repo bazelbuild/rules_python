@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       # Checkout the code
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: jpetrucciani/mypy-check@master
         with:
           requirements: 1.6.0

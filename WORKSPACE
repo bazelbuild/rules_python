@@ -17,7 +17,7 @@ workspace(name = "rules_python")
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
-load("//:internal_deps.bzl", "rules_python_internal_deps")
+load("//:internal_dev_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
 
@@ -37,17 +37,18 @@ load("@stardoc_maven//:defs.bzl", stardoc_pinned_maven_install = "pinned_maven_i
 
 stardoc_pinned_maven_install()
 
-load("//:internal_setup.bzl", "rules_python_internal_setup")
+load("//:internal_dev_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load("//python:repositories.bzl", "python_register_multi_toolchains")
-load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-2],
-    python_versions = MINOR_MAPPING.values(),
+    default_version = MINOR_MAPPING.values()[-3],  # Use 3.11.10
+    # Integration tests verify each version, so register all of them.
+    python_versions = PYTHON_VERSIONS,
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
@@ -85,7 +86,7 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 _py_gazelle_deps()
 
 # This interpreter is used for various rules_python dev-time tools
-load("@python//3.11.8:defs.bzl", "interpreter")
+interpreter = "@python_3_11_9_host//:python"
 
 #####################
 # Install twine for our own runfiles wheel publishing.
@@ -97,7 +98,7 @@ pip_parse(
     name = "rules_python_publish_deps",
     python_interpreter_target = interpreter,
     requirements_darwin = "//tools/publish:requirements_darwin.txt",
-    requirements_lock = "//tools/publish:requirements.txt",
+    requirements_lock = "//tools/publish:requirements_linux.txt",
     requirements_windows = "//tools/publish:requirements_windows.txt",
 )
 
@@ -120,18 +121,8 @@ install_pypiserver()
 
 pip_parse(
     name = "dev_pip",
-    experimental_requirement_cycles = {
-        "sphinx": [
-            "sphinx",
-            "sphinxcontrib-serializinghtml",
-            "sphinxcontrib-qthelp",
-            "sphinxcontrib-htmlhelp",
-            "sphinxcontrib-devhelp",
-            "sphinxcontrib-applehelp",
-        ],
-    },
     python_interpreter_target = interpreter,
-    requirements_lock = "//docs/sphinx:requirements.txt",
+    requirements_lock = "//docs:requirements.txt",
 )
 
 load("@dev_pip//:requirements.bzl", docs_install_deps = "install_deps")

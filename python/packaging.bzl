@@ -35,25 +35,28 @@ This rule is intended to be used as data dependency to py_wheel rule.
     attrs = py_package_lib.attrs,
 )
 
-# Based on https://github.com/aspect-build/bazel-lib/tree/main/lib/private/copy_to_directory.bzl
-# Avoiding a bazelbuild -> aspect-build dependency :(
 def _py_wheel_dist_impl(ctx):
-    dir = ctx.actions.declare_directory(ctx.attr.out)
+    out = ctx.actions.declare_directory(ctx.attr.out)
     name_file = ctx.attr.wheel[PyWheelInfo].name_file
-    cmds = [
-        "mkdir -p \"%s\"" % dir.path,
-        """cp "{}" "{}/$(cat "{}")" """.format(ctx.files.wheel[0].path, dir.path, name_file.path),
-    ]
-    ctx.actions.run_shell(
-        inputs = ctx.files.wheel + [name_file],
-        outputs = [dir],
-        command = "\n".join(cmds),
-        mnemonic = "CopyToDirectory",
-        progress_message = "Copying files to directory",
-        use_default_shell_env = True,
+    wheel = ctx.attr.wheel[PyWheelInfo].wheel
+
+    args = ctx.actions.args()
+    args.add("--wheel", wheel)
+    args.add("--name_file", name_file)
+    args.add("--output", out.path)
+
+    ctx.actions.run(
+        mnemonic = "PyWheelDistDir",
+        executable = ctx.executable._copier,
+        inputs = [wheel, name_file],
+        outputs = [out],
+        arguments = [args],
     )
     return [
-        DefaultInfo(files = depset([dir]), runfiles = ctx.runfiles([dir])),
+        DefaultInfo(
+            files = depset([out]),
+            runfiles = ctx.runfiles([out]),
+        ),
     ]
 
 py_wheel_dist = rule(
@@ -67,12 +70,28 @@ This also has the advantage that stamping information is included in the wheel's
 """,
     implementation = _py_wheel_dist_impl,
     attrs = {
-        "out": attr.string(doc = "name of the resulting directory", mandatory = True),
-        "wheel": attr.label(doc = "a [py_wheel target](#py_wheel)", providers = [PyWheelInfo]),
+        "out": attr.string(
+            doc = "name of the resulting directory",
+            mandatory = True,
+        ),
+        "wheel": attr.label(
+            doc = "a [py_wheel target](#py_wheel)",
+            providers = [PyWheelInfo],
+        ),
+        "_copier": attr.label(
+            cfg = "exec",
+            executable = True,
+            default = Label("//python/private:py_wheel_dist"),
+        ),
     },
 )
 
-def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") if BZLMOD_ENABLED else None, publish_args = [], **kwargs):
+def py_wheel(
+        name,
+        twine = None,
+        twine_binary = Label("//tools/publish:twine") if BZLMOD_ENABLED else None,
+        publish_args = [],
+        **kwargs):
     """Builds a Python Wheel.
 
     Wheels are Python distribution format defined in https://www.python.org/dev/peps/pep-0427/.
@@ -153,24 +172,31 @@ def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") i
             Note that you can also pass additional args to the bazel run command as in the example above.
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """
-    _dist_target = "{}.dist".format(name)
+    tags = kwargs.pop("tags", [])
+    manual_tags = depset(tags + ["manual"]).to_list()
+
+    dist_target = "{}.dist".format(name)
     py_wheel_dist(
-        name = _dist_target,
+        name = dist_target,
         wheel = name,
         out = kwargs.pop("dist_folder", "{}_dist".format(name)),
+        tags = manual_tags,
         **copy_propagating_kwargs(kwargs)
     )
 
-    _py_wheel(name = name, **kwargs)
+    _py_wheel(
+        name = name,
+        tags = tags,
+        **kwargs
+    )
 
     twine_args = []
     if twine or twine_binary:
         twine_args = ["upload"]
         twine_args.extend(publish_args)
-        twine_args.append("$(rootpath :{})/*".format(_dist_target))
+        twine_args.append("$(rootpath :{})/*".format(dist_target))
 
     if twine_binary:
-        twine_kwargs = {"tags": ["manual"]}
         native_binary(
             name = "{}.publish".format(name),
             src = twine_binary,
@@ -179,9 +205,10 @@ def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") i
                 "//conditions:default": "{}.publish_script".format(name),
             }),
             args = twine_args,
-            data = [_dist_target],
+            data = [dist_target],
+            tags = manual_tags,
             visibility = kwargs.get("visibility"),
-            **copy_propagating_kwargs(kwargs, twine_kwargs)
+            **copy_propagating_kwargs(kwargs)
         )
     elif twine:
         if not twine.endswith(":pkg"):
@@ -193,10 +220,11 @@ def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") i
             name = "{}.publish".format(name),
             srcs = [twine_main],
             args = twine_args,
-            data = [_dist_target],
+            data = [dist_target],
             imports = ["."],
             main = twine_main,
             deps = [twine],
+            tags = manual_tags,
             visibility = kwargs.get("visibility"),
             **copy_propagating_kwargs(kwargs)
         )

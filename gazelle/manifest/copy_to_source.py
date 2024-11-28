@@ -26,7 +26,7 @@ def copy_to_source(generated_relative_path: Path, target_relative_path: Path) ->
     target_absolute_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(generated_absolute_path, target_absolute_path)
 
-    target_absolute_path.chmod(0O664)
+    target_absolute_path.chmod(0o664)
 
 
 if __name__ == "__main__":
