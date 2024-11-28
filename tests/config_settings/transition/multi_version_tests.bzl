@@ -49,7 +49,8 @@ def _test_py_test_with_transition(name):
 def _test_py_test_with_transition_impl(env, target):
     # Nothing to assert; we just want to make sure it builds
     env.expect.that_target(target).has_provider(PyInfo)
-    env.expect.that_target(target).has_provider(BuiltinPyInfo)
+    if BuiltinPyInfo:
+        env.expect.that_target(target).has_provider(BuiltinPyInfo)
 
 _tests.append(_test_py_test_with_transition)
 
@@ -70,7 +71,8 @@ def _test_py_binary_with_transition(name):
 def _test_py_binary_with_transition_impl(env, target):
     # Nothing to assert; we just want to make sure it builds
     env.expect.that_target(target).has_provider(PyInfo)
-    env.expect.that_target(target).has_provider(BuiltinPyInfo)
+    if BuiltinPyInfo:
+        env.expect.that_target(target).has_provider(BuiltinPyInfo)
 
 _tests.append(_test_py_binary_with_transition)
 

@@ -69,18 +69,29 @@ func ParseCode(code []byte, path string) (*sitter.Node, error) {
 	}
 
 	root := tree.RootNode()
-	if root.HasError() {
-		log.Printf("WARNING: failed to parse %q. The resulting BUILD target may be incorrect.", path)
+	if !root.HasError() {
+		return root, nil
+	}
 
-		verbose, envExists := os.LookupEnv("GAZELLE_VERBOSE")
-		if envExists && verbose == "1" {
-			for i := 0; i < int(root.ChildCount()); i++ {
-				child := root.Child(i)
-				if child.IsError() {
-					log.Printf("Parse error at %+v:\n%+v", child.StartPoint(), child.Content(code))
-					log.Printf("The above was parsed as: %v", child.String())
-				}
-			}
+	log.Printf("WARNING: failed to parse %q. The resulting BUILD target may be incorrect.", path)
+
+	// Note: we intentionally do not return an error even when root.HasError because the parse
+	// failure may be in some part of the code that Gazelle doesn't care about.
+	verbose, envExists := os.LookupEnv("RULES_PYTHON_GAZELLE_VERBOSE")
+	if !envExists || verbose != "1" {
+		return root, nil
+	}
+
+	for i := 0; i < int(root.ChildCount()); i++ {
+		child := root.Child(i)
+		if child.IsError() {
+			// Example logs:
+			// gazelle: Parse error at {Row:1 Column:0}:
+			// def search_one_more_level[T]():
+			log.Printf("Parse error at %+v:\n%+v", child.StartPoint(), child.Content(code))
+			// Log the internal tree-sitter representation of what was parsed. Eg:
+			// gazelle: The above was parsed as: (ERROR (identifier) (call function: (list (identifier)) arguments: (argument_list)))
+			log.Printf("The above was parsed as: %v", child.String())
 		}
 	}
 

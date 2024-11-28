@@ -23,13 +23,13 @@ load("//python/private:semver.bzl", "semver")
 load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
-load(":hub_repository.bzl", "hub_repository")
+load(":hub_repository.bzl", "hub_repository", "whl_config_settings_to_json")
 load(":parse_requirements.bzl", "parse_requirements")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
-load(":render_pkg_aliases.bzl", "whl_alias")
 load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 load(":simpleapi_download.bzl", "simpleapi_download")
+load(":whl_config_setting.bzl", "whl_config_setting")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "pypi_repo_name", "whl_repo_name")
 
@@ -68,6 +68,7 @@ def _create_whl_repos(
         pip_attr,
         whl_overrides,
         simpleapi_cache,
+        evaluate_markers = evaluate_markers,
         available_interpreters = INTERPRETER_LABELS,
         simpleapi_download = simpleapi_download):
     """create all of the whl repositories
@@ -78,6 +79,7 @@ def _create_whl_repos(
         whl_overrides: {type}`dict[str, struct]` - per-wheel overrides.
         simpleapi_cache: {type}`dict` - an opaque dictionary used for caching the results from calling
             SimpleAPI evaluating all of the tag class invocations {bzl:obj}`pip.parse`.
+        evaluate_markers: the function to use to evaluate markers.
         simpleapi_download: Used for testing overrides
         available_interpreters: {type}`dict[str, Label]` The dictionary of available
             interpreters that have been registered using the `python` bzlmod extension.
@@ -87,7 +89,7 @@ def _create_whl_repos(
     Returns a {type}`struct` with the following attributes:
         whl_map: {type}`dict[str, list[struct]]` the output is keyed by the
             normalized package name and the values are the instances of the
-            {bzl:obj}`whl_alias` return values.
+            {bzl:obj}`whl_config_setting` return values.
         exposed_packages: {type}`dict[str, Any]` this is just a way to
             represent a set of string values.
         whl_libraries: {type}`dict[str, dict[str, Any]]` the keys are the
@@ -304,14 +306,11 @@ def _create_whl_repos(
 
                     whl_libraries[repo_name] = args
 
-                    whl_map.setdefault(whl_name, []).append(
-                        whl_alias(
-                            repo = repo_name,
-                            version = major_minor,
-                            filename = distribution.filename,
-                            target_platforms = target_platforms,
-                        ),
-                    )
+                    whl_map.setdefault(whl_name, {})[whl_config_setting(
+                        version = major_minor,
+                        filename = distribution.filename,
+                        target_platforms = target_platforms,
+                    )] = repo_name
 
             if found_something:
                 if is_exposed:
@@ -339,13 +338,10 @@ def _create_whl_repos(
                 *target_platforms
             )
             whl_libraries[repo_name] = args
-            whl_map.setdefault(whl_name, []).append(
-                whl_alias(
-                    repo = repo_name,
-                    version = major_minor,
-                    target_platforms = target_platforms or None,
-                ),
-            )
+            whl_map.setdefault(whl_name, {})[whl_config_setting(
+                version = major_minor,
+                target_platforms = target_platforms or None,
+            )] = repo_name
 
         if is_exposed:
             exposed_packages[whl_name] = None
@@ -488,7 +484,8 @@ You cannot use both the additive_build_content and additive_build_content_file a
             )
             hub_whl_map.setdefault(hub_name, {})
             for key, settings in out.whl_map.items():
-                hub_whl_map[hub_name].setdefault(key, []).extend(settings)
+                for setting, repo in settings.items():
+                    hub_whl_map[hub_name].setdefault(key, {}).setdefault(repo, []).append(setting)
             extra_aliases.setdefault(hub_name, {})
             for whl_name, aliases in out.extra_aliases.items():
                 extra_aliases[hub_name].setdefault(whl_name, {}).update(aliases)
@@ -508,7 +505,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         whl_mods = dict(sorted(whl_mods.items())),
         hub_whl_map = {
             hub_name: {
-                whl_name: sorted(settings, key = lambda x: (x.version, x.filename))
+                whl_name: dict(settings)
                 for whl_name, settings in sorted(whl_map.items())
             }
             for hub_name, whl_map in sorted(hub_whl_map.items())
@@ -537,20 +534,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
         },
         is_reproducible = is_reproducible,
     )
-
-def _alias_dict(a):
-    ret = {
-        "repo": a.repo,
-    }
-    if a.config_setting:
-        ret["config_setting"] = a.config_setting
-    if a.filename:
-        ret["filename"] = a.filename
-    if a.target_platforms:
-        ret["target_platforms"] = a.target_platforms
-    if a.version:
-        ret["version"] = a.version
-    return ret
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -632,8 +615,8 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             extra_hub_aliases = mods.extra_aliases.get(hub_name, {}),
             whl_map = {
-                key: json.encode([_alias_dict(a) for a in aliases])
-                for key, aliases in whl_map.items()
+                key: whl_config_settings_to_json(values)
+                for key, values in whl_map.items()
             },
             packages = mods.exposed_packages.get(hub_name, []),
             groups = mods.hub_group_map.get(hub_name),

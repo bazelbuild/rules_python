@@ -190,6 +190,7 @@ def sphinx_docs(
     sphinx_run(
         name = name + ".run",
         docs = name,
+        **common_kwargs
     )
 
     build_test(

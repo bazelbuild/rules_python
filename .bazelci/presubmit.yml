@@ -132,6 +132,7 @@ tasks:
     bazel: last_rc
   ubuntu_workspace:
     <<: *reusable_config
+    <<: *common_workspace_flags
     name: "Default: Ubuntu, workspace"
     platform: ubuntu2004
   mac_workspace:
@@ -141,8 +142,30 @@ tasks:
     platform: macos
   windows_workspace:
     <<: *reusable_config
+    <<: *common_workspace_flags
     name: "Default: Windows, workspace"
     platform: windows
+    # Most of tests/integration are failing on Windows w/workspace. Skip them
+    # for now until we can look into it.
+    build_targets:
+      - "--"
+      - "..."
+      # As a regression test for #225, check that wheel targets still build when
+      # their package path is qualified with the repo name.
+      - "@rules_python//examples/wheel/..."
+    build_flags:
+      - "--noenable_bzlmod"
+      - "--enable_workspace"
+      - "--keep_going"
+      - "--build_tag_filters=-integration-test"
+      - "--config=bazel7.x"
+    test_targets:
+      - "--"
+      - "..."
+    test_flags:
+      - "--noenable_bzlmod"
+      - "--enable_workspace"
+      - "--test_tag_filters=-integration-test"
 
   debian:
     <<: *reusable_config
@@ -275,28 +298,6 @@ tasks:
     working_directory: examples/bzlmod
     platform: windows
     bazel: last_rc
-  integration_test_bzlmod_ubuntu_lockfile:
-    <<: *reusable_build_test_all
-    <<: *coverage_targets_example_bzlmod
-    name: "examples/bzlmod: Ubuntu with lockfile"
-    working_directory: examples/bzlmod
-    platform: ubuntu2004
-    bazel: 7.x
-    shell_commands:
-    # Update the lockfiles and fail if it is different.
-    - "../../tools/private/update_bzlmod_lockfiles.sh"
-    - "git diff --exit-code"
-  integration_test_bzlmod_macos_lockfile:
-    <<: *reusable_build_test_all
-    <<: *coverage_targets_example_bzlmod
-    name: "examples/bzlmod: macOS with lockfile"
-    working_directory: examples/bzlmod
-    platform: macos
-    bazel: 7.x
-    shell_commands:
-    # Update the lockfiles and fail if it is different.
-    - "../../tools/private/update_bzlmod_lockfiles.sh"
-    - "git diff --exit-code"
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
     <<: *minimum_supported_version

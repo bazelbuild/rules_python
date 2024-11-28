@@ -9,8 +9,12 @@ fi
 # runfiles-relative path
 STAGE2_BOOTSTRAP="%stage2_bootstrap%"
 
-# runfiles-relative path, absolute path, or single word
+# runfiles-relative path
 PYTHON_BINARY='%python_binary%'
+# The path that PYTHON_BINARY should symlink to.
+# runfiles-relative path, absolute path, or single word.
+# Only applicable for zip files.
+PYTHON_BINARY_ACTUAL="%python_binary_actual%"
 
 # 0 or 1
 IS_ZIPFILE="%is_zipfile%"
@@ -96,6 +100,49 @@ function find_python_interpreter() {
 }
 
 python_exe=$(find_python_interpreter $RUNFILES_DIR $PYTHON_BINARY)
+
+# Zip files have to re-create the venv bin/python3 symlink because they
+# don't contain it already.
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  # It should always be under runfiles, but double check this. We don't
+  # want to accidentally create symlinks elsewhere.
+  if [[ "$python_exe" != $RUNFILES_DIR/* ]]; then
+    echo >&2 "ERROR: Program's venv binary not under runfiles: $python_exe"
+    exit 1
+  fi
+  if [[ "$PYTHON_BINARY_ACTUAL" == /* ]]; then
+    # An absolute path, i.e. platform runtime, e.g. /usr/bin/python3
+    symlink_to=$PYTHON_BINARY_ACTUAL
+  elif [[ "$PYTHON_BINARY_ACTUAL" == */* ]]; then
+    # A runfiles-relative path
+    symlink_to=$RUNFILES_DIR/$PYTHON_BINARY_ACTUAL
+  else
+    # A plain word, e.g. "python3". Symlink to where PATH leads
+    symlink_to=$(which $PYTHON_BINARY_ACTUAL)
+    # Guard against trying to symlink to an empty value
+    if [[ $? -ne 0 ]]; then
+      echo >&2 "ERROR: Python to use found on PATH: $PYTHON_BINARY_ACTUAL"
+      exit 1
+    fi
+  fi
+  # The bin/ directory may not exist if it is empty.
+  mkdir -p "$(dirname $python_exe)"
+  ln -s "$symlink_to" "$python_exe"
+fi
+
+# At this point, we should have a valid reference to the interpreter.
+# Check that so we can give an nicer failure if things went wrong.
+if [[ ! -x "$python_exe" ]]; then
+  if [[ ! -e "$python_exe" ]]; then
+    echo >&2 "ERROR: Python interpreter not found: $python_exe"
+    ls -l $python_exe >&2
+    exit 1
+  elif [[ ! -x "$python_exe" ]]; then
+    echo >&2 "ERROR: Python interpreter not executable: $python_exe"
+    exit 1
+  fi
+fi
+
 stage2_bootstrap="$RUNFILES_DIR/$STAGE2_BOOTSTRAP"
 
 declare -a interpreter_env

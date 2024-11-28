@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Setup for rules_python tests and tools."""
+"""WORKSPACE setup for development and testing of rules_python itself."""
 
 load("@bazel_features//:deps.bzl", "bazel_features_deps")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
@@ -20,6 +20,7 @@ load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@rules_bazel_integration_test//bazel_integration_test:deps.bzl", "bazel_integration_test_rules_dependencies")
 load("@rules_bazel_integration_test//bazel_integration_test:repo_defs.bzl", "bazel_binaries")
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
@@ -29,7 +30,7 @@ load("//python/private:pythons_hub.bzl", "hub_repo")  # buildifier: disable=bzl-
 load("//python/private/pypi:deps.bzl", "pypi_deps")  # buildifier: disable=bzl-visibility
 
 def rules_python_internal_setup():
-    """Setup for rules_python tests and tools."""
+    """Setup for development and testing of rules_python itself."""
 
     internal_config_repo(name = "rules_python_internal")
     hub_repo(
@@ -51,6 +52,9 @@ def rules_python_internal_setup():
     rules_proto_toolchains()
 
     protobuf_deps()
+
+    rules_java_dependencies()
+    rules_java_toolchains()
 
     bazel_integration_test_rules_dependencies()
     bazel_starlib_dependencies()
