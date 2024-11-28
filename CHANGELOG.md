@@ -112,6 +112,7 @@ Other changes:
 * (providers) Added {obj}`py_runtime_info.site_init_template` and
   {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
   initialize the interpreter via venv startup hooks.
+* (runfiles) (Bazel 7.4+) Added support for spaces and newlines in runfiles paths
 
 {#v0-0-0-removed}
 ### Removed
