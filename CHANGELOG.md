@@ -97,6 +97,10 @@ Unreleased changes template.
     * 3.11.11
     * 3.12.8
     * 3.13.1
+* (providers) {obj}`PyInfo` has new fields to aid static analysis tools:
+  {obj}`direct_original_sources`, {obj}`direct_pyi_files`,
+  {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`. NOTE: these
+  are not yet fully populated by `py_library`
 
 [20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 

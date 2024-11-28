@@ -408,6 +408,7 @@ def collect_runfiles(ctx, files = depset()):
 def create_py_info(
         ctx,
         *,
+        original_sources,
         required_py_files,
         required_pyc_files,
         implicit_pyc_files,
@@ -417,6 +418,7 @@ def create_py_info(
 
     Args:
         ctx: rule ctx.
+        original_sources: `depset[File]`; the original input sources from `srcs`
         required_py_files: `depset[File]`; the direct, `.py` sources for the
             target that **must** be included by downstream targets. This should
             only be Python source files. It should not include pyc files.
@@ -437,6 +439,8 @@ def create_py_info(
     """
 
     py_info = PyInfoBuilder()
+    py_info.direct_original_sources.add(original_sources)
+    py_info.transitive_original_sources.add(original_sources)
     py_info.direct_pyc_files.add(required_pyc_files)
     py_info.transitive_pyc_files.add(required_pyc_files)
     py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)
