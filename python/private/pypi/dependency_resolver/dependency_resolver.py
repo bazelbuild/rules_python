@@ -182,7 +182,7 @@ def main(
                         resolved_requirements_file, requirements_file_tree
                     )
                 )
-        cli(argv)
+        cli(argv, standalone_mode = False)
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
