@@ -2,10 +2,10 @@
 
 int main(int argc, char** argv) {
 
-  PyObject *s = PyUnicode_FromString(argv[0]);
+  // PyObject *s = PyUnicode_FromString(argv[0]);
   // Early return to prevent the broken code below from running.
   if (argc >= 1) {
-    printf("%d\n", (int)s->ob_refcnt);
+    // printf("%d\n", (int)s->ob_refcnt);
     return 0;
   }
 
@@ -15,6 +15,7 @@ int main(int argc, char** argv) {
   // To make it actually run, more custom initialization is necessary.
   // See https://docs.python.org/3/c-api/intro.html#embedding-python
   Py_Initialize();
+  Py_BytesMain(argc, argv);
   Py_Finalize();
   return 0;
 }
