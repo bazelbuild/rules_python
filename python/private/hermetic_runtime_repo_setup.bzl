@@ -165,7 +165,7 @@ def define_hermetic_runtime_toolchain_impl(
             ],
             ":is_freethreaded_windows": [
                 "python3t.dll",
-                "python{python_version_nodot}t.dll",
+                "python{major}{minor}t.dll".format(**version_dict),
                 "libs/python{major}{minor}t.lib".format(**version_dict),
                 "libs/python3t.lib",
             ],
@@ -176,7 +176,7 @@ def define_hermetic_runtime_toolchain_impl(
             "@platforms//os:macos": ["lib/libpython{major}.{minor}.dylib".format(**version_dict)],
             "@platforms//os:windows": [
                 "python3.dll",
-                "python{python_version_nodot}.dll",
+                "python{major}{minor}.dll".format(**version_dict),
                 "libs/python{major}{minor}.lib".format(**version_dict),
                 "libs/python3.lib",
             ],
