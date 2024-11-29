@@ -170,6 +170,12 @@ def main(
 
     if UPDATE:
         print("Updating " + requirements_file_relative)
+
+        # Make sure the output file for pip_compile exists. It won't if we are on Windows and --enable_runfiles is not set.
+        if not os.path.exists(requirements_file_relative):
+            os.makedirs(os.path.dirname(requirements_file_relative), exist_ok=True)
+            shutil.copy(resolved_requirements_file, requirements_file_relative)
+
         if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
             workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
             requirements_file_tree = os.path.join(workspace, requirements_file_relative)
