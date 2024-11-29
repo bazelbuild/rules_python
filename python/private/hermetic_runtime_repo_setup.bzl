@@ -91,7 +91,10 @@ def define_hermetic_runtime_toolchain_impl(
     )
     cc_import(
         name = "abi3_interface",
-        interface_library = "libs/python3.lib",
+        interface_library = select({
+            _IS_FREETHREADED: "libs/python3t.lib",
+            "//conditions:default": "libs/python3.lib",
+        }),
         system_provided = True,
     )
 
@@ -161,8 +164,10 @@ def define_hermetic_runtime_toolchain_impl(
                 "lib/libpython{major}.{minor}t.dylib".format(**version_dict),
             ],
             ":is_freethreaded_windows": [
-                "python3.dll",
+                "python3t.dll",
+                "python{python_version_nodot}t.dll",
                 "libs/python{major}{minor}t.lib".format(**version_dict),
+                "libs/python3t.lib",
             ],
             "@platforms//os:linux": [
                 "lib/libpython{major}.{minor}.so".format(**version_dict),
@@ -174,7 +179,7 @@ def define_hermetic_runtime_toolchain_impl(
                 "python{python_version_nodot}.dll",
                 "libs/python{major}{minor}.lib".format(**version_dict),
                 "libs/python3.lib",
-	    ],
+            ],
         }),
     )
 
