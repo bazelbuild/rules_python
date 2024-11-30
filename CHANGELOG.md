@@ -95,6 +95,9 @@ Other changes:
   ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
 * (workspace) Corrected protobuf's name to com_google_protobuf, the name is
   hardcoded in Bazel, WORKSPACE mode.
+* (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
+  defined by a repository template. This enables stable ABI builds of Python extensions
+  on Windows (by defining Py_LIMITED_API).
 
 {#v0-0-0-added}
 ### Added
