@@ -298,7 +298,9 @@ def get_filename_config_settings(
         else:
             py = "py3"
 
-        if parsed.abi_tag.startswith("cp"):
+        if parsed.abi_tag.startswith("cp") and parsed.abi_tag.endswith("t"):
+            abi = "cpt"
+        elif parsed.abi_tag.startswith("cp"):
             abi = "cp"
         else:
             abi = parsed.abi_tag

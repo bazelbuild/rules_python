@@ -39,6 +39,7 @@ _flag = struct(
     pip_whl_osx_arch = lambda x: (str(Label("//python/config_settings:pip_whl_osx_arch")), str(x)),
     py_linux_libc = lambda x: (str(Label("//python/config_settings:py_linux_libc")), str(x)),
     python_version = lambda x: (str(Label("//python/config_settings:python_version")), str(x)),
+    py_freethreaded = lambda x: (str(Label("//python/config_settings:py_freethreaded")), str(x)),
 )
 
 def _analysis_test(*, name, dist, want, config_settings = [_flag.platform("linux_aarch64")]):
@@ -286,6 +287,38 @@ def _test_py_none_any_versioned(name):
 
 _tests.append(_test_py_none_any_versioned)
 
+def _test_cp_whl_is_not_prefered_over_py3_non_freethreaded(name):
+    _analysis_test(
+        name = name,
+        dist = {
+            "is_cp3.7_cp3x_abi3_any": "py3_abi3",
+            "is_cp3.7_cp3x_cpt_any": "cp",
+            "is_cp3.7_cp3x_none_any": "py3",
+        },
+        want = "py3_abi3",
+        config_settings = [
+            _flag.py_freethreaded("no"),
+        ],
+    )
+
+_tests.append(_test_cp_whl_is_not_prefered_over_py3_non_freethreaded)
+
+def _test_cp_whl_is_not_prefered_over_py3_freethreaded(name):
+    _analysis_test(
+        name = name,
+        dist = {
+            "is_cp3.7_cp3x_abi3_any": "py3_abi3",
+            "is_cp3.7_cp3x_cp_any": "cp",
+            "is_cp3.7_cp3x_none_any": "py3",
+        },
+        want = "py3",
+        config_settings = [
+            _flag.py_freethreaded("yes"),
+        ],
+    )
+
+_tests.append(_test_cp_whl_is_not_prefered_over_py3_freethreaded)
+
 def _test_cp_cp_whl(name):
     _analysis_test(
         name = name,
@@ -412,6 +445,7 @@ def _test_windows(name):
         name = name,
         dist = {
             "is_cp3.7_cp3x_cp_windows_x86_64": "whl",
+            "is_cp3.7_cp3x_cpt_windows_x86_64": "whl_freethreaded",
         },
         want = "whl",
         config_settings = [
@@ -420,6 +454,22 @@ def _test_windows(name):
     )
 
 _tests.append(_test_windows)
+
+def _test_windows_freethreaded(name):
+    _analysis_test(
+        name = name,
+        dist = {
+            "is_cp3.7_cp3x_cp_windows_x86_64": "whl",
+            "is_cp3.7_cp3x_cpt_windows_x86_64": "whl_freethreaded",
+        },
+        want = "whl_freethreaded",
+        config_settings = [
+            _flag.platform("windows_x86_64"),
+            _flag.py_freethreaded("yes"),
+        ],
+    )
+
+_tests.append(_test_windows_freethreaded)
 
 def _test_osx(name):
     _analysis_test(
