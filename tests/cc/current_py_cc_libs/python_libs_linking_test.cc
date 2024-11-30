@@ -1,11 +1,8 @@
 #include <Python.h>
 
 int main(int argc, char** argv) {
-
-  // PyObject *s = PyUnicode_FromString(argv[0]);
   // Early return to prevent the broken code below from running.
   if (argc >= 1) {
-    // printf("%d\n", (int)s->ob_refcnt);
     return 0;
   }
 
