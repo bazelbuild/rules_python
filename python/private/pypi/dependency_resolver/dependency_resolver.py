@@ -20,6 +20,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional, Tuple
+import multiprocessing
 
 import click
 import piptools.writer as piptools_writer
@@ -97,6 +98,7 @@ def main(
     extra_args: Tuple[str, ...],
 ) -> None:
     bazel_runfiles = runfiles.Create()
+    runfiles_dir = Path(bazel_runfiles._python_runfiles_root) / "_main"
 
     requirements_file = _select_golden_requirements_file(
         requirements_txt=requirements_txt,
@@ -182,10 +184,16 @@ def main(
                         resolved_requirements_file, requirements_file_tree
                     )
                 )
-        cli(argv)
+        # Run in a process as pip tools is calling sys.exit()
+        piptools_process = multiprocessing.Process(target=cli, args=[argv])
+        piptools_process.start()
+        piptools_process.join()
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
+        # For windows or linux.
+        content = content.replace(str(runfiles_dir) + "/", "")
+        content = content.replace(str(runfiles_dir) + "\\", "")
         requirements_file_relative_path.write_text(content)
     else:
         # cli will exit(0) on success

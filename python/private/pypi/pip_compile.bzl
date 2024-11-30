@@ -27,6 +27,7 @@ def pip_compile(
         src = None,
         extra_args = [],
         extra_deps = [],
+        extra_data = [],
         generate_hashes = True,
         py_binary = _py_binary,
         py_test = _py_test,
@@ -66,6 +67,7 @@ def pip_compile(
               [PEP621](https://peps.python.org/pep-0621/).
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
+        extra_data: extra data passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
@@ -99,7 +101,7 @@ def pip_compile(
         visibility = visibility,
     )
 
-    data = [name, requirements_txt] + srcs + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, requirements_txt] + srcs + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None] + extra_data
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
