@@ -24,6 +24,9 @@ import uuid
 # Runfiles-relative path to the main Python source file.
 MAIN = "%main%"
 
+# Whether this script is used as a sitecustomize script.
+USED_AS_SITECUSTOMIZE = "%used_as_sitecustomize%"
+
 # ===== Template substitutions end =====
 
 
@@ -375,6 +378,8 @@ def main():
     if runfiles_envkey:
         os.environ[runfiles_envkey] = runfiles_envvalue
 
+    sys.path[0:0] = prepend_path_entries
+
     main_filename = os.path.join(module_space, main_rel_path)
     main_filename = get_windows_path_with_unc_prefix(main_filename)
     assert os.path.exists(main_filename), (
@@ -385,8 +390,6 @@ def main():
     )
 
     sys.stdout.flush()
-
-    sys.path[0:0] = prepend_path_entries
 
     if os.environ.get("COVERAGE_DIR"):
         import _bazel_site_init
