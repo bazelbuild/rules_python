@@ -68,6 +68,7 @@ def _create_whl_repos(
         pip_attr,
         whl_overrides,
         simpleapi_cache,
+        evaluate_markers = evaluate_markers,
         available_interpreters = INTERPRETER_LABELS,
         simpleapi_download = simpleapi_download):
     """create all of the whl repositories
@@ -78,6 +79,7 @@ def _create_whl_repos(
         whl_overrides: {type}`dict[str, struct]` - per-wheel overrides.
         simpleapi_cache: {type}`dict` - an opaque dictionary used for caching the results from calling
             SimpleAPI evaluating all of the tag class invocations {bzl:obj}`pip.parse`.
+        evaluate_markers: the function to use to evaluate markers.
         simpleapi_download: Used for testing overrides
         available_interpreters: {type}`dict[str, Label]` The dictionary of available
             interpreters that have been registered using the `python` bzlmod extension.

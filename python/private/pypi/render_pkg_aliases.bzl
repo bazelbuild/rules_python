@@ -44,33 +44,17 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
-NO_MATCH_ERROR_MESSAGE_TEMPLATE_V2 = """\
-No matching wheel for current configuration's Python version.
-
-The current build configuration's Python version doesn't match any of the Python
-wheels available for this wheel. This wheel supports the following Python
-configuration settings:
-    {config_settings}
-
-To determine the current configuration's Python version, run:
-    `bazel config <config id>` (shown further below)
-and look for
-    {rules_python}//python/config_settings:python_version
-
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-"""
-
 def _repr_dict(*, value_repr = repr, **kwargs):
     return {k: value_repr(v) for k, v in kwargs.items() if v}
 
 def _repr_config_setting(alias):
-    if alias.filename:
+    if alias.filename or alias.target_platforms:
         return render.call(
             "whl_config_setting",
             **_repr_dict(
                 filename = alias.filename,
                 target_platforms = alias.target_platforms,
+                config_setting = alias.config_setting,
                 version = alias.version,
             )
         )

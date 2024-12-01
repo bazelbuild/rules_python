@@ -33,3 +33,21 @@ cc_test(
         "@rules_python//python/cc:current_py_cc_libs",
     ],
 )
+
+# This is technically a headers test, but since the pyconfig.h header
+# designates the appropriate lib to link on Win+MSVC, this test verifies that
+# the expected Windows libraries are all present in the expected location.
+# Since we define the Py_LIMITED_API macro, we expect the linker to go search
+# for libs/python3.lib.
+# buildifier: disable=native-cc
+cc_test(
+    name = "python_libs_linking_windows_test",
+    srcs = ["python_libs_linking_test.cc"],
+    defines = ["Py_LIMITED_API=0x030A0000"],
+    env = {"HELLO": "world"},
+    target_compatible_with = ["@platforms//os:windows"],
+    deps = [
+        "@rules_python//python/cc:current_py_cc_headers",
+        "@rules_python//python/cc:current_py_cc_libs",
+    ],
+)

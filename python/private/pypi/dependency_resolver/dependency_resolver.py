@@ -170,19 +170,26 @@ def main(
 
     if UPDATE:
         print("Updating " + requirements_file_relative)
+
+        # Make sure the output file for pip_compile exists. It won't if we are on Windows and --enable_runfiles is not set.
+        if not os.path.exists(requirements_file_relative):
+            os.makedirs(os.path.dirname(requirements_file_relative), exist_ok=True)
+            shutil.copy(resolved_requirements_file, requirements_file_relative)
+
         if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
             workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
             requirements_file_tree = os.path.join(workspace, requirements_file_relative)
+            absolute_output_file = Path(requirements_file_relative).absolute()
             # In most cases, requirements_file will be a symlink to the real file in the source tree.
             # If symlinks are not enabled (e.g. on Windows), then requirements_file will be a copy,
             # and we should copy the updated requirements back to the source tree.
-            if not os.path.samefile(resolved_requirements_file, requirements_file_tree):
+            if not absolute_output_file.samefile(requirements_file_tree):
                 atexit.register(
                     lambda: shutil.copy(
-                        resolved_requirements_file, requirements_file_tree
+                        absolute_output_file, requirements_file_tree
                     )
                 )
-        cli(argv)
+        cli(argv, standalone_mode = False)
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")

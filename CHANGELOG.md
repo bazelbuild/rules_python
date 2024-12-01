@@ -80,6 +80,7 @@ Other changes:
   otherwise empty) virtual env is used to customize `sys.path` initialization.
 * (deps) bazel_skylib 1.7.0 (workspace; bzlmod already specifying that version)
 * (deps) bazel_features 1.21.0; necessary for compatiblity with Bazel 8 rc3
+* (deps) stardoc 0.7.2 to support Bazel 8.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -94,6 +95,11 @@ Other changes:
   ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
 * (workspace) Corrected protobuf's name to com_google_protobuf, the name is
   hardcoded in Bazel, WORKSPACE mode.
+* (pypi): {bzl:obj}`compile_pip_requirements` no longer fails on Windows when `--enable_runfiles` is not enabled.
+* (pypi): {bzl:obj}`compile_pip_requirements` now correctly updates files in the source tree on Windows when `--windows_enable_symlinks` is not enabled.
+* (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
+  defined by a repository template. This enables stable ABI builds of Python extensions
+  on Windows (by defining Py_LIMITED_API).
 
 {#v0-0-0-added}
 ### Added
@@ -111,6 +117,7 @@ Other changes:
 * (providers) Added {obj}`py_runtime_info.site_init_template` and
   {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
   initialize the interpreter via venv startup hooks.
+* (runfiles) (Bazel 7.4+) Added support for spaces and newlines in runfiles paths
 
 {#v0-0-0-removed}
 ### Removed

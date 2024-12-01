@@ -14,14 +14,13 @@
 
 "A small function to create an alias for a whl distribution"
 
-def whl_config_setting(*, repo = None, version = None, config_setting = None, filename = None, target_platforms = None):
+def whl_config_setting(*, version = None, config_setting = None, filename = None, target_platforms = None):
     """The bzl_packages value used by by the render_pkg_aliases function.
 
     This contains the minimum amount of information required to generate correct
     aliases in a hub repository.
 
     Args:
-        repo: str, the repo of where to find the things to be aliased.
         version: optional(str), the version of the python toolchain that this
             whl alias is for. If not set, then non-version aware aliases will be
             constructed. This is mainly used for better error messages when there
@@ -43,7 +42,6 @@ def whl_config_setting(*, repo = None, version = None, config_setting = None, fi
     return struct(
         config_setting = config_setting,
         filename = filename,
-        repo = repo,
         # Make the struct hashable
         target_platforms = tuple(target_platforms) if target_platforms else None,
         version = version,

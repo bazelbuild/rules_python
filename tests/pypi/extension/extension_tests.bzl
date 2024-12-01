@@ -245,6 +245,87 @@ def _test_simple_multiple_requirements(env):
 
 _tests.append(_test_simple_multiple_requirements)
 
+def _test_simple_with_markers(env):
+    pypi = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        requirements_lock = "universal.txt",
+                    ),
+                ],
+            ),
+            read = lambda x: {
+                "universal.txt": """\
+torch==2.4.1+cpu ; platform_machine == 'x86_64'
+torch==2.4.1 ; platform_machine != 'x86_64'
+""",
+            }[x],
+        ),
+        available_interpreters = {
+            "python_3_15_host": "unit_test_interpreter_target",
+        },
+        evaluate_markers = lambda _, requirements, **__: {
+            key: [
+                platform
+                for platform in platforms
+                if ("x86_64" in platform and "platform_machine ==" in key) or ("x86_64" not in platform and "platform_machine !=" in key)
+            ]
+            for key, platforms in requirements.items()
+        },
+    )
+
+    pypi.is_reproducible().equals(True)
+    pypi.exposed_packages().contains_exactly({"pypi": ["torch"]})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "torch": {
+            "pypi_315_torch_linux_aarch64_linux_arm_linux_ppc_linux_s390x_osx_aarch64": [
+                whl_config_setting(
+                    target_platforms = [
+                        "cp315_linux_aarch64",
+                        "cp315_linux_arm",
+                        "cp315_linux_ppc",
+                        "cp315_linux_s390x",
+                        "cp315_osx_aarch64",
+                    ],
+                    version = "3.15",
+                ),
+            ],
+            "pypi_315_torch_linux_x86_64_osx_x86_64_windows_x86_64": [
+                whl_config_setting(
+                    target_platforms = [
+                        "cp315_linux_x86_64",
+                        "cp315_osx_x86_64",
+                        "cp315_windows_x86_64",
+                    ],
+                    version = "3.15",
+                ),
+            ],
+        },
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_torch_linux_aarch64_linux_arm_linux_ppc_linux_s390x_osx_aarch64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "torch==2.4.1 ; platform_machine != 'x86_64'",
+        },
+        "pypi_315_torch_linux_x86_64_osx_x86_64_windows_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "torch==2.4.1+cpu ; platform_machine == 'x86_64'",
+        },
+    })
+    pypi.whl_mods().contains_exactly({})
+
+_tests.append(_test_simple_with_markers)
+
 def _test_download_only_multiple(env):
     pypi = _parse_modules(
         env,
