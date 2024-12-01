@@ -95,6 +95,8 @@ Other changes:
   ([2169](https://github.com/bazelbuild/rules_python/issues/2169)).
 * (workspace) Corrected protobuf's name to com_google_protobuf, the name is
   hardcoded in Bazel, WORKSPACE mode.
+* (pypi): {bzl:obj}`compile_pip_requirements` no longer fails on Windows when `--enable_runfiles` is not enabled.
+* (pypi): {bzl:obj}`compile_pip_requirements` now correctly updates files in the source tree on Windows when `--windows_enable_symlinks` is not enabled.
 * (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
   defined by a repository template. This enables stable ABI builds of Python extensions
   on Windows (by defining Py_LIMITED_API).
