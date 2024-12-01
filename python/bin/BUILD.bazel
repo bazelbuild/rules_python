@@ -1,4 +1,14 @@
 load("//python:defs.bzl", "py_binary")
+load(":interpreter.bzl", "interpreter")
+
+interpreter(
+    name = "interpreter",
+)
+
+label_flag(
+    name = "bin",
+    build_setting_default = "//python:none",
+)
 
 py_binary(
     name = "repl",
