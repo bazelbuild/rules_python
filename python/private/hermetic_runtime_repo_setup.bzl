@@ -89,6 +89,14 @@ def define_hermetic_runtime_toolchain_impl(
         }),
         system_provided = True,
     )
+    cc_import(
+        name = "abi3_interface",
+        interface_library = select({
+            _IS_FREETHREADED: "libs/python3t.lib",
+            "//conditions:default": "libs/python3.lib",
+        }),
+        system_provided = True,
+    )
 
     native.filegroup(
         name = "includes",
@@ -97,7 +105,7 @@ def define_hermetic_runtime_toolchain_impl(
     cc_library(
         name = "python_headers",
         deps = select({
-            "@bazel_tools//src/conditions:windows": [":interface"],
+            "@bazel_tools//src/conditions:windows": [":interface", ":abi3_interface"],
             "//conditions:default": None,
         }),
         hdrs = [":includes"],
@@ -156,15 +164,22 @@ def define_hermetic_runtime_toolchain_impl(
                 "lib/libpython{major}.{minor}t.dylib".format(**version_dict),
             ],
             ":is_freethreaded_windows": [
-                "python3.dll",
+                "python3t.dll",
+                "python{major}{minor}t.dll".format(**version_dict),
                 "libs/python{major}{minor}t.lib".format(**version_dict),
+                "libs/python3t.lib",
             ],
             "@platforms//os:linux": [
                 "lib/libpython{major}.{minor}.so".format(**version_dict),
                 "lib/libpython{major}.{minor}.so.1.0".format(**version_dict),
             ],
             "@platforms//os:macos": ["lib/libpython{major}.{minor}.dylib".format(**version_dict)],
-            "@platforms//os:windows": ["python3.dll", "libs/python{major}{minor}.lib".format(**version_dict)],
+            "@platforms//os:windows": [
+                "python3.dll",
+                "python{major}{minor}.dll".format(**version_dict),
+                "libs/python{major}{minor}.lib".format(**version_dict),
+                "libs/python3.lib",
+            ],
         }),
     )
 

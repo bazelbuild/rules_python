@@ -36,22 +36,31 @@ load(":whl_target_platforms.bzl", "whl_target_platforms")
 # it. It is more of an internal consistency check.
 _VERSION_NONE = (0, 0)
 
+_CONFIG_SETTINGS_PKG = str(Label("//python/config_settings:BUILD.bazel")).partition(":")[0]
+
 _NO_MATCH_ERROR_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
 
 The current build configuration's Python version doesn't match any of the Python
-wheels available for this wheel. This wheel supports the following Python
+wheels available for this distribution. This distribution supports the following Python
 configuration settings:
     {config_settings}
 
 To determine the current configuration's Python version, run:
     `bazel config <config id>` (shown further below)
-and look for
-    {rules_python}//python/config_settings:python_version
 
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-"""
+and look for one of:
+    {settings_pkg}:python_version
+    {settings_pkg}:pip_whl
+    {settings_pkg}:pip_whl_glibc_version
+    {settings_pkg}:pip_whl_muslc_version
+    {settings_pkg}:pip_whl_osx_arch
+    {settings_pkg}:pip_whl_osx_version
+    {settings_pkg}:py_freethreaded
+    {settings_pkg}:py_linux_libc
+
+If the value is missing, then the default value is being used, see documentation:
+{docs_url}/python/config_settings"""
 
 def _no_match_error(actual):
     if type(actual) != type({}):
@@ -68,7 +77,8 @@ def _no_match_error(actual):
                 for value in (key if type(key) == "tuple" else [key])
             ])),
         ).lstrip(),
-        rules_python = "rules_python",
+        settings_pkg = _CONFIG_SETTINGS_PKG,
+        docs_url = "https://rules-python.readthedocs.io/en/latest/api/rules_python",
     )
 
 def pkg_aliases(
