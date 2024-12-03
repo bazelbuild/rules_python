@@ -444,7 +444,16 @@ toolchain(
     ],
     exec_comaptible_with = ["@platforms/os:linux"]
 )
+
+# File: MODULE.bazel or WORKSPACE.bazel
+# These toolchains will considered before others
+register_toolchains("//toolchains:all")
 ```
+
+When registering custom toolchains, be aware of the the [toolchain registration
+order](https://bazel.build/extending/toolchains#toolchain-resolution). In brief,
+toolchain order is the BFS-order of the modules; see the bazel docs for a more
+detailed description.
 
 :::{note}
 The toolchain() calls should be in a separate BUILD file from everything else.
