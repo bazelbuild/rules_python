@@ -11,15 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test", "sh_py_run_test")
+load("//tests/support:support.bzl", "SUPPORTS_BOOTSTRAP_SCRIPT")
 load(":venv_relative_path_tests.bzl", "relative_path_test_suite")
-
-_SUPPORTS_BOOTSTRAP_SCRIPT = select({
-    "@platforms//os:windows": ["@platforms//:incompatible"],
-    "//conditions:default": [],
-}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
 
 sh_py_run_test(
     name = "run_binary_zip_no_test",
@@ -41,7 +35,7 @@ sh_py_run_test(
     build_python_zip = "yes",
     py_src = "bin.py",
     sh_src = "run_binary_zip_yes_test.sh",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 sh_py_run_test(
@@ -50,7 +44,7 @@ sh_py_run_test(
     build_python_zip = "no",
     py_src = "bin.py",
     sh_src = "run_binary_zip_no_test.sh",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 py_reconfig_test(
@@ -60,7 +54,7 @@ py_reconfig_test(
     env = {"BOOTSTRAP": "script"},
     imports = ["./USER_IMPORT/site-packages"],
     main = "sys_path_order_test.py",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 py_reconfig_test(
@@ -77,7 +71,7 @@ sh_py_run_test(
     bootstrap_impl = "script",
     py_src = "bin.py",
     sh_src = "inherit_pythonsafepath_env_test.sh",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 sh_py_run_test(
@@ -86,7 +80,7 @@ sh_py_run_test(
     imports = ["./MARKER"],
     py_src = "call_sys_exe.py",
     sh_src = "sys_executable_inherits_sys_path_test.sh",
-    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 relative_path_test_suite(name = "relative_path_tests")

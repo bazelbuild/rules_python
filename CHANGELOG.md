@@ -100,6 +100,8 @@ Other changes:
 * (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
   defined by a repository template. This enables stable ABI builds of Python extensions
   on Windows (by defining Py_LIMITED_API).
+* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the 
+  first `sys.path` entry when using {obj}`--bootstrap_impl=script`
 
 {#v0-0-0-added}
 ### Added

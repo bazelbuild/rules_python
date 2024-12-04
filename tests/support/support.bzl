@@ -19,6 +19,8 @@
 # rules_testing or as config_setting values, which don't support Label in some
 # places.
 
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
+
 MAC = Label("//tests/support:mac")
 MAC_X86_64 = Label("//tests/support:mac_x86_64")
 LINUX = Label("//tests/support:linux")
@@ -39,3 +41,8 @@ PRECOMPILE_SOURCE_RETENTION = str(Label("//python/config_settings:precompile_sou
 PYC_COLLECTION = str(Label("//python/config_settings:pyc_collection"))
 PYTHON_VERSION = str(Label("//python/config_settings:python_version"))
 VISIBLE_FOR_TESTING = str(Label("//python/private:visible_for_testing"))
+
+SUPPORTS_BOOTSTRAP_SCRIPT = select({
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
