@@ -55,9 +55,31 @@ def _get_xcode_location_cflags(rctx):
         # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
         # so we need to change the path to to the macos specific tools which are in a different relative
         # path than xcode installed command line tools.
-        xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+        xcode_sdks_json = rctx.execute([
+            "xcrun",
+            "xcodebuild",
+            "-showsdks",
+            "-json",
+        ], environment = {
+            "DEVELOPER_DIR": xcode_root,
+        }).stdout
+        xcode_sdks = json.decode(xcode_sdks_json)
+        potential_sdks = [
+            sdk
+            for sdk in xcode_sdks
+            if "productName" in sdk and
+               sdk["productName"] == "macOS" and
+               "darwinos" not in sdk["canonicalName"]
+        ]
+
+        # Now we'll get two entries here (one for internal and another one for public)
+        # It shouldn't matter which one we pick.
+        xcode_sdk_path = potential_sdks[0]["sdkPath"]
+    else:
+        xcode_sdk_path = "{}/SDKs/MacOSX.sdk".format(xcode_root)
+
     return [
-        "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
+        "-isysroot {}".format(xcode_sdk_path),
     ]
 
 def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
@@ -158,19 +180,22 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
 
-    # Gather any available CPPFLAGS values
-    cppflags = []
-    cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
-
     env = {
         "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
             rctx,
             entries = rctx.attr._python_path_entries,
         ),
-        _CPPFLAGS: " ".join(cppflags),
     }
 
+    # Gather any available CPPFLAGS values
+    #
+    # We may want to build in an environment without a cc toolchain.
+    # In those cases, we're limited to --donwload-only, but we should respect that here.
+    if not rctx.attr.download_only:
+        cppflags = []
+        cppflags.extend(_get_xcode_location_cflags(rctx))
+        cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
+        env[_CPPFLAGS] = " ".join(cppflags)
     return env
 
 def _whl_library_impl(rctx):
