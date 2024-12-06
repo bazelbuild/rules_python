@@ -67,7 +67,7 @@ Unreleased changes template.
 * Nothing removed.
 
 {#v1-0-0}
-## Unreleased
+## [1.0.0] - 2024-12-05
 
 [1.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.0.0
 
