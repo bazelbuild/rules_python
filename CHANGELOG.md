@@ -52,6 +52,27 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-0-0}
+## [1.0.0] - 2024-12-05
+
+[1.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.0.0
+
+{#v1-0-0-changed}
+### Changed
 
 **Breaking**:
 * (toolchains) stop exposing config settings in python toolchain alias repos.
@@ -82,7 +103,7 @@ Other changes:
 * (deps) bazel_features 1.21.0; necessary for compatiblity with Bazel 8 rc3
 * (deps) stardoc 0.7.2 to support Bazel 8.
 
-{#v0-0-0-fixed}
+{#v1-0-0-fixed}
 ### Fixed
 * (toolchains) stop depending on `uname` to get the value of the host platform.
 * (pypi): Correctly handle multiple versions of the same package in the requirements
@@ -103,7 +124,7 @@ Other changes:
 * (rules) `py_test` and `py_binary` targets no longer incorrectly remove the 
   first `sys.path` entry when using {obj}`--bootstrap_impl=script`
 
-{#v0-0-0-added}
+{#v1-0-0-added}
 ### Added
 * (gazelle): Parser failures will now be logged to the terminal. Additional
   details can be logged by setting `RULES_PYTHON_GAZELLE_VERBOSE=1`.
@@ -121,7 +142,7 @@ Other changes:
   initialize the interpreter via venv startup hooks.
 * (runfiles) (Bazel 7.4+) Added support for spaces and newlines in runfiles paths
 
-{#v0-0-0-removed}
+{#v1-0-0-removed}
 ### Removed
 * (pypi): Remove `pypi_install_dependencies` macro that has been included in
   {bzl:obj}`py_repositories` for a long time.
