@@ -514,6 +514,7 @@ def _py_wheel_impl(ctx):
         outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
+        use_default_shell_env = True,
         progress_message = "Building wheel {}".format(ctx.label),
     )
     return [
