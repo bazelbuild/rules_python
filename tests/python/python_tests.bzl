@@ -413,7 +413,7 @@ def _test_add_new_version(env):
                         strip_prefix = "python",
                         platform = "aarch64-unknown-linux-gnu",
                         coverage_tool = "specific_cov_tool",
-                        python_version = "3.13.1",
+                        python_version = "3.13.99",
                         patch_strip = 2,
                         patches = ["specific-patch.txt"],
                     ),
@@ -421,9 +421,9 @@ def _test_add_new_version(env):
                 override = [
                     _override(
                         base_url = "",
-                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1"],
+                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1", "3.13.99"],
                         minor_mapping = {
-                            "3.13": "3.13.0",
+                            "3.13": "3.13.99",
                         },
                     ),
                 ],
@@ -436,13 +436,14 @@ def _test_add_new_version(env):
         "3.12.4",
         "3.13.0",
         "3.13.1",
+        "3.13.99",
     ])
     env.expect.that_dict(py.config.default["tool_versions"]["3.13.0"]).contains_exactly({
         "sha256": {"aarch64-unknown-linux-gnu": "deadbeef"},
         "strip_prefix": {"aarch64-unknown-linux-gnu": "prefix"},
         "url": {"aarch64-unknown-linux-gnu": ["example.org"]},
     })
-    env.expect.that_dict(py.config.default["tool_versions"]["3.13.1"]).contains_exactly({
+    env.expect.that_dict(py.config.default["tool_versions"]["3.13.99"]).contains_exactly({
         "coverage_tool": {"aarch64-unknown-linux-gnu": "specific_cov_tool"},
         "patch_strip": {"aarch64-unknown-linux-gnu": 2},
         "patches": {"aarch64-unknown-linux-gnu": ["specific-patch.txt"]},
@@ -452,7 +453,7 @@ def _test_add_new_version(env):
     })
     env.expect.that_dict(py.config.minor_mapping).contains_exactly({
         "3.12": "3.12.4",  # The `minor_mapping` will be overriden only for the missing keys
-        "3.13": "3.13.0",
+        "3.13": "3.13.99",
     })
     env.expect.that_collection(py.toolchains).contains_exactly([
         struct(
@@ -484,13 +485,13 @@ def _test_register_all_versions(env):
                         sha256 = "deadb00f",
                         urls = ["something.org"],
                         platform = "aarch64-unknown-linux-gnu",
-                        python_version = "3.13.1",
+                        python_version = "3.13.99",
                     ),
                 ],
                 override = [
                     _override(
                         base_url = "",
-                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1"],
+                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1", "3.13.99"],
                         register_all_versions = True,
                     ),
                 ],
@@ -503,11 +504,12 @@ def _test_register_all_versions(env):
         "3.12.4",
         "3.13.0",
         "3.13.1",
+        "3.13.99",
     ])
     env.expect.that_dict(py.config.minor_mapping).contains_exactly({
         # The mapping is calculated automatically
         "3.12": "3.12.4",
-        "3.13": "3.13.1",
+        "3.13": "3.13.99",
     })
     env.expect.that_collection(py.toolchains).contains_exactly([
         struct(
@@ -521,6 +523,7 @@ def _test_register_all_versions(env):
             "python_3_13": "3.13",
             "python_3_13_0": "3.13.0",
             "python_3_13_1": "3.13.1",
+            "python_3_13_99": "3.13.99",
         }.items()
     ])
 
