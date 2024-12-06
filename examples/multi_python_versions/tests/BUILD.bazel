@@ -131,7 +131,7 @@ py_test(
     data = [":version_3_10"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.10",
-        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_10)",
+        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_10)",
         "VERSION_CHECK": "3.9",
     },
     main = "cross_version_test.py",
@@ -143,7 +143,7 @@ py_test_3_10(
     data = [":version_3_9"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.9",
-        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_9)",
+        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_9)",
         "VERSION_CHECK": "3.10",
     },
     main = "cross_version_test.py",
@@ -155,7 +155,7 @@ sh_test(
     data = [":version_default"],
     env = {
         "VERSION_CHECK": "3.9",  # The default defined in the WORKSPACE.
-        "VERSION_PY_BINARY": "$(rootpath :version_default)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_default)",
     },
 )
 
@@ -165,7 +165,7 @@ sh_test(
     data = [":version_3_8"],
     env = {
         "VERSION_CHECK": "3.8",
-        "VERSION_PY_BINARY": "$(rootpath :version_3_8)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_8)",
     },
 )
 
@@ -175,7 +175,7 @@ sh_test(
     data = [":version_3_9"],
     env = {
         "VERSION_CHECK": "3.9",
-        "VERSION_PY_BINARY": "$(rootpath :version_3_9)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_9)",
     },
 )
 
@@ -185,7 +185,7 @@ sh_test(
     data = [":version_3_10"],
     env = {
         "VERSION_CHECK": "3.10",
-        "VERSION_PY_BINARY": "$(rootpath :version_3_10)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_10)",
     },
 )
 
