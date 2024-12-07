@@ -514,6 +514,8 @@ def _py_wheel_impl(ctx):
         outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
+        # The default shell env is used to better support toolchains that look
+        # up python at runtime using PATH.
         use_default_shell_env = True,
         progress_message = "Building wheel {}".format(ctx.label),
     )
