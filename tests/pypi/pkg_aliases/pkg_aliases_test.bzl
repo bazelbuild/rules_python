@@ -288,6 +288,14 @@ def _test_multiplatform_whl_aliases_filename(env):
             version = "3.1",
         ): "foo-py3-0.0.1",
         whl_config_setting(
+            filename = "foo-0.0.1-cp313-cp313-any.whl",
+            version = "3.1",
+        ): "foo-cp-0.0.1",
+        whl_config_setting(
+            filename = "foo-0.0.1-cp313-cp313t-any.whl",
+            version = "3.1",
+        ): "foo-cpt-0.0.1",
+        whl_config_setting(
             filename = "foo-0.0.2-py3-none-any.whl",
             version = "3.1",
             target_platforms = [
@@ -303,6 +311,8 @@ def _test_multiplatform_whl_aliases_filename(env):
         osx_versions = [],
     )
     want = {
+        "//_config:is_cp3.1_cp3x_cp_any": "foo-cp-0.0.1",
+        "//_config:is_cp3.1_cp3x_cpt_any": "foo-cpt-0.0.1",
         "//_config:is_cp3.1_py3_none_any": "foo-py3-0.0.1",
         "//_config:is_cp3.1_py3_none_any_linux_aarch64": "foo-0.0.2",
         "//_config:is_cp3.1_py3_none_any_linux_x86_64": "foo-0.0.2",
