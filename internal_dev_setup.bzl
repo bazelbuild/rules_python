@@ -32,7 +32,6 @@ load("//python/private/pypi:deps.bzl", "pypi_deps")  # buildifier: disable=bzl-v
 def rules_python_internal_setup():
     """Setup for development and testing of rules_python itself."""
 
-    internal_config_repo(name = "rules_python_internal")
     hub_repo(
         name = "pythons_hub",
         minor_mapping = MINOR_MAPPING,
