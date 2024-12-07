@@ -15,7 +15,7 @@
 """The implementation of the `py_proto_library` rule and its aspect."""
 
 load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
-load("//python:defs.bzl", "PyInfo")
+load("//python:py_info.bzl", "PyInfo")
 load("//python/api:api.bzl", _py_common = "py_common")
 
 PY_PROTO_TOOLCHAIN = "@rules_python//python/proto:toolchain_type"
