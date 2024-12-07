@@ -6,7 +6,8 @@ load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_
 load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
 load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
-load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
 load("@rules_python//python:versions.bzl", DEFAULT_MINOR_MAPPING = "MINOR_MAPPING", DEFAULT_TOOL_VERSIONS = "TOOL_VERSIONS")
 load("@rules_python//python/private:text_util.bzl", "render")  # buildifier: disable=bzl-visibility
 load("@rules_shell//shell:sh_test.bzl", "sh_test")

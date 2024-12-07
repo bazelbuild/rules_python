@@ -76,7 +76,7 @@ Once you've imported the rule set using either Bzlmod or WORKSPACE, you can then
 load the core rules in your `BUILD` files with the following:
 
 ```starlark
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 py_binary(
   name = "main",

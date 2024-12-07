@@ -21,7 +21,7 @@ _tests = []
 
 def _test_simple(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:py_library.bzl", "py_library")
 
 
 ## Group vbap
@@ -62,7 +62,7 @@ _tests.append(_test_simple)
 
 def _test_in_hub(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:py_library.bzl", "py_library")
 
 
 ## Group vbap

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_library")
 load("//python:packaging.bzl", "py_wheel")
+load("//python:py_library.bzl", "py_library")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 
 filegroup(
