@@ -19,7 +19,8 @@ NOTE @aignas 2024-06-23: We are using the implementation specific name here to
 make it possible to have multiple tools inside the `pypi` directory
 """
 
-load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
+load("//python:py_binary.bzl", _py_binary = "py_binary")
+load("//python:py_test.bzl", _py_test = "py_test")
 
 def pip_compile(
         name,

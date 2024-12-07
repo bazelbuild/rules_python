@@ -20,20 +20,21 @@ that matches the target platform. We can leverage this fact to ensure that the
 most specialized wheels are used by default with the users being able to
 configure string_flag values to select the less specialized ones.
 
-The list of specialization of the dists goes like follows:
+The list of specialization of the dists goes like follows (cpxyt stands for freethreaded
+environments):
 * sdist
 * py*-none-any.whl
 * py*-abi3-any.whl
-* py*-cpxy-any.whl
+* py*-cpxy-any.whl or py*-cpxyt-any.whl
 * cp*-none-any.whl
 * cp*-abi3-any.whl
-* cp*-cpxy-plat.whl
+* cp*-cpxy-any.whl or cp*-cpxyt-any.whl
 * py*-none-plat.whl
 * py*-abi3-plat.whl
-* py*-cpxy-plat.whl
+* py*-cpxy-plat.whl or py*-cpxyt-plat.whl
 * cp*-none-plat.whl
 * cp*-abi3-plat.whl
-* cp*-cpxy-plat.whl
+* cp*-cpxy-plat.whl or cp*-cpxyt-plat.whl
 
 Note, that here the specialization of musl vs manylinux wheels is the same in
 order to ensure that the matching fails if the user requests for `musl` and we don't have it or vice versa.
@@ -46,18 +47,23 @@ FLAGS = struct(
     **{
         f: str(Label("//python/config_settings:" + f))
         for f in [
-            "python_version",
+            "is_pip_whl_auto",
+            "is_pip_whl_no",
+            "is_pip_whl_only",
+            "is_py_freethreaded",
+            "is_py_non_freethreaded",
             "pip_whl_glibc_version",
             "pip_whl_muslc_version",
             "pip_whl_osx_arch",
             "pip_whl_osx_version",
             "py_linux_libc",
-            "is_pip_whl_no",
-            "is_pip_whl_only",
-            "is_pip_whl_auto",
+            "python_version",
         ]
     }
 )
+
+_DEFAULT = "//conditions:default"
+_INCOMPATIBLE = "@platforms//:incompatible"
 
 # Here we create extra string flags that are just to work with the select
 # selecting the most specialized match. We don't allow the user to change
@@ -170,52 +176,70 @@ def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
         **kwargs
     )
 
-    for name, f in [
-        ("py_none", _flags.whl_py2_py3),
-        ("py3_none", _flags.whl_py3),
-        ("py3_abi3", _flags.whl_py3_abi3),
-        ("cp3x_none", _flags.whl_pycp3x),
-        ("cp3x_abi3", _flags.whl_pycp3x_abi3),
-        ("cp3x_cp", _flags.whl_pycp3x_abicp),
+    used_flags = {}
+
+    # NOTE @aignas 2024-12-01: the abi3 is not compatible with freethreaded
+    # builds as per PEP703 (https://peps.python.org/pep-0703/#backwards-compatibility)
+    #
+    # The discussion here also reinforces this notion:
+    # https://discuss.python.org/t/pep-703-making-the-global-interpreter-lock-optional-3-12-updates/26503/99
+
+    for name, f, abi in [
+        ("py_none", _flags.whl_py2_py3, None),
+        ("py3_none", _flags.whl_py3, None),
+        ("py3_abi3", _flags.whl_py3_abi3, (FLAGS.is_py_non_freethreaded,)),
+        ("cp3x_none", _flags.whl_pycp3x, None),
+        ("cp3x_abi3", _flags.whl_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
+        # The below are not specializations of one another, they are variants
+        ("cp3x_cp", _flags.whl_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
+        ("cp3x_cpt", _flags.whl_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
     ]:
-        if f in flag_values:
+        if (f, abi) in used_flags:
             # This should never happen as all of the different whls should have
-            # unique flag values.
+            # unique flag values
             fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
         else:
             flag_values[f] = ""
+            used_flags[(f, abi)] = True
 
         _dist_config_setting(
             name = "{}_any{}".format(name, suffix),
             flag_values = flag_values,
             is_pip_whl = FLAGS.is_pip_whl_only,
+            abi = abi,
             **kwargs
         )
 
     generic_flag_values = flag_values
+    generic_used_flags = used_flags
 
     for (suffix, flag_values) in plat_flag_values:
+        used_flags = {(f, None): True for f in flag_values} | generic_used_flags
         flag_values = flag_values | generic_flag_values
 
-        for name, f in [
-            ("py_none", _flags.whl_plat),
-            ("py3_none", _flags.whl_plat_py3),
-            ("py3_abi3", _flags.whl_plat_py3_abi3),
-            ("cp3x_none", _flags.whl_plat_pycp3x),
-            ("cp3x_abi3", _flags.whl_plat_pycp3x_abi3),
-            ("cp3x_cp", _flags.whl_plat_pycp3x_abicp),
+        for name, f, abi in [
+            ("py_none", _flags.whl_plat, None),
+            ("py3_none", _flags.whl_plat_py3, None),
+            ("py3_abi3", _flags.whl_plat_py3_abi3, (FLAGS.is_py_non_freethreaded,)),
+            ("cp3x_none", _flags.whl_plat_pycp3x, None),
+            ("cp3x_abi3", _flags.whl_plat_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
+            # The below are not specializations of one another, they are variants
+            ("cp3x_cp", _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
+            ("cp3x_cpt", _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
         ]:
-            if f in flag_values:
+            if (f, abi) in used_flags:
                 # This should never happen as all of the different whls should have
                 # unique flag values.
                 fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
             else:
                 flag_values[f] = ""
+                used_flags[(f, abi)] = True
 
             _dist_config_setting(
                 name = "{}_{}".format(name, suffix),
                 flag_values = flag_values,
                 is_pip_whl = FLAGS.is_pip_whl_only,
+                abi = abi,
                 **kwargs
             )
 
@@ -285,7 +309,7 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, native = native, **kwargs):
+def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, abi = None, native = native, **kwargs):
     """A macro to create a target that matches is_pip_whl_auto and one more value.
 
     Args:
@@ -294,6 +318,10 @@ def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, 
             `is_pip_whl_auto` when evaluating the config setting.
         is_python: The python version config_setting to match.
         python_version: The python version name.
+        abi: {type}`tuple[Label]` A collection of ABI config settings that are
+            compatible with the given dist config setting. For example, if only
+            non-freethreaded python builds are allowed, add
+            FLAGS.is_py_non_freethreaded here.
         native (struct): The struct containing alias and config_setting rules
             to use for creating the objects. Can be overridden for unit tests
             reasons.
@@ -306,9 +334,9 @@ def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, 
     native.alias(
         name = "is_cp{}_{}".format(python_version, name) if python_version else "is_{}".format(name),
         actual = select({
-            # First match by the python version
-            is_python: _name,
-            "//conditions:default": is_python,
+            # First match by the python version and then by ABI
+            is_python: _name + ("_abi" if abi else ""),
+            _DEFAULT: _INCOMPATIBLE,
         }),
         visibility = visibility,
     )
@@ -325,12 +353,23 @@ def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, 
     config_setting_name = _name + "_setting"
     native.config_setting(name = config_setting_name, **kwargs)
 
+    if abi:
+        native.alias(
+            name = _name + "_abi",
+            actual = select(
+                {k: _name for k in abi} | {
+                    _DEFAULT: _INCOMPATIBLE,
+                },
+            ),
+            visibility = visibility,
+        )
+
     # Next match by the `pip_whl` flag value and then match by the flags that
     # are intrinsic to the distribution.
     native.alias(
         name = _name,
         actual = select({
-            "//conditions:default": FLAGS.is_pip_whl_auto,
+            _DEFAULT: _INCOMPATIBLE,
             FLAGS.is_pip_whl_auto: config_setting_name,
             is_pip_whl: config_setting_name,
         }),
