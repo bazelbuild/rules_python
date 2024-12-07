@@ -56,7 +56,8 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (py_wheel) Use the default shell environment when building wheels to allow
+  toolchains that search PATH to be used for the wheel builder tool.
 
 {#v0-0-0-added}
 ### Added
