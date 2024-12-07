@@ -52,7 +52,7 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -60,7 +60,7 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (toolchains) Python 3.13.1 added
 
 {#v0-0-0-removed}
 ### Removed
