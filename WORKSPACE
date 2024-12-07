@@ -17,6 +17,13 @@ workspace(name = "rules_python")
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
+# Necessary so that Bazel 9 recognizes this as rules_python and doesn't try
+# to load the version Bazel itself uses by default.
+local_repository(
+    name = "rules_python",
+    path = ".",
+)
+
 load("//:internal_dev_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
