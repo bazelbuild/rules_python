@@ -30,7 +30,7 @@ bzl_library(
     srcs = ["py_proto_library.bzl"],
     visibility = ["//python:__pkg__"],
     deps = [
-        "//python:defs_bzl",
+        "//python:py_info_bzl",
         "@rules_proto//proto:defs",
     ],
 )

@@ -25,7 +25,7 @@ load(
 )
 
 _PRELUDE = """\
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:py_library.bzl", "py_library")
 """
 
 _GROUP_TEMPLATE = """\

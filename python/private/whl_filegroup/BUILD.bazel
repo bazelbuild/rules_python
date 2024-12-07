@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//python:defs.bzl", "py_binary")
+load("//python:py_binary.bzl", "py_binary")
 
 filegroup(
     name = "distribution",
