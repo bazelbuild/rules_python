@@ -190,7 +190,7 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
     # Gather any available CPPFLAGS values
     #
     # We may want to build in an environment without a cc toolchain.
-    # In those cases, we're limited to --donwload-only, but we should respect that here.
+    # In those cases, we're limited to --download-only, but we should respect that here.
     if not rctx.attr.download_only:
         cppflags = []
         cppflags.extend(_get_xcode_location_cflags(rctx))
