@@ -64,6 +64,7 @@ Unreleased changes template.
   automatically includes corresponding stub packages for third-party libraries
   that are present and used (e.g., `boto3` → `boto3-stubs`), improving 
   type-checking support.
+
 {#v0-0-0-removed}
 ### Removed
 * Nothing removed.
