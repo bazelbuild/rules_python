@@ -61,7 +61,10 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
+  automatically includes corresponding stub packages for third-party libraries
+  that are present and used (e.g., `boto3` → `boto3-stubs`), improving 
+  type-checking support.
 
 {#v0-0-0-removed}
 ### Removed

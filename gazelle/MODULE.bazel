@@ -34,3 +34,14 @@ use_repo(
     python_stdlib_list,
     "python_stdlib_list",
 )
+
+internal_dev_deps = use_extension(
+    "//:internal_dev_deps.bzl",
+    "internal_dev_deps_extension",
+    dev_dependency = True,
+)
+use_repo(
+    internal_dev_deps,
+    "django-types",
+    "pytest",
+)
