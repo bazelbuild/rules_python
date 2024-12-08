@@ -59,6 +59,7 @@ load(
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    "PY_TEST_TOOLCHAIN_TYPE",
     TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
 
@@ -178,7 +179,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
 
     imports = collect_imports(ctx, semantics)
 
-    runtime_details = _get_runtime_details(ctx, semantics)
+    runtime_details = _get_runtime_details(ctx, semantics, is_test)
     if ctx.configuration.coverage_enabled:
         extra_deps = semantics.get_coverage_deps(ctx, runtime_details)
     else:
@@ -277,7 +278,7 @@ def _declare_executable_file(ctx):
 
     return executable
 
-def _get_runtime_details(ctx, semantics):
+def _get_runtime_details(ctx, semantics, is_test):
     """Gets various information about the Python runtime to use.
 
     While most information comes from the toolchain, various legacy and
@@ -286,6 +287,7 @@ def _get_runtime_details(ctx, semantics):
     Args:
         ctx: Rule ctx
         semantics: A `BinarySemantics` struct; see `create_binary_semantics_struct`
+        is_test: bool; True if the rule is a test rule (has `test=True`), False if not
 
     Returns:
         A struct; see inline-field comments of the return value for details.
@@ -314,6 +316,7 @@ def _get_runtime_details(ctx, semantics):
         if not effective_runtime:
             fail("Unable to find Python runtime")
 
+    extra_test_env = {}
     if effective_runtime:
         direct = []  # List of files
         transitive = []  # List of depsets
@@ -326,6 +329,12 @@ def _get_runtime_details(ctx, semantics):
                 direct.append(effective_runtime.coverage_tool)
             if effective_runtime.coverage_files:
                 transitive.append(effective_runtime.coverage_files)
+        if is_test:
+            py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
+            if py_test_toolchain:
+                coverage_rc = py_test_toolchain.py_test_info.coverage_rc
+                extra_test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].short_path}
+                direct.extend(coverage_rc.files.to_list())
         runtime_files = depset(direct = direct, transitive = transitive)
     else:
         runtime_files = depset()
@@ -357,6 +366,9 @@ def _get_runtime_details(ctx, semantics):
         # be included. For in-build runtimes, this shold include the interpreter
         # and any supporting files.
         runfiles = ctx.runfiles(transitive_files = runtime_files),
+        # extra_test_env: dict[str, str]; Additional environment variables to
+        # set when running the test.
+        extra_test_env = extra_test_env,
     )
 
 def _maybe_get_runtime_from_ctx(ctx):
@@ -849,6 +861,7 @@ def _create_providers(
     Returns:
         A list of modern providers.
     """
+
     providers = [
         DefaultInfo(
             executable = executable,
@@ -863,7 +876,7 @@ def _create_providers(
             ),
         ),
         create_instrumented_files_info(ctx),
-        _create_run_environment_info(ctx, inherited_environment),
+        _create_run_environment_info(ctx, inherited_environment, runtime_details.extra_test_env),
         PyExecutableInfo(
             main = main_py,
             runfiles_without_exe = runfiles_details.runfiles_without_exe,
@@ -935,7 +948,7 @@ def _create_providers(
     providers.extend(extra_providers)
     return providers
 
-def _create_run_environment_info(ctx, inherited_environment):
+def _create_run_environment_info(ctx, inherited_environment, extra_test_env):
     expanded_env = {}
     for key, value in ctx.attr.env.items():
         expanded_env[key] = _py_builtins.expand_location_and_make_variables(
@@ -944,6 +957,7 @@ def _create_run_environment_info(ctx, inherited_environment):
             expression = value,
             targets = ctx.attr.data,
         )
+    expanded_env.update(extra_test_env)
     return RunEnvironmentInfo(
         environment = expanded_env,
         inherited_environment = inherited_environment,
