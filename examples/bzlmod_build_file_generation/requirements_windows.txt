@@ -150,10 +150,6 @@ s3cmd==2.1.0 \
     --hash=sha256:49cd23d516b17974b22b611a95ce4d93fe326feaa07320bd1d234fed68cbccfa \
     --hash=sha256:966b0a494a916fc3b4324de38f089c86c70ee90e8e1cae6d59102103a4c0cc03
     # via -r requirements.in
-setuptools==65.6.3 \
-    --hash=sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54 \
-    --hash=sha256:a7620757bf984b58deaf32fc8a4577a9bbc0850cf92c20e1ce41c38c19e5fb75
-    # via yamllint
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
@@ -281,3 +277,9 @@ yamllint==1.28.0 \
     --hash=sha256:89bb5b5ac33b1ade059743cf227de73daa34d5e5a474b06a5e17fc16583b0cf2 \
     --hash=sha256:9e3d8ddd16d0583214c5fdffe806c9344086721f107435f68bad990e5a88826b
     # via -r requirements.in
+
+# The following packages are considered to be unsafe in a requirements file:
+setuptools==65.6.3 \
+    --hash=sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54 \
+    --hash=sha256:a7620757bf984b58deaf32fc8a4577a9bbc0850cf92c20e1ce41c38c19e5fb75
+    # via yamllint
