@@ -65,7 +65,7 @@ Unreleased changes template.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing removed.
+* `find_requirements` in `//python:defs.bzl` has been removed.
 
 {#v1-0-0}
 ## [1.0.0] - 2024-12-05

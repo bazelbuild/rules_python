@@ -13,7 +13,6 @@
 # limitations under the License.
 """Core rules for building Python projects."""
 
-load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_info.bzl", _PyInfo = "PyInfo")
 load("//python:py_library.bzl", _py_library = "py_library")
@@ -34,11 +33,7 @@ current_py_toolchain = _current_py_toolchain
 
 py_import = _py_import
 
-# Re-exports of Starlark-defined symbols in @bazel_tools//tools/python.
-
 py_runtime_pair = _py_runtime_pair
-
-find_requirements = _find_requirements
 
 py_library = _py_library
 
