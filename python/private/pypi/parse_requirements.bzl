@@ -209,7 +209,6 @@ def parse_requirements(
                 struct(
                     distribution = r.distribution,
                     srcs = r.srcs,
-                    requirement_line = r.requirement_line,
                     target_platforms = sorted(target_platforms),
                     extra_pip_args = r.extra_pip_args,
                     whls = whls,
