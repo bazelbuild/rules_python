@@ -74,16 +74,21 @@ def parse_requirements(
         logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
 
     Returns:
-        A tuple where the first element a dict of dicts where the first key is
-        the normalized distribution name (with underscores) and the second key
-        is the requirement_line, then value and the keys are structs with the
-        following attributes:
-         * distribution: The non-normalized distribution name.
-         * srcs: The Simple API downloadable source list.
-         * requirement_line: The original requirement line.
-         * target_platforms: The list of target platforms that this package is for.
-         * is_exposed: A boolean if the package should be exposed via the hub
+        {type}`dict[str, list[struct]]` where the key is the distribution name and the struct
+        contains the following attributes:
+         * `distribution`: {type}`str` The non-normalized distribution name.
+         * `srcs`: {type}`struct` The parsed requirement line for easier Simple
+           API downloading.
+         * `target_platforms`: {type}`list[str]` Target platforms that this package is for.
+         * `is_exposed`: {type}`bool` `True` if the package should be exposed via the hub
            repository.
+         * `extra_pip_args`: {type}`list[str]` pip args to use in case we are
+           not using the bazel downloader to download the archives. This should
+           be passed to {obj}`whl_library`.
+         * `whls`: {type}`list[struct]` The list of whl entries that can be
+           downloaded using the bazel downloader.
+         * `sdist`: {type}`list[struct]` The sdist that can be downloaded using
+           the bazel downloader.
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
