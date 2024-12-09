@@ -56,15 +56,19 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (py_wheel) Use the default shell environment when building wheels to allow
+  toolchains that search PATH to be used for the wheel builder tool.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
+  automatically includes corresponding stub packages for third-party libraries
+  that are present and used (e.g., `boto3` → `boto3-stubs`), improving 
+  type-checking support.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing removed.
+* `find_requirements` in `//python:defs.bzl` has been removed.
 
 {#v1-0-0}
 ## [1.0.0] - 2024-12-05

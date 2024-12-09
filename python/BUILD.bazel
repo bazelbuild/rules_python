@@ -71,7 +71,6 @@ bzl_library(
         ":py_runtime_info_bzl",
         ":py_runtime_pair_bzl",
         ":py_test_bzl",
-        "//python/private:bazel_tools_bzl",
     ],
 )
 

@@ -189,8 +189,20 @@ func (py *Resolver) Resolve(
 						continue MODULES_LOOP
 					}
 				} else {
-					if dep, ok := cfg.FindThirdPartyDependency(moduleName); ok {
+					if dep, distributionName, ok := cfg.FindThirdPartyDependency(moduleName); ok {
 						deps.Add(dep)
+						// Add the type and stub dependencies if they exist.
+						modules := []string{
+							fmt.Sprintf("%s_stubs", strings.ToLower(distributionName)),
+							fmt.Sprintf("%s_types", strings.ToLower(distributionName)),
+							fmt.Sprintf("types_%s", strings.ToLower(distributionName)),
+							fmt.Sprintf("stubs_%s", strings.ToLower(distributionName)),
+						}
+						for _, module := range modules {
+							if dep, _, ok := cfg.FindThirdPartyDependency(module); ok {
+								deps.Add(dep)
+							}
+						}
 						if explainDependency == dep {
 							log.Printf("Explaining dependency (%s): "+
 								"in the target %q, the file %q imports %q at line %d, "+

@@ -106,6 +106,12 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "is_py_non_freethreaded",
+    flag_values = {":py_freethreaded": FreeThreadedFlag.NO},
+    visibility = ["//visibility:public"],
+)
+
 # pip.parse related flags
 
 string_flag(
