@@ -292,7 +292,7 @@ def _create_whl_repos(
                     args.pop("download_only", None)
 
                     repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
-                    args["requirement"] = requirement.srcs.requirement
+                    args["requirement"] = _requirement_without_marker(requirement.srcs.requirement)
                     args["urls"] = [distribution.url]
                     args["sha256"] = distribution.sha256
                     args["filename"] = distribution.filename
@@ -324,7 +324,7 @@ def _create_whl_repos(
                 logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
             args = dict(whl_library_args)  # make a copy
-            args["requirement"] = requirement.requirement_line
+            args["requirement"] = _requirement_without_marker(requirement.requirement_line)
             if requirement.extra_pip_args:
                 args["extra_pip_args"] = requirement.extra_pip_args
 
@@ -534,6 +534,25 @@ You cannot use both the additive_build_content and additive_build_content_file a
         },
         is_reproducible = is_reproducible,
     )
+
+def _requirement_without_marker(requirement):
+    requirement, _, maybe_hashes = requirement.partition(";")
+    ret = requirement.strip(" ")
+    _, marker, maybe_hashes = maybe_hashes.partition("--hash=")
+    if not maybe_hashes:
+        ret, marker, maybe_hashes = ret.partition("--hash=")
+
+    if maybe_hashes:
+        return "{} {}{}".format(
+            ret.strip(" "),
+            marker.strip(" "),
+            " --hash=".join([
+                h.strip(" ")
+                for h in maybe_hashes.split("--hash=")
+            ]),
+        )
+    else:
+        return ret
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
