@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive", _http_file = "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
 
 def http_archive(name, **kwargs):
     maybe(
@@ -39,6 +40,7 @@ def rules_python_internal_deps():
     For dependencies needed by *users* of rules_python, see
     python/private/py_repositories.bzl.
     """
+    internal_config_repo(name = "rules_python_internal")
 
     http_archive(
         name = "bazel_skylib",
