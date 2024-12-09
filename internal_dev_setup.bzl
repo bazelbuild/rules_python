@@ -25,14 +25,12 @@ load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_
 load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
-load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
 load("//python/private:pythons_hub.bzl", "hub_repo")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:deps.bzl", "pypi_deps")  # buildifier: disable=bzl-visibility
 
 def rules_python_internal_setup():
     """Setup for development and testing of rules_python itself."""
 
-    internal_config_repo(name = "rules_python_internal")
     hub_repo(
         name = "pythons_hub",
         minor_mapping = MINOR_MAPPING,
