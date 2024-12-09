@@ -20,8 +20,10 @@ load("//python/private/pypi:parse_requirements.bzl", "parse_requirements", "sele
 def _mock_ctx():
     testdata = {
         "requirements_different_package_version": """\
-foo==0.0.1+local --hash=sha256:deadbeef
-foo==0.0.1 --hash=sha256:deadb00f
+foo==0.0.1+local \
+    --hash=sha256:deadbeef
+foo==0.0.1 \
+    --hash=sha256:deadb00f
 """,
         "requirements_direct": """\
 foo[extra] @ https://some-url
@@ -29,7 +31,8 @@ foo[extra] @ https://some-url
         "requirements_extra_args": """\
 --index-url=example.org
 
-foo[extra]==0.0.1 --hash=sha256:deadbeef
+foo[extra]==0.0.1 \
+    --hash=sha256:deadbeef
 """,
         "requirements_linux": """\
 foo==0.0.3 --hash=sha256:deadbaaf
@@ -95,9 +98,12 @@ def _test_simple(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
+                sdist = None,
+                is_exposed = True,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo[extra]==0.0.1",
+                    requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
@@ -106,8 +112,6 @@ def _test_simple(env):
                     "windows_x86_64",
                 ],
                 whls = [],
-                sdist = None,
-                is_exposed = True,
             ),
         ],
     })
@@ -133,9 +137,12 @@ def _test_extra_pip_args(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = ["--index-url=example.org", "--trusted-host=example.org"],
-                requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
+                sdist = None,
+                is_exposed = True,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo[extra]==0.0.1",
+                    requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
@@ -143,8 +150,6 @@ def _test_extra_pip_args(env):
                     "linux_x86_64",
                 ],
                 whls = [],
-                sdist = None,
-                is_exposed = True,
             ),
         ],
     })
@@ -169,16 +174,17 @@ def _test_dupe_requirements(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo[extra,extra_2]==0.0.1 --hash=sha256:deadbeef",
+                sdist = None,
+                is_exposed = True,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo[extra,extra_2]==0.0.1",
+                    requirement_line = "foo[extra,extra_2]==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [],
-                sdist = None,
-                is_exposed = True,
             ),
         ],
     })
@@ -199,9 +205,10 @@ def _test_multi_os(env):
             struct(
                 distribution = "bar",
                 extra_pip_args = [],
-                requirement_line = "bar==0.0.1 --hash=sha256:deadb00f",
                 srcs = struct(
+                    marker = "",
                     requirement = "bar==0.0.1",
+                    requirement_line = "bar==0.0.1 --hash=sha256:deadb00f",
                     shas = ["deadb00f"],
                     version = "0.0.1",
                 ),
@@ -215,9 +222,10 @@ def _test_multi_os(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo==0.0.3 --hash=sha256:deadbaaf",
                 srcs = struct(
+                    marker = "",
                     requirement = "foo==0.0.3",
+                    requirement_line = "foo==0.0.3 --hash=sha256:deadbaaf",
                     shas = ["deadbaaf"],
                     version = "0.0.3",
                 ),
@@ -229,9 +237,10 @@ def _test_multi_os(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo[extra]==0.0.2 --hash=sha256:deadbeef",
                 srcs = struct(
+                    marker = "",
                     requirement = "foo[extra]==0.0.2",
+                    requirement_line = "foo[extra]==0.0.2 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.2",
                 ),
@@ -266,10 +275,11 @@ def _test_multi_os_legacy(env):
                 distribution = "bar",
                 extra_pip_args = ["--platform=manylinux_2_17_x86_64", "--python-version=39", "--implementation=cp", "--abi=cp39"],
                 is_exposed = False,
-                requirement_line = "bar==0.0.1 --hash=sha256:deadb00f",
                 sdist = None,
                 srcs = struct(
+                    marker = "",
                     requirement = "bar==0.0.1",
+                    requirement_line = "bar==0.0.1 --hash=sha256:deadb00f",
                     shas = ["deadb00f"],
                     version = "0.0.1",
                 ),
@@ -282,10 +292,11 @@ def _test_multi_os_legacy(env):
                 distribution = "foo",
                 extra_pip_args = ["--platform=manylinux_2_17_x86_64", "--python-version=39", "--implementation=cp", "--abi=cp39"],
                 is_exposed = True,
-                requirement_line = "foo==0.0.1 --hash=sha256:deadbeef",
                 sdist = None,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo==0.0.1",
+                    requirement_line = "foo==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
@@ -296,9 +307,10 @@ def _test_multi_os_legacy(env):
                 distribution = "foo",
                 extra_pip_args = ["--platform=macosx_10_9_arm64", "--python-version=39", "--implementation=cp", "--abi=cp39"],
                 is_exposed = True,
-                requirement_line = "foo==0.0.3 --hash=sha256:deadbaaf",
                 sdist = None,
                 srcs = struct(
+                    marker = "",
+                    requirement_line = "foo==0.0.3 --hash=sha256:deadbaaf",
                     requirement = "foo==0.0.3",
                     shas = ["deadbaaf"],
                     version = "0.0.3",
@@ -348,10 +360,11 @@ def _test_env_marker_resolution(env):
                 distribution = "bar",
                 extra_pip_args = [],
                 is_exposed = True,
-                requirement_line = "bar==0.0.1 --hash=sha256:deadbeef",
                 sdist = None,
                 srcs = struct(
+                    marker = "",
                     requirement = "bar==0.0.1",
+                    requirement_line = "bar==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
@@ -363,12 +376,12 @@ def _test_env_marker_resolution(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                # This is not exposed because we also have `linux_super_exotic` in the platform list
                 is_exposed = False,
-                requirement_line = "foo[extra]==0.0.1 ;marker --hash=sha256:deadbeef",
                 sdist = None,
                 srcs = struct(
-                    requirement = "foo[extra]==0.0.1 ;marker",
+                    marker = "marker",
+                    requirement = "foo[extra]==0.0.1",
+                    requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1",
                 ),
@@ -398,30 +411,32 @@ def _test_different_package_version(env):
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo==0.0.1 --hash=sha256:deadb00f",
+                is_exposed = True,
+                sdist = None,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo==0.0.1",
+                    requirement_line = "foo==0.0.1 --hash=sha256:deadb00f",
                     shas = ["deadb00f"],
                     version = "0.0.1",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [],
-                sdist = None,
-                is_exposed = True,
             ),
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
-                requirement_line = "foo==0.0.1+local --hash=sha256:deadbeef",
+                is_exposed = True,
+                sdist = None,
                 srcs = struct(
+                    marker = "",
                     requirement = "foo==0.0.1+local",
+                    requirement_line = "foo==0.0.1+local --hash=sha256:deadbeef",
                     shas = ["deadbeef"],
                     version = "0.0.1+local",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [],
-                sdist = None,
-                is_exposed = True,
             ),
         ],
     })

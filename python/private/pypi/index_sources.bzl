@@ -26,28 +26,43 @@ def index_sources(line):
         line(str): The requirements.txt entry.
 
     Returns:
-        A struct with shas attribute containing a list of shas to download from pypi_index.
+        A struct with shas attribute containing:
+            * `shas` - a list of shas to download from pypi_index.
+            * `version` - the version of the package.
+            * `marker` - the marker as per PEP508 spec.
+            * `requirement` - a requirement line without the marker. This can
+                be given to `pip` to install a package.
     """
+    line = line.replace("\\", " ")
     head, _, maybe_hashes = line.partition(";")
     _, _, version = head.partition("==")
     version = version.partition(" ")[0].strip()
 
-    if "@" in head:
-        shas = []
-    else:
-        maybe_hashes = maybe_hashes or line
-        shas = [
-            sha.strip()
-            for sha in maybe_hashes.split("--hash=sha256:")[1:]
-        ]
+    marker, _, _ = maybe_hashes.partition("--hash=")
+    maybe_hashes = maybe_hashes or line
+    shas = [
+        sha.strip()
+        for sha in maybe_hashes.split("--hash=sha256:")[1:]
+    ]
 
+    marker = marker.strip()
     if head == line:
-        head = line.partition("--hash=")[0].strip()
+        requirement = line.partition("--hash=")[0].strip()
     else:
-        head = head + ";" + maybe_hashes.partition("--hash=")[0].strip()
+        requirement = head.strip()
+
+    requirement_line = "{} {}".format(
+        requirement,
+        " ".join(["--hash=sha256:{}".format(sha) for sha in shas]),
+    ).strip()
+    if "@" in head:
+        requirement = requirement_line
+        shas = []
 
     return struct(
-        requirement = line if not shas else head,
+        requirement = requirement,
+        requirement_line = requirement_line,
         version = version,
         shas = sorted(shas),
+        marker = marker,
     )
