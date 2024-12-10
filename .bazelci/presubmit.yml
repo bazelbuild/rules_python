@@ -18,11 +18,13 @@ buildifier:
   # Use a specific version to avoid skew issues when new versions are released.
   version: 6.1.0
   warnings: "all"
-# NOTE: Minimum supported version is 6.x for workspace; 7.x for bzlmod
+# NOTE: Minimum tested version is 7.4.1 for workspace and bzlmod, patches
+# for 6.x for workspace are welcome as long as they don't add maintenance
+# overhead.
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
-  bazel: 6.4.0
+  bazel: 7.4.1
   skip_in_bazel_downstream_pipeline: "Bazel 6 required"
 .reusable_config: &reusable_config
   build_targets:
@@ -34,7 +36,6 @@ buildifier:
   build_flags:
     - "--keep_going"
     - "--build_tag_filters=-integration-test"
-    - "--config=bazel7.x"
   test_targets:
     - "--"
     - "..."
@@ -121,7 +122,6 @@ tasks:
     <<: *reusable_config
     name: "Default: Ubuntu, bzlmod, minimum Bazel"
     platform: ubuntu2004
-    bazel: 7.x
   ubuntu:
     <<: *reusable_config
     name: "Default: Ubuntu"
@@ -159,7 +159,6 @@ tasks:
       - "--enable_workspace"
       - "--keep_going"
       - "--build_tag_filters=-integration-test"
-      - "--config=bazel7.x"
     test_targets:
       - "--"
       - "..."
@@ -187,7 +186,6 @@ tasks:
     <<: *reusable_config
     name: "RBE: Ubuntu, minimum Bazel"
     platform: rbe_ubuntu2004
-    bazel: 7.x
     build_flags:
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
@@ -249,14 +247,12 @@ tasks:
     name: "examples/bzlmod: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod
     platform: ubuntu2004
-    bazel: 7.x
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: Ubuntu"
     working_directory: examples/bzlmod
     platform: ubuntu2004
-    bazel: 7.x
   integration_test_bzlmod_ubuntu_upcoming:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
@@ -270,14 +266,12 @@ tasks:
     name: "examples/bzlmod: Debian"
     working_directory: examples/bzlmod
     platform: debian11
-    bazel: 7.x
   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: macOS"
     working_directory: examples/bzlmod
     platform: macos
-    bazel: 7.x
   integration_test_bzlmod_macos_upcoming:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
@@ -291,7 +285,6 @@ tasks:
     name: "examples/bzlmod: Windows"
     working_directory: examples/bzlmod
     platform: windows
-    bazel: 7.x
   integration_test_bzlmod_windows_upcoming:
     <<: *reusable_build_test_all
     # coverage is not supported on Windows
@@ -307,7 +300,6 @@ tasks:
     name: "examples/bzlmod_build_file_generation: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod_build_file_generation
     platform: ubuntu2004
-    bazel: 7.x
   integration_test_bzlmod_generation_build_files_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod_build_file_generation
@@ -383,7 +375,6 @@ tasks:
     name: "examples/pip_parse: Ubuntu, bzlmod, minimum supported Bazel version"
     working_directory: examples/pip_parse
     platform: ubuntu2004
-    bazel: 7.x
   integration_test_pip_parse_ubuntu:
     <<: *reusable_build_test_all
     name: "examples/pip_parse: Ubuntu"
@@ -595,7 +586,6 @@ tasks:
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu, bzlmod, minimum Bazel"
     working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004
-    bazel: 7.x
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."

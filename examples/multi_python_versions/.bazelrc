@@ -4,4 +4,4 @@ test --test_output=errors
 build --enable_runfiles
 
 coverage --java_runtime_version=remotejdk_11
-common:bazel7.x --incompatible_python_disallow_native_rules
+common --incompatible_python_disallow_native_rules
