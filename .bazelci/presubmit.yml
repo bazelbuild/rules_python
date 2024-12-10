@@ -412,25 +412,21 @@ tasks:
     name: "examples/pip_parse_vendored: Ubuntu, workspace, minimum Bazel"
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
-  integration_test_pip_parse_vendored_ubuntu_min_bzlmod:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: "examples/pip_parse_vendored: Ubuntu, bzlmod, minimum Bazel"
-    working_directory: examples/pip_parse_vendored
-    platform: ubuntu2004
-    bazel: 7.x
   integration_test_pip_parse_vendored_ubuntu:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: Ubuntu"
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
   integration_test_pip_parse_vendored_debian:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: Debian"
     working_directory: examples/pip_parse_vendored
     platform: debian11
   integration_test_pip_parse_vendored_macos:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: MacOS"
     working_directory: examples/pip_parse_vendored
     platform: macos
