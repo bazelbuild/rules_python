@@ -27,10 +27,10 @@ def index_sources(line):
 
     Returns:
         A struct with shas attribute containing:
-            * `shas` - a list of shas to download from pypi_index.
-            * `version` - the version of the package.
-            * `marker` - the marker as per PEP508 spec.
-            * `requirement` - a requirement line without the marker. This can
+            * `shas` - list[str]; shas to download from pypi_index.
+            * `version` - str; version of the package.
+            * `marker` - str; the marker expression, as per PEP508 spec.
+            * `requirement` - str; a requirement line without the marker. This can
                 be given to `pip` to install a package.
     """
     line = line.replace("\\", " ")
