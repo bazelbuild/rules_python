@@ -58,12 +58,16 @@ Unreleased changes template.
 ### Fixed
 * (py_wheel) Use the default shell environment when building wheels to allow
   toolchains that search PATH to be used for the wheel builder tool.
+* (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
+  Parameter Syntax][pep-695]. (#2396)
+
+[pep-695]: https://peps.python.org/pep-0695/
 
 {#v0-0-0-added}
 ### Added
 * (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
   automatically includes corresponding stub packages for third-party libraries
-  that are present and used (e.g., `boto3` → `boto3-stubs`), improving 
+  that are present and used (e.g., `boto3` → `boto3-stubs`), improving
   type-checking support.
 
 {#v0-0-0-removed}
@@ -125,7 +129,7 @@ Other changes:
 * (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
   defined by a repository template. This enables stable ABI builds of Python extensions
   on Windows (by defining Py_LIMITED_API).
-* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the 
+* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the
   first `sys.path` entry when using {obj}`--bootstrap_impl=script`
 
 {#v1-0-0-added}
