@@ -5,7 +5,6 @@ build --enable_runfiles
 
 # The bzlmod version of this example is in examples/bzlmod_build_file_generation
 # Once WORKSPACE support is dropped, this example can be entirely deleted.
-common --noenable_bzlmod
-common --enable_workspace
+build --experimental_enable_bzlmod=false
 
 common:bazel7.x --incompatible_python_disallow_native_rules
