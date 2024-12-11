@@ -54,7 +54,7 @@ buildifier:
   build_flags:
     - "--noenable_bzlmod"
     - "--enable_workspace"
-  bazel: 7.4.1
+  bazel: 7.x
 .common_bazelinbazel_config: &common_bazelinbazel_config
     build_flags:
       - "--build_tag_filters=integration-test"
@@ -205,6 +205,7 @@ tasks:
     name: "RBE: Ubuntu"
     platform: rbe_ubuntu2004
     # TODO @aignas 2024-12-11: get the RBE working in CI for bazel 8.0
+    # See https://github.com/bazelbuild/rules_python/issues/2499
     bazel: 7.x
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"

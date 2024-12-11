@@ -52,9 +52,9 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* The earliest version that is tested in our CI for `WORKSPACE` support now
-  is `7.4.1`, which is in line with our bazel version support matrix - only the
-  two latest bazel versions are supported at a time.
+* Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
+  version, per our Bazel support matrix. Earlier versions are not
+  tested by CI, so functionality cannot be guaranteed.
 
 {#v0-0-0-fixed}
 ### Fixed
