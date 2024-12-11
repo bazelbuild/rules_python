@@ -46,6 +46,6 @@ repos:
       - id: update-deleted-packages
         name: Update deleted packages
         language: system
-        entry: bazel run @rules_bazel_integration_test//tools:update_deleted_packages
+        entry: env USE_BAZEL_VERSION=7.x bazel run @rules_bazel_integration_test//tools:update_deleted_packages
         files: ^((examples|tests)/.*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc)$
         pass_filenames: false

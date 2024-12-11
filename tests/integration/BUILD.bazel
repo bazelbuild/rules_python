@@ -36,7 +36,7 @@ _GAZELLE_PLUGIN_FLAGS = [
 ]
 
 default_test_runner(
-    name = "bazel_6_4_workspace_test_runner",
+    name = "bazel_7_4_workspace_test_runner",
     bazel_cmds = [
         "info {}".format(" ".join(_LEGACY_WORKSPACE_FLAGS)),
         "test {} //...".format(" ".join(_LEGACY_WORKSPACE_FLAGS)),
@@ -45,7 +45,7 @@ default_test_runner(
 )
 
 default_test_runner(
-    name = "bazel_6_4_workspace_test_runner_gazelle_plugin",
+    name = "bazel_7_4_workspace_test_runner_gazelle_plugin",
     bazel_cmds = [
         "info {}".format(" ".join(_LEGACY_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
         "test {} //...".format(" ".join(_LEGACY_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
