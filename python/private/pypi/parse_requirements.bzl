@@ -78,7 +78,7 @@ def parse_requirements(
         contains the following attributes:
          * `distribution`: {type}`str` The non-normalized distribution name.
          * `srcs`: {type}`struct` The parsed requirement line for easier Simple
-           API downloading.
+           API downloading (see `index_sources` return value).
          * `target_platforms`: {type}`list[str]` Target platforms that this package is for.
          * `is_exposed`: {type}`bool` `True` if the package should be exposed via the hub
            repository.
