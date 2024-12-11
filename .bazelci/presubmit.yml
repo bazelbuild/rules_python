@@ -18,12 +18,12 @@ buildifier:
   # Use a specific version to avoid skew issues when new versions are released.
   version: 6.1.0
   warnings: "all"
-# NOTE: Minimum supported version is 6.x for workspace; 7.x for bzlmod
+# NOTE: Minimum supported version is 7.x
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
-  bazel: 6.4.0
-  skip_in_bazel_downstream_pipeline: "Bazel 6 required"
+  bazel: 7.4.1
+  skip_in_bazel_downstream_pipeline: "Bazel 7 required"
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -34,7 +34,6 @@ buildifier:
   build_flags:
     - "--keep_going"
     - "--build_tag_filters=-integration-test"
-    - "--config=bazel7.x"
   test_targets:
     - "--"
     - "..."
@@ -160,7 +159,6 @@ tasks:
       - "--enable_workspace"
       - "--keep_going"
       - "--build_tag_filters=-integration-test"
-      - "--config=bazel7.x"
     test_targets:
       - "--"
       - "..."
