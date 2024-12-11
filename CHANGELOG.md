@@ -67,6 +67,9 @@ Unreleased changes template.
   Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
 * (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
   Parameter Syntax][pep-695]. (#2396)
+* (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
+  {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
+  using WORKSPACE files.
 
 [pep-695]: https://peps.python.org/pep-0695/
 

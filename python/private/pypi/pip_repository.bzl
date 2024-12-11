@@ -178,6 +178,7 @@ def _pip_repository_impl(rctx):
             for pkg in bzl_packages or []
         },
         extra_hub_aliases = rctx.attr.extra_hub_aliases,
+        requirement_cycles = requirement_cycles,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
