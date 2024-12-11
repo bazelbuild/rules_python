@@ -43,6 +43,7 @@ filegroup(
         "//python/pip_install:distribution",
         "//python/private:distribution",
         "//python/runfiles:distribution",
+        "//python/runtime_env_toolchains:distribution",
         "//python/uv:distribution",
     ],
     visibility = ["//:__pkg__"],

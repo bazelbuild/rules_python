@@ -52,7 +52,9 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
+  version, per our Bazel support matrix. Earlier versions are not
+  tested by CI, so functionality cannot be guaranteed.
 
 {#v0-0-0-fixed}
 ### Fixed
