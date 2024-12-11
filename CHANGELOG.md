@@ -52,7 +52,9 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
+  version, per our Bazel support matrix. Earlier versions are not
+  tested by CI, so functionality cannot be guaranteed.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -70,6 +72,11 @@ Unreleased changes template.
   automatically includes corresponding stub packages for third-party libraries
   that are present and used (e.g., `boto3` → `boto3-stubs`), improving 
   type-checking support.
+* (pypi) Freethreaded packages are now fully supported in the
+  {obj}`experimental_index_url` usage or the regular `pip.parse` usage.
+  To select the free-threaded interpreter in the repo phase, please use
+  the documented [env](/environment-variables.html) variables.
+  Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).
 
 {#v0-0-0-removed}
 ### Removed

@@ -17,3 +17,9 @@ load("//python/private:runtime_env_toolchain.bzl", "define_runtime_env_toolchain
 package(default_visibility = ["//:__subpackages__"])
 
 define_runtime_env_toolchain(name = "runtime_env_toolchain")
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
+)
