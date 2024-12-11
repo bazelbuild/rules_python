@@ -61,7 +61,7 @@ Unreleased changes template.
 * (pypi) The requirement argument parsed to `whl_library` will now not have env
   marker information allowing `bazel query` to work in cases where the `whl` is
   available for all of the platforms and the sdist can be built. This fix is
-  for both, WORKSPACE and `bzlmod` setups.
+  for both WORKSPACE and `bzlmod` setups.
   Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
 
 {#v0-0-0-added}
