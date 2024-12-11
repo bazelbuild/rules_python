@@ -80,6 +80,7 @@ def parse_requirements(
          * `srcs`: {type}`struct` The parsed requirement line for easier Simple
            API downloading (see `index_sources` return value).
          * `target_platforms`: {type}`list[str]` Target platforms that this package is for.
+             The format is `cp3{minor}_{os}_{arch}`.
          * `is_exposed`: {type}`bool` `True` if the package should be exposed via the hub
            repository.
          * `extra_pip_args`: {type}`list[str]` pip args to use in case we are
