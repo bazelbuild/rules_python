@@ -23,7 +23,7 @@ common --incompatible_disallow_struct_provider_syntax
 # Windows makes use of runfiles for some rules
 build --enable_runfiles
 
-# Make Bazel 6 use bzlmod by default
+# Make Bazel 7 use bzlmod by default
 common --enable_bzlmod
 
 # Additional config to use for readthedocs builds.
@@ -33,6 +33,6 @@ build:rtd --stamp
 # Some bzl files contain repos only available under bzlmod
 build:rtd --enable_bzlmod
 
-common:bazel7.x --incompatible_python_disallow_native_rules
+common --incompatible_python_disallow_native_rules
 
 build --lockfile_mode=update
