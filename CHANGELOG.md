@@ -60,6 +60,11 @@ Unreleased changes template.
 ### Fixed
 * (py_wheel) Use the default shell environment when building wheels to allow
   toolchains that search PATH to be used for the wheel builder tool.
+* (pypi) The requirement argument parsed to `whl_library` will now not have env
+  marker information allowing `bazel query` to work in cases where the `whl` is
+  available for all of the platforms and the sdist can be built. This fix is
+  for both WORKSPACE and `bzlmod` setups.
+  Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
 
 {#v0-0-0-added}
 ### Added
