@@ -101,7 +101,7 @@ def _pip_repository_impl(rctx):
         if not r:
             continue
         options = options or r.extra_pip_args
-        selected_requirements[name] = r.requirement_line
+        selected_requirements[name] = r.srcs.requirement_line
 
     bzl_packages = sorted(selected_requirements.keys())
 

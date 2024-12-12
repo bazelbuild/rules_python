@@ -60,6 +60,11 @@ Unreleased changes template.
 ### Fixed
 * (py_wheel) Use the default shell environment when building wheels to allow
   toolchains that search PATH to be used for the wheel builder tool.
+* (pypi) The requirement argument parsed to `whl_library` will now not have env
+  marker information allowing `bazel query` to work in cases where the `whl` is
+  available for all of the platforms and the sdist can be built. This fix is
+  for both WORKSPACE and `bzlmod` setups.
+  Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
 * (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
   Parameter Syntax][pep-695]. (#2396)
 

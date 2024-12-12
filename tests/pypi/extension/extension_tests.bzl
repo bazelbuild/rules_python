@@ -28,7 +28,10 @@ def _mock_mctx(*modules, environ = {}, read = None):
             name = "unittest",
             arch = "exotic",
         ),
-        read = read or (lambda _: "simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadbaaf"),
+        read = read or (lambda _: """\
+simple==0.0.1 \
+    --hash=sha256:deadbeef \
+    --hash=sha256:deadbaaf"""),
         modules = [
             struct(
                 name = modules[0].name,
@@ -262,7 +265,8 @@ def _test_simple_with_markers(env):
             read = lambda x: {
                 "universal.txt": """\
 torch==2.4.1+cpu ; platform_machine == 'x86_64'
-torch==2.4.1 ; platform_machine != 'x86_64'
+torch==2.4.1 ; platform_machine != 'x86_64' \
+    --hash=sha256:deadbeef
 """,
             }[x],
         ),
@@ -313,13 +317,13 @@ torch==2.4.1 ; platform_machine != 'x86_64'
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
-            "requirement": "torch==2.4.1 ; platform_machine != 'x86_64'",
+            "requirement": "torch==2.4.1 --hash=sha256:deadbeef",
         },
         "pypi_315_torch_linux_x86_64_osx_x86_64_windows_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
-            "requirement": "torch==2.4.1+cpu ; platform_machine == 'x86_64'",
+            "requirement": "torch==2.4.1+cpu",
         },
     })
     pypi.whl_mods().contains_exactly({})
@@ -351,8 +355,10 @@ def _test_download_only_multiple(env):
 --implementation=cp
 --abi=cp315
 
-simple==0.0.1 --hash=sha256:deadbeef
-extra==0.0.1 --hash=sha256:deadb00f
+simple==0.0.1 \
+    --hash=sha256:deadbeef
+extra==0.0.1 \
+    --hash=sha256:deadb00f
 """,
                 "requirements.osx_aarch64.txt": """\
 --platform=macosx_10_9_arm64
@@ -360,7 +366,8 @@ extra==0.0.1 --hash=sha256:deadb00f
 --implementation=cp
 --abi=cp315
 
-simple==0.0.3 --hash=sha256:deadbaaf
+simple==0.0.3 \
+    --hash=sha256:deadbaaf
 """,
             }[x],
         ),
@@ -473,7 +480,9 @@ def _test_simple_get_index(env):
             ),
             read = lambda x: {
                 "requirements.txt": """
-simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadb00f
+simple==0.0.1 \
+    --hash=sha256:deadbeef \
+    --hash=sha256:deadb00f
 some_pkg==0.0.1
 """,
             }[x],
