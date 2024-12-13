@@ -19,6 +19,7 @@ workspace(name = "rules_python")
 
 # Necessary so that Bazel 9 recognizes this as rules_python and doesn't try
 # to load the version Bazel itself uses by default.
+# buildifier: disable=duplicated-name
 local_repository(
     name = "rules_python",
     path = ".",
