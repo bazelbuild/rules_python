@@ -88,6 +88,19 @@ EXECUTABLE_ATTRS = union_attrs(
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
     {
+        "legacy_create_init": attr.int(
+            default = -1,
+            values = [-1, 0, 1],
+            doc = """\
+Whether to implicitly create empty `__init__.py` files in the runfiles tree.
+These are created in every directory containing Python source code or shared
+libraries, and every parent directory of those directories, excluding the repo
+root directory. The default, `-1` (auto), means true unless
+`--incompatible_default_to_explicit_init_py` is used. If false, the user is
+responsible for creating (possibly empty) `__init__.py` files and adding them to
+the `srcs` of Python targets as required.
+                                       """,
+        ),
         # TODO(b/203567235): In the Java impl, any file is allowed. While marked
         # label, it is more treated as a string, and doesn't have to refer to
         # anything that exists because it gets treated as suffix-search string
@@ -131,26 +144,6 @@ Valid values are:
             default = "//python/config_settings:bootstrap_impl",
             providers = [BuildSettingInfo],
         ),
-        "_windows_constraints": attr.label_list(
-            default = [
-                "@platforms//os:windows",
-            ],
-        ),
-
-        ### from old _bazel_ bzl file
-        "legacy_create_init": attr.int(
-            default = -1,
-            values = [-1, 0, 1],
-            doc = """\
-Whether to implicitly create empty `__init__.py` files in the runfiles tree.
-These are created in every directory containing Python source code or shared
-libraries, and every parent directory of those directories, excluding the repo
-root directory. The default, `-1` (auto), means true unless
-`--incompatible_default_to_explicit_init_py` is used. If false, the user is
-responsible for creating (possibly empty) `__init__.py` files and adding them to
-the `srcs` of Python targets as required.
-                                       """,
-        ),
         "_bootstrap_template": attr.label(
             allow_single_file = True,
             default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
@@ -179,6 +172,11 @@ the `srcs` of Python targets as required.
         ),
         "_python_version_flag": attr.label(
             default = "//python/config_settings:python_version",
+        ),
+        "_windows_constraints": attr.label_list(
+            default = [
+                "@platforms//os:windows",
+            ],
         ),
         "_windows_launcher_maker": attr.label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
