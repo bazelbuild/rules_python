@@ -41,13 +41,38 @@ _BAZEL_PY_TEST_ATTRS = {
 }
 
 def _py_test_impl(ctx):
-    providers = py_executable_impl(
+    providers, binary_info, environment_info = py_executable_impl(
         ctx = ctx,
         is_test = True,
         inherited_environment = ctx.attr.env_inherit,
     )
     maybe_add_test_execution_info(providers, ctx)
-    return providers
+    py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
+    if py_test_toolchain:
+        py_test_info = py_test_toolchain.py_test_info
+    else:
+        providers.extend(
+            [
+                DefaultInfo(
+                    executable = binary_info.executable,
+                    files = binary_info.files,
+                    default_runfiles = binary_info.default_runfiles,
+                    data_runfiles = binary_info.data_runfiles,
+                ),
+                RunEnvironmentInfo(
+                    environment = environment_info.environment,
+                    inherited_environment = environment_info.inherited_environment,
+                ),
+            ],
+        )
+        return providers
+    test_providers = py_test_info.get_runner.func(
+        ctx,
+        binary_info,
+        environment_info,
+        **py_test_info.get_runner.args
+    )
+    return test_providers + providers
 
 py_test = create_executable_rule(
     implementation = _py_test_impl,

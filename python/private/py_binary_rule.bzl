@@ -39,11 +39,28 @@ _PY_TEST_ATTRS = {
 }
 
 def _py_binary_impl(ctx):
-    return py_executable_impl(
+    providers, binary_info, environment_info = py_executable_impl(
         ctx = ctx,
         is_test = False,
         inherited_environment = [],
     )
+    providers.extend(
+        [
+            # We construct DefaultInfo and RunEnvironmentInfo here, as other py_binary-like
+            # rules (py_test) need a different DefaultInfo and RunEnvironmentInfo.
+            DefaultInfo(
+                executable = binary_info.executable,
+                files = binary_info.files,
+                default_runfiles = binary_info.default_runfiles,
+                data_runfiles = binary_info.data_runfiles,
+            ),
+            RunEnvironmentInfo(
+                environment = environment_info.environment,
+                inherited_environment = environment_info.inherited_environment,
+            ),
+        ],
+    )
+    return providers
 
 py_binary = create_executable_rule(
     implementation = _py_binary_impl,
