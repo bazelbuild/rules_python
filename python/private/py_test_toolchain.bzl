@@ -25,15 +25,58 @@ load(
 PyTestProviderInfo = provider(
     doc = "Information about the pytest toolchain",
     fields = [
-        "coverage_rc",
+        "get_runner",
     ],
 )
+
+def _get_runner(ctx, binary_info, environment_info, coverage_rc):
+    """
+        Constructs and returns a list containing `DefaultInfo` and `RunEnvironmentInfo` for a test runner setup.
+
+        Args:
+            ctx: The rule context, providing access to actions, inputs, outputs, and more.
+            binary_info: A `struct` with defaultinfo details.
+                - `executable`: The executable binary.
+                - `files`: The files associated with the binary.
+                - `default_runfiles`: The default runfiles of the binary.
+                - `data_runfiles`: Additional runfiles for data dependencies.
+            environment_info: A `struct` with environment details.
+                - `environment`: A dictionary of key-value pairs for the test environment.
+                - `inherited_environment`: A list of environment variables inherited from the host.
+            coverage_rc: A `File` or `File`-like target containing coverage configuration files.
+            """
+
+    test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].short_path}
+    test_env.update(environment_info.environment)
+
+    return [
+        DefaultInfo(
+            # Opportunity to override the executable in the binary_info with a new testrunner.
+            executable = binary_info.executable,
+            files = binary_info.files,
+            default_runfiles = binary_info.default_runfiles.merge(
+                ctx.runfiles(
+                    transitive_files = coverage_rc.files,
+                ),
+            ),
+            data_runfiles = binary_info.data_runfiles,
+        ),
+        RunEnvironmentInfo(
+            environment = test_env,
+            inherited_environment = environment_info.inherited_environment,
+        ),
+    ]
 
 def _py_test_toolchain_impl(ctx):
     return [
         platform_common.ToolchainInfo(
             py_test_info = PyTestProviderInfo(
-                coverage_rc = ctx.attr.coverage_rc,
+                get_runner = struct(
+                    func = _get_runner,
+                    args = {
+                        "coverage_rc": ctx.attr.coverage_rc,
+                    },
+                ),
             ),
         ),
     ]
@@ -41,9 +84,7 @@ def _py_test_toolchain_impl(ctx):
 py_test_toolchain = rule(
     implementation = _py_test_toolchain_impl,
     attrs = {
-        "coverage_rc": attr.label(
-            allow_single_file = True,
-        ),
+        "coverage_rc": attr.label(allow_single_file = True),
     },
 )
 
@@ -94,9 +135,9 @@ py_test_toolchain_repo = repository_rule(
     doc = "Generates a toolchain hub repository",
     attrs = {
         "coverage_rc": attr.label(
-            allow_single_file = True,
             doc = "The coverage rc file",
             mandatory = True,
+            allow_single_file = True,
         ),
         "toolchain_type": attr.label(doc = "Toolchain type", mandatory = True),
     },
