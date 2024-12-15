@@ -52,6 +52,50 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
+  version, per our Bazel support matrix. Earlier versions are not
+  tested by CI, so functionality cannot be guaranteed.
+
+{#v0-0-0-fixed}
+### Fixed
+* (py_wheel) Use the default shell environment when building wheels to allow
+  toolchains that search PATH to be used for the wheel builder tool.
+* (pypi) The requirement argument parsed to `whl_library` will now not have env
+  marker information allowing `bazel query` to work in cases where the `whl` is
+  available for all of the platforms and the sdist can be built. This fix is
+  for both WORKSPACE and `bzlmod` setups.
+  Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
+* (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
+  Parameter Syntax][pep-695]. (#2396)
+* (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
+  {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
+  using WORKSPACE files.
+
+[pep-695]: https://peps.python.org/pep-0695/
+
+{#v0-0-0-added}
+### Added
+* (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
+  automatically includes corresponding stub packages for third-party libraries
+  that are present and used (e.g., `boto3` → `boto3-stubs`), improving
+  type-checking support.
+* (pypi) Freethreaded packages are now fully supported in the
+  {obj}`experimental_index_url` usage or the regular `pip.parse` usage.
+  To select the free-threaded interpreter in the repo phase, please use
+  the documented [env](/environment-variables.html) variables.
+  Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).
+
+{#v0-0-0-removed}
+### Removed
+* `find_requirements` in `//python:defs.bzl` has been removed.
+
+{#v1-0-0}
+## [1.0.0] - 2024-12-05
+
+[1.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.0.0
+
+{#v1-0-0-changed}
+### Changed
 
 **Breaking**:
 * (toolchains) stop exposing config settings in python toolchain alias repos.
@@ -82,7 +126,7 @@ Other changes:
 * (deps) bazel_features 1.21.0; necessary for compatiblity with Bazel 8 rc3
 * (deps) stardoc 0.7.2 to support Bazel 8.
 
-{#v0-0-0-fixed}
+{#v1-0-0-fixed}
 ### Fixed
 * (toolchains) stop depending on `uname` to get the value of the host platform.
 * (pypi): Correctly handle multiple versions of the same package in the requirements
@@ -100,8 +144,10 @@ Other changes:
 * (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
   defined by a repository template. This enables stable ABI builds of Python extensions
   on Windows (by defining Py_LIMITED_API).
+* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the
+  first `sys.path` entry when using {obj}`--bootstrap_impl=script`
 
-{#v0-0-0-added}
+{#v1-0-0-added}
 ### Added
 * (gazelle): Parser failures will now be logged to the terminal. Additional
   details can be logged by setting `RULES_PYTHON_GAZELLE_VERBOSE=1`.
@@ -119,7 +165,7 @@ Other changes:
   initialize the interpreter via venv startup hooks.
 * (runfiles) (Bazel 7.4+) Added support for spaces and newlines in runfiles paths
 
-{#v0-0-0-removed}
+{#v1-0-0-removed}
 ### Removed
 * (pypi): Remove `pypi_install_dependencies` macro that has been included in
   {bzl:obj}`py_repositories` for a long time.

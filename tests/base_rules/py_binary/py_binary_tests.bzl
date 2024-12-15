@@ -13,7 +13,7 @@
 # limitations under the License.
 """Tests for py_binary."""
 
-load("//python:defs.bzl", "py_binary")
+load("//python:py_binary.bzl", "py_binary")
 load(
     "//tests/base_rules:py_executable_base_tests.bzl",
     "create_executable_tests",

@@ -16,7 +16,7 @@
 """Implementation of the py_wheel_library rule."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//python:defs.bzl", "PyInfo")
+load("//python:py_info.bzl", "PyInfo")
 load(":providers.bzl", "PyWheelInfo")
 
 def _py_wheel_library_impl(ctx):

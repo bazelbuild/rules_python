@@ -43,6 +43,7 @@ filegroup(
         "//python/pip_install:distribution",
         "//python/private:distribution",
         "//python/runfiles:distribution",
+        "//python/runtime_env_toolchains:distribution",
         "//python/uv:distribution",
     ],
     visibility = ["//:__pkg__"],
@@ -71,7 +72,6 @@ bzl_library(
         ":py_runtime_info_bzl",
         ":py_runtime_pair_bzl",
         ":py_test_bzl",
-        "//python/private:bazel_tools_bzl",
     ],
 )
 

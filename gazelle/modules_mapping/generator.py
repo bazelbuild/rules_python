@@ -25,16 +25,25 @@ class Generator:
     stderr = None
     output_file = None
     excluded_patterns = None
-    mapping = {}
 
-    def __init__(self, stderr, output_file, excluded_patterns):
+    def __init__(self, stderr, output_file, excluded_patterns, include_stub_packages):
         self.stderr = stderr
         self.output_file = output_file
         self.excluded_patterns = [re.compile(pattern) for pattern in excluded_patterns]
+        self.include_stub_packages = include_stub_packages
+        self.mapping = {}
 
     # dig_wheel analyses the wheel .whl file determining the modules it provides
     # by looking at the directory structure.
     def dig_wheel(self, whl):
+        # Skip stubs and types wheels.
+        wheel_name = get_wheel_name(whl)
+        if self.include_stub_packages and (
+            wheel_name.endswith(("_stubs", "_types"))
+            or wheel_name.startswith(("types_", "stubs_"))
+        ):
+            self.mapping[wheel_name.lower()] = wheel_name.lower()
+            return
         with zipfile.ZipFile(whl, "r") as zip_file:
             for path in zip_file.namelist():
                 if is_metadata(path):
@@ -145,8 +154,11 @@ if __name__ == "__main__":
         description="Generates the modules mapping used by the Gazelle manifest.",
     )
     parser.add_argument("--output_file", type=str)
+    parser.add_argument("--include_stub_packages", action="store_true")
     parser.add_argument("--exclude_patterns", nargs="+", default=[])
     parser.add_argument("--wheels", nargs="+", default=[])
     args = parser.parse_args()
-    generator = Generator(sys.stderr, args.output_file, args.exclude_patterns)
+    generator = Generator(
+        sys.stderr, args.output_file, args.exclude_patterns, args.include_stub_packages
+    )
     exit(generator.run(args.wheels))

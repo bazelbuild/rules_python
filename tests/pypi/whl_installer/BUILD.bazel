@@ -1,4 +1,4 @@
-load("//python:defs.bzl", "py_test")
+load("//python:py_test.bzl", "py_test")
 
 alias(
     name = "lib",

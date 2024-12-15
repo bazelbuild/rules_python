@@ -30,6 +30,7 @@ licenses(["notice"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
+        "//python/private/api:distribution",
         "//python/private/proto:distribution",
         "//python/private/pypi:distribution",
         "//python/private/whl_filegroup:distribution",

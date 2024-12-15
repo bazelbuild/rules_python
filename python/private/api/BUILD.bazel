@@ -19,6 +19,11 @@ package(
     default_visibility = ["//:__subpackages__"],
 )
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+)
+
 py_common_api(
     name = "py_common_api",
     # NOTE: Not actually public. Implicit dependency of public rules.

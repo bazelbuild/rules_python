@@ -89,6 +89,10 @@ def select_whls(*, whls, want_platforms = [], logger = None):
         want_abis[abi] = None
         want_abis[abi + "m"] = None
 
+        # Also add freethreaded wheels if we find them since we started supporting them
+        _want_platforms["{}t_{}".format(abi, os_cpu)] = None
+        want_abis[abi + "t"] = None
+
     want_platforms = sorted(_want_platforms)
 
     candidates = {}
