@@ -9,16 +9,3 @@ label_flag(
     name = "bin",
     build_setting_default = "//python:none",
 )
-
-py_binary(
-    name = "repl",
-    srcs = ["repl.py"],
-    deps = [
-        ":repl_dep",
-    ],
-)
-
-label_flag(
-    name = "repl_dep",
-    build_setting_default = "//python:none",
-)

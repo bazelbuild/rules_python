@@ -27,7 +27,6 @@ _SELF_RUNFILES_RELATIVE_PATH = "%site_init_runfiles_path%"
 # Runfiles-relative path to the coverage tool entry point, if any.
 _COVERAGE_TOOL = "%coverage_tool%"
 
-print("Hi")
 
 def _is_verbose():
     return bool(os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"))
