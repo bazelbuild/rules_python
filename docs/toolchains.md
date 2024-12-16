@@ -229,13 +229,11 @@ python_register_toolchains(
     python_version = "3.11",
 )
 
-load("@python_3_11//:defs.bzl", "interpreter")
-
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     ...
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python_3_11_host//:python",
     ...
 )
 ```
