@@ -34,7 +34,7 @@ interpreter = rule(
     executable = True,
     attrs = {
         "binary": attr.label(
-            default = "//tools/run:bin",
+            mandatory = True,
         ),
     },
 )

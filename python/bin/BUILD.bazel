@@ -1,11 +1,22 @@
 load("//python:defs.bzl", "py_binary")
 load(":interpreter.bzl", "interpreter")
 
-interpreter(
-    name = "interpreter",
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
 )
 
+interpreter(
+    name = "interpreter",
+    binary = ":interpreter_src",
+)
+
+# The user can modify this flag to source different interpreters for the
+# `interpreter` target above.
 label_flag(
-    name = "bin",
+    name = "interpreter_src",
     build_setting_default = "//python:none",
 )
