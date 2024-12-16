@@ -44,6 +44,7 @@ class InterpreterTest(runner.TestCase):
 
     def _run_module_test(self, version):
         """Validates that we can successfully invoke a module from the CLI."""
+        # Pass unformatted JSON to the json.tool module.
         result = self.run_bazel(
             "run",
             f"--@rules_python//python/config_settings:python_version={version}",
@@ -53,6 +54,7 @@ class InterpreterTest(runner.TestCase):
             "json.tool",
             input = '{"json":"obj"}',
         )
+        # Validate that we get formatted JSON back.
         self.assert_result_matches(result, r'{\n    "json": "obj"\n}')
 
     def test_run_module_3_10(self):
