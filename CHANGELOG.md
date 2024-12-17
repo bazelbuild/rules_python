@@ -61,6 +61,13 @@ Unreleased changes template.
 {#v0-0-0-added}
 ### Added
 * (toolchains) Python 3.13.1 added
+* (toolchains) Use the latest astrahl-sh toolchain release [20241206] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.8
+
+[20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
 {#v0-0-0-removed}
 ### Removed
