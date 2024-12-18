@@ -52,7 +52,7 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 
 {#v0-0-0-fixed}
 ### Fixed

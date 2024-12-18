@@ -14,8 +14,12 @@
 
 "This file managed by `bazel run //:gazelle_update_repos`"
 
-load("@bazel_gazelle//:deps.bzl", "go_repository")
+load("@bazel_gazelle//:deps.bzl", _go_repository = "go_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+def go_repository(name, **kwargs):
+     if name not in native.existing_rules():
+         _go_repository(name = name, **kwargs)
 
 def python_stdlib_list_deps():
     "Fetch python stdlib list dependencies"
