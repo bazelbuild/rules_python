@@ -376,7 +376,7 @@ Here, we show an example for a semi-complicated toolchain suite, one that is:
 Defining toolchains for this might look something like this:
 
 ```
-# File: toolchain_impls/BUILD
+# File: toolchain_impl/BUILD
 load("@rules_python//python:py_cc_toolchain.bzl", "py_cc_toolchain")
 load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
