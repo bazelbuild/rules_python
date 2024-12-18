@@ -55,14 +55,18 @@ def _get_xcode_location_cflags(rctx):
         # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
         # so we need to change the path to to the macos specific tools which are in a different relative
         # path than xcode installed command line tools.
-        xcode_sdks_json = rctx.execute([
-            "xcrun",
-            "xcodebuild",
-            "-showsdks",
-            "-json",
-        ], environment = {
-            "DEVELOPER_DIR": xcode_root,
-        }).stdout
+        xcode_sdks_json = repo_utils.execute_checked(
+            rctx,
+            op = "LocateXCodeSDKs",
+            arguments = [
+                repo_utils.which_checked(rctx, "xcrun"),
+                "xcodebuild",
+                "-showsdks",
+                "-json",
+            ],
+            environment = {
+                "DEVELOPER_DIR": xcode_root,
+            }).stdout
         xcode_sdks = json.decode(xcode_sdks_json)
         potential_sdks = [
             sdk
@@ -190,8 +194,9 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
     # Gather any available CPPFLAGS values
     #
     # We may want to build in an environment without a cc toolchain.
-    # In those cases, we're limited to --donwload-only, but we should respect that here.
-    if not rctx.attr.download_only:
+    # In those cases, we're limited to --download-only, but we should respect that here.
+    is_wheel = rctx.attr.filename and rctx.attr.filename.endswith(".whl")
+    if not (rctx.attr.download_only or is_wheel):
         cppflags = []
         cppflags.extend(_get_xcode_location_cflags(rctx))
         cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
