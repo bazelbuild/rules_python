@@ -65,6 +65,8 @@ Unreleased changes template.
 * (rules) The version-aware rules have been folded into the base rules and
   the version-aware rules are now simply aliases for the base rules. The
   `python_version` attribute is still used to specify the Python version.
+* (pypi) Updated versions of packages: `pip` to 24.3.1 and
+  `packaging` to 24.2.
 
 {#v0-0-0-deprecations}
 #### Deprecations
