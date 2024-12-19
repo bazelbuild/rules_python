@@ -20,12 +20,11 @@ python_register_toolchains(
     name = "python39",
     python_version = "3.9",
 )
-load("@python39//:defs.bzl", "interpreter")
 
 # Load dependencies vendored by some other ruleset.
 load("@some_rules//:py_deps.bzl", "install_deps")
 
 install_deps(
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
 )
 ```
