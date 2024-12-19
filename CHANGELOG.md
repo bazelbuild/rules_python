@@ -55,6 +55,7 @@ Unreleased changes template.
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
   tested by CI, so functionality cannot be guaranteed.
+* Use `xcrun xcodebuild --showsdks` to find XCode root
 
 {#v0-0-0-fixed}
 ### Fixed
