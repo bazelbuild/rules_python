@@ -189,7 +189,7 @@ existing attributes:
 It is possible to use toolchains defined in `MODULE.bazel` in `WORKSPACE`. For example
 the following `MODULE.bazel` and `WORKSPACE` provides a working {bzl:obj}`pip_parse` setup:
 ```starlark
-# WORKSPACE contents
+# File: WORKSPACE
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
@@ -206,7 +206,7 @@ load("@third_party//:requirements.bzl", "install_deps")
 
 install_deps()
 
-# MODULE.bazel contents
+# File: MODULE.bazel
 bazel_dep(name = "rules_python", version = "0.40.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
