@@ -22,6 +22,8 @@ make it possible to have multiple tools inside the `pypi` directory
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 
+_TAGS_FOR_REMOTE_EXECUTION = ["no-sandbox", "no-remote-exec", "requires-network"]
+
 def pip_compile(
         name,
         srcs = None,
@@ -38,6 +40,7 @@ def pip_compile(
         requirements_windows = None,
         visibility = ["//visibility:private"],
         tags = None,
+        remoteable = True,
         **kwargs):
     """Generates targets for managing pip dependencies with pip-compile.
 
@@ -68,6 +71,7 @@ def pip_compile(
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
+        remoteable: whether of not to add tags that support remote execution.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
         requirements_in: file expressing desired dependencies. Deprecated, use src or srcs instead.
@@ -141,17 +145,19 @@ def pip_compile(
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 
-    tags = tags or []
-    tags.append("requires-network")
-    tags.append("no-remote-exec")
-    tags.append("no-sandbox")
+    tags_to_use = []
+    if tags:
+        tags_to_use += tags
+    if remoteable:
+        tags_to_use += _TAGS_FOR_REMOTE_EXECUTION
+
     attrs = {
         "args": args,
         "data": data,
         "deps": deps,
         "main": pip_compile,
         "srcs": [pip_compile],
-        "tags": tags,
+        "tags": tags_to_use,
         "visibility": visibility,
     }
 
