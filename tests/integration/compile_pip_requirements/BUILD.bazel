@@ -26,6 +26,7 @@ compile_pip_requirements(
         "requirements.in",
         "requirements_extra.in",
     ],
+    extra_args = ["--no-annotate"],
     requirements_txt = "requirements_lock.txt",
 )
 
@@ -36,6 +37,7 @@ compile_pip_requirements(
         "requirements.in",
         "requirements_extra.in",
     ],
+    extra_args = ["--no-annotate"],
     generate_hashes = False,
     requirements_txt = "requirements_nohashes_lock.txt",
 )
@@ -60,6 +62,7 @@ compile_pip_requirements(
         "requirements_extra.in",
         "requirements_os_specific.in",
     ],
+    extra_args = ["--no-annotate"],
     requirements_darwin = "requirements_lock_darwin.txt",
     requirements_linux = "requirements_lock_linux.txt",
     requirements_txt = "requirements_lock.txt",

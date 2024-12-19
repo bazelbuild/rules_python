@@ -505,13 +505,13 @@ tasks:
     # right thing.
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
-    - "bazel run //:requirements.update"
+    - "bazel run //:requirements.update -- --no-annotate"
     - "git diff --exit-code"
     # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
     # right thing.
     - "echo '' > requirements_lock_linux.txt"
     - "! git diff --exit-code"
-    - "bazel run //:os_specific_requirements.update"
+    - "bazel run //:os_specific_requirements.update -- --no-annotate"
     - "git diff --exit-code"
   integration_test_compile_pip_requirements_debian:
     <<: *reusable_build_test_all
@@ -523,13 +523,13 @@ tasks:
     # right thing.
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
-    - "bazel run //:requirements.update"
+    - "bazel run //:requirements.update -- --no-annotate"
     - "git diff --exit-code"
     # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
     # right thing.
     - "echo '' > requirements_lock_linux.txt"
     - "! git diff --exit-code"
-    - "bazel run //:os_specific_requirements.update"
+    - "bazel run //:os_specific_requirements.update -- --no-annotate"
     - "git diff --exit-code"
   integration_test_compile_pip_requirements_macos:
     <<: *reusable_build_test_all
@@ -541,7 +541,7 @@ tasks:
     # right thing.
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
-    - "bazel run //:requirements.update"
+    - "bazel run //:requirements.update -- --no-annotate"
     - "git diff --exit-code"
     # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
     # right thing.
@@ -559,13 +559,13 @@ tasks:
     # right thing.
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
-    - "bazel run //:requirements.update"
+    - "bazel run //:requirements.update -- --no-annotate"
     - "git diff --exit-code"
     # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
     # right thing.
     - "echo '' > requirements_lock_windows.txt"
     - "! git diff --exit-code"
-    - "bazel run //:os_specific_requirements.update"
+    - "bazel run //:os_specific_requirements.update -- --no-annotate"
     - "git diff --exit-code"
 
 

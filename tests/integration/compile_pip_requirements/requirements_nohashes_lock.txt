@@ -7,6 +7,4 @@
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==22.3.1
-    # via -r requirements.in
 setuptools==65.6.3
-    # via -r requirements_extra.in
