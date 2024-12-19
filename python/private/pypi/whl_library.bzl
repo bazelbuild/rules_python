@@ -287,7 +287,7 @@ def _whl_library_impl(rctx):
                 p.target_platform
                 for p in whl_target_platforms(
                     platform_tag = parsed_whl.platform_tag,
-                    abi_tag = parsed_whl.abi_tag,
+                    abi_tag = parsed_whl.abi_tag.strip("tm"),
                 )
             ]
 

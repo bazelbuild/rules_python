@@ -67,7 +67,7 @@ components have examples in the {gh-path}`examples` directory.
 The core rules are currently available in Bazel as built-in symbols, but this
 form is deprecated. Instead, you should depend on rules_python in your
 `WORKSPACE` or `MODULE.bazel` file and load the Python rules from
-`@rules_python//python:defs.bzl` or load paths described in the API documentation.
+`@rules_python//python:<name>.bzl` or load paths described in the API documentation.
 
 A [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
 fix is available to automatically migrate `BUILD` and `.bzl` files to add the

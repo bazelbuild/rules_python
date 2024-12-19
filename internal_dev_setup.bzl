@@ -20,19 +20,15 @@ load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@rules_bazel_integration_test//bazel_integration_test:deps.bzl", "bazel_integration_test_rules_dependencies")
 load("@rules_bazel_integration_test//bazel_integration_test:repo_defs.bzl", "bazel_binaries")
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("@rules_shell//shell:repositories.bzl", "rules_shell_dependencies", "rules_shell_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
-load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
 load("//python/private:pythons_hub.bzl", "hub_repo")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:deps.bzl", "pypi_deps")  # buildifier: disable=bzl-visibility
 
 def rules_python_internal_setup():
     """Setup for development and testing of rules_python itself."""
 
-    internal_config_repo(name = "rules_python_internal")
     hub_repo(
         name = "pythons_hub",
         minor_mapping = MINOR_MAPPING,
@@ -48,13 +44,7 @@ def rules_python_internal_setup():
 
     bazel_skylib_workspace()
 
-    rules_proto_dependencies()
-    rules_proto_toolchains()
-
     protobuf_deps()
-
-    rules_java_dependencies()
-    rules_java_toolchains()
 
     bazel_integration_test_rules_dependencies()
     bazel_starlib_dependencies()

@@ -218,7 +218,8 @@ bzl_library(
     srcs = ["pip_compile.bzl"],
     deps = [
         ":deps_bzl",
-        "//python:defs_bzl",
+        "//python:py_binary_bzl",
+        "//python:py_test_bzl",
     ],
 )
 
