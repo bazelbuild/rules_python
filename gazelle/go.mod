@@ -6,7 +6,7 @@ require (
 	github.com/bazelbuild/bazel-gazelle v0.31.1
 	github.com/bazelbuild/buildtools v0.0.0-20231103205921-433ea8554e82
 	github.com/bazelbuild/rules_go v0.41.0
-	github.com/bmatcuk/doublestar/v4 v4.6.1
+	github.com/bmatcuk/doublestar/v4 v4.7.1
 	github.com/dougthor42/go-tree-sitter v0.0.0-20241210060307-2737e1d0de6b
 	github.com/emirpasic/gods v1.18.1
 	github.com/ghodss/yaml v1.0.0
