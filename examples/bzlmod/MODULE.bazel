@@ -5,6 +5,7 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_python", version = "0.0.0")
 local_path_override(
     module_name = "rules_python",
@@ -270,6 +271,12 @@ bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(
     module_name = "other_module",
     path = "other_module",
+)
+
+bazel_dep(name = "foo_external", version = "")
+local_path_override(
+    module_name = "foo_external",
+    path = "py_proto_library/foo_external",
 )
 
 # example test dependencies
