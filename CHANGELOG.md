@@ -84,12 +84,13 @@ Unreleased changes template.
   {obj}`experimental_index_url` usage or the regular `pip.parse` usage.
   To select the free-threaded interpreter in the repo phase, please use
   the documented [env](/environment-variables.html) variables.
-  Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).* (toolchains) Python 3.13.1 added
+  Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).
 * (toolchains) Use the latest astrahl-sh toolchain release [20241206] for Python versions:
     * 3.9.21
     * 3.10.16
     * 3.11.11
     * 3.12.8
+    * 3.13.1
 
 [20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
