@@ -18,12 +18,12 @@ buildifier:
   # Use a specific version to avoid skew issues when new versions are released.
   version: 6.1.0
   warnings: "all"
-# NOTE: Minimum supported version is 6.x for workspace; 7.x for bzlmod
+# NOTE: Minimum supported version is 7.x
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
-  bazel: 6.4.0
-  skip_in_bazel_downstream_pipeline: "Bazel 6 required"
+  bazel: 7.x
+  skip_in_bazel_downstream_pipeline: "Bazel 7 required"
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -34,7 +34,6 @@ buildifier:
   build_flags:
     - "--keep_going"
     - "--build_tag_filters=-integration-test"
-    - "--config=bazel7.x"
   test_targets:
     - "--"
     - "..."
@@ -55,6 +54,7 @@ buildifier:
   build_flags:
     - "--noenable_bzlmod"
     - "--enable_workspace"
+  bazel: 7.x
 .common_bazelinbazel_config: &common_bazelinbazel_config
     build_flags:
       - "--build_tag_filters=integration-test"
@@ -159,7 +159,6 @@ tasks:
       - "--enable_workspace"
       - "--keep_going"
       - "--build_tag_filters=-integration-test"
-      - "--config=bazel7.x"
     test_targets:
       - "--"
       - "..."
@@ -187,7 +186,6 @@ tasks:
     <<: *reusable_config
     name: "RBE: Ubuntu, minimum Bazel"
     platform: rbe_ubuntu2004
-    bazel: 7.x
     build_flags:
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
@@ -206,6 +204,9 @@ tasks:
     <<: *reusable_config
     name: "RBE: Ubuntu"
     platform: rbe_ubuntu2004
+    # TODO @aignas 2024-12-11: get the RBE working in CI for bazel 8.0
+    # See https://github.com/bazelbuild/rules_python/issues/2499
+    bazel: 7.x
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
@@ -412,25 +413,21 @@ tasks:
     name: "examples/pip_parse_vendored: Ubuntu, workspace, minimum Bazel"
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
-  integration_test_pip_parse_vendored_ubuntu_min_bzlmod:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: "examples/pip_parse_vendored: Ubuntu, bzlmod, minimum Bazel"
-    working_directory: examples/pip_parse_vendored
-    platform: ubuntu2004
-    bazel: 7.x
   integration_test_pip_parse_vendored_ubuntu:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: Ubuntu"
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
   integration_test_pip_parse_vendored_debian:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: Debian"
     working_directory: examples/pip_parse_vendored
     platform: debian11
   integration_test_pip_parse_vendored_macos:
     <<: *reusable_build_test_all
+    <<: *common_workspace_flags
     name: "examples/pip_parse_vendored: MacOS"
     working_directory: examples/pip_parse_vendored
     platform: macos

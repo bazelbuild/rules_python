@@ -184,6 +184,43 @@ existing attributes:
 * Adding additional Python versions via {bzl:obj}`python.single_version_override` or
   {bzl:obj}`python.single_version_platform_override`.
 
+### Using defined toolchains from WORKSPACE
+
+It is possible to use toolchains defined in `MODULE.bazel` in `WORKSPACE`. For example
+the following `MODULE.bazel` and `WORKSPACE` provides a working {bzl:obj}`pip_parse` setup:
+```starlark
+# File: WORKSPACE
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "third_party",
+    requirements_lock = "//:requirements.txt",
+    python_interpreter_target = "@python_3_10_host//:python",
+)
+
+load("@third_party//:requirements.bzl", "install_deps")
+
+install_deps()
+
+# File: MODULE.bazel
+bazel_dep(name = "rules_python", version = "0.40.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+python.toolchain(is_default = True, python_version = "3.10")
+
+use_repo(python, "python_3_10", "python_3_10_host")
+```
+
+Note, the user has to import the `*_host` repository to use the python interpreter in the
+{bzl:obj}`pip_parse` and {bzl:obj}`whl_library` repository rules and once that is done
+users should be able to ensure the setting of the default toolchain even during the
+transition period when some of the code is still defined in `WORKSPACE`.
+
 ## Workspace configuration
 
 To import rules_python in your project, you first need to add it to your
@@ -229,13 +266,11 @@ python_register_toolchains(
     python_version = "3.11",
 )
 
-load("@python_3_11//:defs.bzl", "interpreter")
-
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     ...
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python_3_11_host//:python",
     ...
 )
 ```
@@ -376,7 +411,7 @@ Here, we show an example for a semi-complicated toolchain suite, one that is:
 Defining toolchains for this might look something like this:
 
 ```
-# File: toolchain_impls/BUILD
+# File: toolchain_impl/BUILD
 load("@rules_python//python:py_cc_toolchain.bzl", "py_cc_toolchain")
 load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load("@rules_python//python:py_runtime.bzl", "py_runtime")

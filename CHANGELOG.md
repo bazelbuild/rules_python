@@ -53,14 +53,38 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
+* Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
+  version, per our Bazel support matrix. Earlier versions are not
+  tested by CI, so functionality cannot be guaranteed.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (py_wheel) Use the default shell environment when building wheels to allow
+  toolchains that search PATH to be used for the wheel builder tool.
+* (pypi) The requirement argument parsed to `whl_library` will now not have env
+  marker information allowing `bazel query` to work in cases where the `whl` is
+  available for all of the platforms and the sdist can be built. This fix is
+  for both WORKSPACE and `bzlmod` setups.
+  Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
+* (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
+  Parameter Syntax][pep-695]. (#2396)
+* (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
+  {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
+  using WORKSPACE files.
+
+[pep-695]: https://peps.python.org/pep-0695/
 
 {#v0-0-0-added}
 ### Added
-* (toolchains) Python 3.13.1 added
+* (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
+  automatically includes corresponding stub packages for third-party libraries
+  that are present and used (e.g., `boto3` → `boto3-stubs`), improving
+  type-checking support.
+* (pypi) Freethreaded packages are now fully supported in the
+  {obj}`experimental_index_url` usage or the regular `pip.parse` usage.
+  To select the free-threaded interpreter in the repo phase, please use
+  the documented [env](/environment-variables.html) variables.
+  Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).* (toolchains) Python 3.13.1 added
 * (toolchains) Use the latest astrahl-sh toolchain release [20241206] for Python versions:
     * 3.9.21
     * 3.10.16
@@ -71,7 +95,7 @@ Unreleased changes template.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing removed.
+* `find_requirements` in `//python:defs.bzl` has been removed.
 
 {#v1-0-0}
 ## [1.0.0] - 2024-12-05
@@ -128,7 +152,7 @@ Other changes:
 * (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
   defined by a repository template. This enables stable ABI builds of Python extensions
   on Windows (by defining Py_LIMITED_API).
-* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the 
+* (rules) `py_test` and `py_binary` targets no longer incorrectly remove the
   first `sys.path` entry when using {obj}`--bootstrap_impl=script`
 
 {#v1-0-0-added}

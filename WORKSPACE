@@ -17,9 +17,36 @@ workspace(name = "rules_python")
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
+# Necessary so that Bazel 9 recognizes this as rules_python and doesn't try
+# to load the version Bazel itself uses by default.
+# buildifier: disable=duplicated-name
+local_repository(
+    name = "rules_python",
+    path = ".",
+)
+
 load("//:internal_dev_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+# note that the following line is what is minimally required from protobuf for the java rules
+# consider using the protobuf_deps() public API from @com_google_protobuf//:protobuf_deps.bzl
+load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+
+proto_bazel_features(name = "proto_bazel_features")
+
+# register toolchains
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 

@@ -31,6 +31,8 @@ def _modules_mapping_impl(ctx):
         transitive = [dep[DefaultInfo].files for dep in ctx.attr.wheels] + [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.wheels],
     )
     args.add("--output_file", modules_mapping.path)
+    if ctx.attr.include_stub_packages:
+        args.add("--include_stub_packages")
     args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
     args.add_all("--wheels", [whl.path for whl in all_wheels.to_list()])
     ctx.actions.run(
@@ -48,6 +50,11 @@ modules_mapping = rule(
         "exclude_patterns": attr.string_list(
             default = ["^_|(\\._)+"],
             doc = "A set of regex patterns to match against each calculated module path. By default, exclude the modules starting with underscores.",
+            mandatory = False,
+        ),
+        "include_stub_packages": attr.bool(
+            default = False,
+            doc = "Whether to include stub packages in the mapping.",
             mandatory = False,
         ),
         "modules_mapping_name": attr.string(

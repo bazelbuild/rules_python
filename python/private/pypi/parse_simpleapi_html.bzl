@@ -138,4 +138,4 @@ def _absolute_url(index_url, candidate):
         return "{}/{}".format(index_url, last.strip("/"))
 
     # relative path without up-references
-    return "{}/{}".format(index_url, candidate)
+    return "{}/{}".format(index_url.rstrip("/"), candidate)
