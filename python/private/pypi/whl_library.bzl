@@ -193,6 +193,10 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
 
+    # Add a PROJECT_ROOT environment variable
+    if rctx.attr.project_root:
+        environment["PROJECT_ROOT"] = str(rctx.path(rctx.attr.project_root).dirname)
+
     whl_path = None
     if rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
@@ -403,6 +407,9 @@ and the target that we need respectively.
     ),
     "group_name": attr.string(
         doc = "Name of the group, if any.",
+    ),
+    "project_root": attr.label(
+        doc = "Label of the file defining the project root. If present, this label will be expanded to a path and its parent directory will be made available in the PROJECT_ROOT environment variable when building the wheel.",
     ),
     "repo": attr.string(
         mandatory = True,
