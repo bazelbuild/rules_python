@@ -259,6 +259,17 @@ def _whl_library_impl(rctx):
             logger = logger,
         )
 
+        # If the requirement was a local directory, then we need to watch its content
+        # to recreate the repository when it is modified.
+        # Assume that such packages are imported using a single line requirement
+        # of the form [<name> @] file://<path>
+        # We might have to perform some substitutions in the string before searching.
+        subst_req = envsubst(rctx.attr.requirement, environment.keys(), lambda x, dft: environment[x])
+        if subst_req.startswith("file://"):
+            _, path = subst_req.split("file://", 1)
+            logger.info(lambda: "watching tree {} for wheel library {}".format(path, rctx.name))
+            rctx.watch_tree(path)
+
         whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
         if not rctx.delete("whl_file.json"):
             fail("failed to delete the whl_file.json file")
