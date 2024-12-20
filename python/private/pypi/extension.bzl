@@ -241,6 +241,7 @@ def _create_whl_repos(
             group_deps = group_deps,
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
+            project_root = pip_attr.project_root,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             whl_patches = {
@@ -731,6 +732,9 @@ If we are in synchronous mode, then we will use the first result that we
 find in case extra indexes are specified.
 """,
             default = True,
+        ),
+        "project_root": attr.label(
+            doc = "Label of the file defining the project root. If present, this label will be passed to all `whl_library` created from the requirement file. It will then expanded to a path and its parent directory will be made available in the PROJECT_ROOT environment variable when building the wheel.",
         ),
         "python_version": attr.string(
             mandatory = True,
