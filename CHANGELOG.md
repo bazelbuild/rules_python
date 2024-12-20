@@ -70,6 +70,7 @@ Unreleased changes template.
 * (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
   {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
   using WORKSPACE files.
+* (py_proto_library) Fix import paths in Bazel 8.
 
 [pep-695]: https://peps.python.org/pep-0695/
 
