@@ -56,12 +56,8 @@ def _test_config_setting_aliases(env):
     actual_no_match_error = []
 
     def mock_select(value, no_match_error = None):
-        actual_no_match_error.append(no_match_error)
-        env.expect.that_str(no_match_error).contains("""\
-configuration settings:
-    //:my_config_setting
-
-""")
+        if no_match_error and no_match_error not in actual_no_match_error:
+            actual_no_match_error.append(no_match_error)
         return value
 
     pkg_aliases(
@@ -71,7 +67,7 @@ configuration settings:
         },
         extra_aliases = ["my_special"],
         native = struct(
-            alias = lambda name, actual: got.update({name: actual}),
+            alias = lambda name, actual, visibility = None: got.update({name: actual}),
         ),
         select = mock_select,
     )
@@ -80,9 +76,22 @@ configuration settings:
     want = {
         "pkg": {
             "//:my_config_setting": "@bar_baz_repo//:pkg",
+            "//conditions:default": "_no_matching_repository",
         },
+        # This will be printing the current config values and will make sure we
+        # have an error.
+        "_no_matching_repository": {Label("//python/config_settings:is_not_matching_current_config"): Label("//python:none")},
     }
     env.expect.that_dict(got).contains_at_least(want)
+    env.expect.that_collection(actual_no_match_error).has_size(1)
+    env.expect.that_str(actual_no_match_error[0]).contains("""\
+configuration settings:
+    //:my_config_setting
+
+""")
+    env.expect.that_str(actual_no_match_error[0]).contains(
+        "//python/config_settings:current_config=fail",
+    )
 
 _tests.append(_test_config_setting_aliases)
 
@@ -92,13 +101,8 @@ def _test_config_setting_aliases_many(env):
     actual_no_match_error = []
 
     def mock_select(value, no_match_error = None):
-        actual_no_match_error.append(no_match_error)
-        env.expect.that_str(no_match_error).contains("""\
-configuration settings:
-    //:another_config_setting
-    //:my_config_setting
-    //:third_config_setting
-""")
+        if no_match_error and no_match_error not in actual_no_match_error:
+            actual_no_match_error.append(no_match_error)
         return value
 
     pkg_aliases(
@@ -112,7 +116,8 @@ configuration settings:
         },
         extra_aliases = ["my_special"],
         native = struct(
-            alias = lambda name, actual: got.update({name: actual}),
+            alias = lambda name, actual, visibility = None: got.update({name: actual}),
+            config_setting = lambda **_: None,
         ),
         select = mock_select,
     )
@@ -125,9 +130,17 @@ configuration settings:
                 "//:another_config_setting",
             ): "@bar_baz_repo//:my_special",
             "//:third_config_setting": "@foo_repo//:my_special",
+            "//conditions:default": "_no_matching_repository",
         },
     }
     env.expect.that_dict(got).contains_at_least(want)
+    env.expect.that_collection(actual_no_match_error).has_size(1)
+    env.expect.that_str(actual_no_match_error[0]).contains("""\
+configuration settings:
+    //:another_config_setting
+    //:my_config_setting
+    //:third_config_setting
+""")
 
 _tests.append(_test_config_setting_aliases_many)
 
@@ -137,15 +150,8 @@ def _test_multiplatform_whl_aliases(env):
     actual_no_match_error = []
 
     def mock_select(value, no_match_error = None):
-        actual_no_match_error.append(no_match_error)
-        env.expect.that_str(no_match_error).contains("""\
-configuration settings:
-    //:my_config_setting
-    //_config:is_cp3.9_linux_x86_64
-    //_config:is_cp3.9_py3_none_any
-    //_config:is_cp3.9_py3_none_any_linux_x86_64
-
-""")
+        if no_match_error and no_match_error not in actual_no_match_error:
+            actual_no_match_error.append(no_match_error)
         return value
 
     pkg_aliases(
@@ -168,7 +174,7 @@ configuration settings:
         },
         extra_aliases = [],
         native = struct(
-            alias = lambda name, actual: got.update({name: actual}),
+            alias = lambda name, actual, visibility = None: got.update({name: actual}),
         ),
         select = mock_select,
         glibc_versions = [],
@@ -183,9 +189,19 @@ configuration settings:
             "//_config:is_cp3.9_linux_x86_64": "@bzlmod_repo_for_a_particular_platform//:pkg",
             "//_config:is_cp3.9_py3_none_any": "@filename_repo//:pkg",
             "//_config:is_cp3.9_py3_none_any_linux_x86_64": "@filename_repo_for_platform//:pkg",
+            "//conditions:default": "_no_matching_repository",
         },
     }
     env.expect.that_dict(got).contains_at_least(want)
+    env.expect.that_collection(actual_no_match_error).has_size(1)
+    env.expect.that_str(actual_no_match_error[0]).contains("""\
+configuration settings:
+    //:my_config_setting
+    //_config:is_cp3.9_linux_x86_64
+    //_config:is_cp3.9_py3_none_any
+    //_config:is_cp3.9_py3_none_any_linux_x86_64
+
+""")
 
 _tests.append(_test_multiplatform_whl_aliases)
 

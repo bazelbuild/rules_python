@@ -36,8 +36,6 @@ load(":whl_target_platforms.bzl", "whl_target_platforms")
 # it. It is more of an internal consistency check.
 _VERSION_NONE = (0, 0)
 
-_CONFIG_SETTINGS_PKG = str(Label("//python/config_settings:BUILD.bazel")).partition(":")[0]
-
 _NO_MATCH_ERROR_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
 
@@ -49,37 +47,18 @@ configuration settings:
 To determine the current configuration's Python version, run:
     `bazel config <config id>` (shown further below)
 
-and look for one of:
-    {settings_pkg}:python_version
-    {settings_pkg}:pip_whl
-    {settings_pkg}:pip_whl_glibc_version
-    {settings_pkg}:pip_whl_muslc_version
-    {settings_pkg}:pip_whl_osx_arch
-    {settings_pkg}:pip_whl_osx_version
-    {settings_pkg}:py_freethreaded
-    {settings_pkg}:py_linux_libc
+For the current configuration value see the debug message above that is
+printing the current flag values. If you can't see the message, then re-run the
+build to make it a failure instead by running the build with:
+    --{current_flags}=fail
 
-If the value is missing, then the default value is being used, see documentation:
-{docs_url}/python/config_settings"""
+However, the command above will hide the `bazel config <config id>` message.
+"""
 
-def _no_match_error(actual):
-    if type(actual) != type({}):
-        return None
-
-    if "//conditions:default" in actual:
-        return None
-
-    return _NO_MATCH_ERROR_TEMPLATE.format(
-        config_settings = render.indent(
-            "\n".join(sorted([
-                value
-                for key in actual
-                for value in (key if type(key) == "tuple" else [key])
-            ])),
-        ).lstrip(),
-        settings_pkg = _CONFIG_SETTINGS_PKG,
-        docs_url = "https://rules-python.readthedocs.io/en/latest/api/rules_python",
-    )
+_LABEL_NONE = Label("//python:none")
+_LABEL_CURRENT_CONFIG = Label("//python/config_settings:current_config")
+_LABEL_CURRENT_CONFIG_NO_MATCH = Label("//python/config_settings:is_not_matching_current_config")
+_INCOMPATIBLE = "_no_matching_repository"
 
 def pkg_aliases(
         *,
@@ -120,7 +99,25 @@ def pkg_aliases(
     }
 
     actual = multiplatform_whl_aliases(aliases = actual, **kwargs)
-    no_match_error = _no_match_error(actual)
+    if type(actual) == type({}) and "//conditions:default" not in actual:
+        native.alias(
+            name = _INCOMPATIBLE,
+            actual = select(
+                {_LABEL_CURRENT_CONFIG_NO_MATCH: _LABEL_NONE},
+                no_match_error = _NO_MATCH_ERROR_TEMPLATE.format(
+                    config_settings = render.indent(
+                        "\n".join(sorted([
+                            value
+                            for key in actual
+                            for value in (key if type(key) == "tuple" else [key])
+                        ])),
+                    ).lstrip(),
+                    current_flags = str(_LABEL_CURRENT_CONFIG),
+                ),
+            ),
+            visibility = ["//visibility:private"],
+        )
+        actual["//conditions:default"] = _INCOMPATIBLE
 
     for name, target_name in target_names.items():
         if type(actual) == type(""):
@@ -134,10 +131,9 @@ def pkg_aliases(
                     v: "@{repo}//:{target_name}".format(
                         repo = repo,
                         target_name = name,
-                    )
+                    ) if repo != _INCOMPATIBLE else repo
                     for v, repo in actual.items()
                 },
-                no_match_error = no_match_error,
             )
         else:
             fail("The `actual` arg must be a dictionary or a string")

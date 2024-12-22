@@ -240,3 +240,21 @@ instead.
 :::
 
 ::::
+
+::::{bzl:flag} current_config
+Fail the build if the current build configuration does not match the
+{obj}`pip.parse` defined wheels.
+
+Values:
+* `fail`: Will fail in the build action ensuring that we get the error
+  message no matter the action cache.
+* ``: The default value, that will just print a warning.
+
+:::{seealso}
+{obj}`pip.parse`
+:::
+
+:::{versionadded} 1.1.0
+:::
+
+::::
