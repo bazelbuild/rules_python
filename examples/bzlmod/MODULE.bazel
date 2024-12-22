@@ -7,6 +7,11 @@ module(
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_python", version = "0.0.0")
+bazel_dep(name = "bazel_features", version = "1.9.1")
+
+version = use_extension("@bazel_features//private:extensions.bzl", "version_extension")
+use_repo(version, "bazel_features_globals", "bazel_features_version")
+
 local_path_override(
     module_name = "rules_python",
     path = "../..",
@@ -103,6 +108,14 @@ python.single_version_platform_override(
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
 # rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_versions", "pythons_hub")
+
+python_test = use_extension("@rules_python//python/extensions:python_test.bzl", "python_test")
+python_test.configure(
+    coveragerc = ".coveragerc",
+)
+use_repo(python_test, "py_test_toolchain")
+
+register_toolchains("@py_test_toolchain//:all")
 
 # EXPERIMENTAL: This is experimental and may be removed without notice
 uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")

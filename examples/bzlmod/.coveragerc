@@ -1,0 +1,6 @@
+[report]
+include_namespace_packages=True
+skip_covered=True
+[run]
+relative_files=True
+branch=True

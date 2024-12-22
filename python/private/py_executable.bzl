@@ -850,20 +850,7 @@ def _create_providers(
         A list of modern providers.
     """
     providers = [
-        DefaultInfo(
-            executable = executable,
-            files = default_outputs,
-            default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
-                ctx,
-                runfiles_details.default_runfiles,
-            ),
-            data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
-                ctx,
-                runfiles_details.data_runfiles,
-            ),
-        ),
         create_instrumented_files_info(ctx),
-        _create_run_environment_info(ctx, inherited_environment),
         PyExecutableInfo(
             main = main_py,
             runfiles_without_exe = runfiles_details.runfiles_without_exe,
@@ -933,7 +920,20 @@ def _create_providers(
         runtime_details = runtime_details,
     )
     providers.extend(extra_providers)
-    return providers
+    environemnt_info = _create_run_environment_info(ctx, inherited_environment)
+    binary_info = struct(
+        executable = executable,
+        files = default_outputs,
+        default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
+            ctx,
+            runfiles_details.default_runfiles,
+        ),
+        data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
+            ctx,
+            runfiles_details.data_runfiles,
+        ),
+    )
+    return providers, binary_info, environemnt_info
 
 def _create_run_environment_info(ctx, inherited_environment):
     expanded_env = {}
@@ -944,7 +944,7 @@ def _create_run_environment_info(ctx, inherited_environment):
             expression = value,
             targets = ctx.attr.data,
         )
-    return RunEnvironmentInfo(
+    return struct(
         environment = expanded_env,
         inherited_environment = inherited_environment,
     )
