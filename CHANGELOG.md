@@ -70,9 +70,10 @@ Unreleased changes template.
 * (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
   {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
   using WORKSPACE files.
-* The error messages when the wheel distributions do not match anything
+* (pypi) The error messages when the wheel distributions do not match anything
   are now printing more details and include the currently active flag
   values. Fixes [#2466](https://github.com/bazelbuild/rules_python/issues/2466).
+* (py_proto_library) Fix import paths in Bazel 8.
 
 [pep-695]: https://peps.python.org/pep-0695/
 
