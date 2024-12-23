@@ -16,9 +16,9 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
 load(
-    ":py_executable_bazel.bzl",
+    ":py_executable.bzl",
     "create_executable_rule",
-    "py_executable_bazel_impl",
+    "py_executable_impl",
 )
 
 _PY_TEST_ATTRS = {
@@ -39,7 +39,7 @@ _PY_TEST_ATTRS = {
 }
 
 def _py_binary_impl(ctx):
-    return py_executable_bazel_impl(
+    return py_executable_impl(
         ctx = ctx,
         is_test = False,
         inherited_environment = [],

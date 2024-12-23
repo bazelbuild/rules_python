@@ -13,43 +13,11 @@
 # limitations under the License.
 """Common functions that are specific to Bazel rule implementation"""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
-load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":attributes.bzl", "PrecompileAttr", "PrecompileInvalidationModeAttr", "PrecompileSourceRetentionAttr")
-load(":common.bzl", "is_bool")
 load(":flags.bzl", "PrecompileFlag")
-load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
-load(":py_internal.bzl", "py_internal")
 load(":py_interpreter_program.bzl", "PyInterpreterProgramInfo")
 load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
-
-_py_builtins = py_internal
-
-def collect_cc_info(ctx, extra_deps = []):
-    """Collect C++ information from dependencies for Bazel.
-
-    Args:
-        ctx: Rule ctx; must have `deps` attribute.
-        extra_deps: list of Target to also collect C+ information from.
-
-    Returns:
-        CcInfo provider of merged information.
-    """
-    deps = ctx.attr.deps
-    if extra_deps:
-        deps = list(deps)
-        deps.extend(extra_deps)
-    cc_infos = []
-    for dep in deps:
-        if CcInfo in dep:
-            cc_infos.append(dep[CcInfo])
-
-        if PyCcLinkParamsInfo in dep:
-            cc_infos.append(dep[PyCcLinkParamsInfo].cc_info)
-
-    return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
 def maybe_precompile(ctx, srcs):
     """Computes all the outputs (maybe precompiled) from the input srcs.
@@ -237,44 +205,3 @@ def _precompile(ctx, src, *, use_pycache):
         toolchain = EXEC_TOOLS_TOOLCHAIN_TYPE,
     )
     return pyc
-
-def get_imports(ctx):
-    """Gets the imports from a rule's `imports` attribute.
-
-    See create_binary_semantics_struct for details about this function.
-
-    Args:
-        ctx: Rule ctx.
-
-    Returns:
-        List of strings.
-    """
-    prefix = "{}/{}".format(
-        ctx.workspace_name,
-        _py_builtins.get_label_repo_runfiles_path(ctx.label),
-    )
-    result = []
-    for import_str in ctx.attr.imports:
-        import_str = ctx.expand_make_variables("imports", import_str, {})
-        if import_str.startswith("/"):
-            continue
-
-        # To prevent "escaping" out of the runfiles tree, we normalize
-        # the path and ensure it doesn't have up-level references.
-        import_path = paths.normalize("{}/{}".format(prefix, import_str))
-        if import_path.startswith("../") or import_path == "..":
-            fail("Path '{}' references a path above the execution root".format(
-                import_str,
-            ))
-        result.append(import_path)
-    return result
-
-def convert_legacy_create_init_to_int(kwargs):
-    """Convert "legacy_create_init" key to int, in-place.
-
-    Args:
-        kwargs: The kwargs to modify. The key "legacy_create_init", if present
-            and bool, will be converted to its integer value, in place.
-    """
-    if is_bool(kwargs.get("legacy_create_init")):
-        kwargs["legacy_create_init"] = 1 if kwargs["legacy_create_init"] else 0

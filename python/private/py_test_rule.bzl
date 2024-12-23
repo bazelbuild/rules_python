@@ -17,9 +17,9 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
 load(
-    ":py_executable_bazel.bzl",
+    ":py_executable.bzl",
     "create_executable_rule",
-    "py_executable_bazel_impl",
+    "py_executable_impl",
 )
 
 _BAZEL_PY_TEST_ATTRS = {
@@ -40,7 +40,7 @@ _BAZEL_PY_TEST_ATTRS = {
 }
 
 def _py_test_impl(ctx):
-    providers = py_executable_bazel_impl(
+    providers = py_executable_impl(
         ctx = ctx,
         is_test = True,
         inherited_environment = ctx.attr.env_inherit,
