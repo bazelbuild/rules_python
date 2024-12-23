@@ -35,6 +35,7 @@ load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
 load(
     ":common.bzl",
+    "collect_cc_info",
     "collect_imports",
     "collect_runfiles",
     "create_binary_semantics_struct",
@@ -45,11 +46,13 @@ load(
     "create_py_info",
     "csv",
     "filter_to_py_srcs",
+    "get_imports",
+    "is_bool",
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
 load(":flags.bzl", "BootstrapImplFlag")
+load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_executable_info.bzl", "PyExecutableInfo")
 load(":py_info.bzl", "PyInfo")
@@ -193,6 +196,16 @@ Valid values are:
     create_srcs_attr(mandatory = True),
     allow_none = True,
 )
+
+def convert_legacy_create_init_to_int(kwargs):
+    """Convert "legacy_create_init" key to int, in-place.
+
+    Args:
+        kwargs: The kwargs to modify. The key "legacy_create_init", if present
+            and bool, will be converted to its integer value, in place.
+    """
+    if is_bool(kwargs.get("legacy_create_init")):
+        kwargs["legacy_create_init"] = 1 if kwargs["legacy_create_init"] else 0
 
 def py_executable_impl(ctx, *, is_test, inherited_environment):
     return py_executable_base_impl(
