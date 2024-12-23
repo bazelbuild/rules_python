@@ -248,7 +248,7 @@ Fail the build if the current build configuration does not match the
 Values:
 * `fail`: Will fail in the build action ensuring that we get the error
   message no matter the action cache.
-* ``: The default value, that will just print a warning.
+* ``: (empty string) The default value, that will just print a warning.
 
 :::{seealso}
 {obj}`pip.parse`
