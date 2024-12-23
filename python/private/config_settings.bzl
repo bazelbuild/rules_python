@@ -55,7 +55,6 @@ def construct_config_settings(*, name, default_version, versions, minor_mapping,
     _python_version_major_minor_flag(
         name = _PYTHON_VERSION_MAJOR_MINOR_FLAG.name,
         build_setting_default = "",
-        python_version_flag = _PYTHON_VERSION_FLAG,
         visibility = ["//visibility:public"],
     )
 
@@ -153,7 +152,7 @@ _python_version_flag = rule(
 )
 
 def _python_version_major_minor_flag_impl(ctx):
-    input = _flag_value(ctx.attr.python_version_flag)
+    input = _flag_value(ctx.attr._python_version_flag)
     if input:
         version = semver(input)
         value = "{}.{}".format(version.major, version.minor)
@@ -166,7 +165,7 @@ _python_version_major_minor_flag = rule(
     implementation = _python_version_major_minor_flag_impl,
     build_setting = config.string(flag = False),
     attrs = {
-        "python_version_flag": attr.label(mandatory = True),
+        "_python_version_flag": attr.label(default = _PYTHON_VERSION_FLAG),
     },
 )
 
