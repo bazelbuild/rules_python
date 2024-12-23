@@ -165,7 +165,9 @@ _python_version_major_minor_flag = rule(
     implementation = _python_version_major_minor_flag_impl,
     build_setting = config.string(flag = False),
     attrs = {
-        "_python_version_flag": attr.label(default = _PYTHON_VERSION_FLAG),
+        "_python_version_flag": attr.label(
+            default = _PYTHON_VERSION_FLAG,
+        ),
     },
 )
 
