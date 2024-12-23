@@ -116,6 +116,7 @@ def pkg_aliases(
                 ),
             ),
             visibility = ["//visibility:private"],
+            tags = ["manual"],
         )
         actual["//conditions:default"] = _INCOMPATIBLE
 

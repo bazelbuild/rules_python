@@ -67,7 +67,7 @@ def _test_config_setting_aliases(env):
         },
         extra_aliases = ["my_special"],
         native = struct(
-            alias = lambda name, actual, visibility = None: got.update({name: actual}),
+            alias = lambda *, name, actual, visibility = None, tags = None: got.update({name: actual}),
         ),
         select = mock_select,
     )
@@ -116,7 +116,7 @@ def _test_config_setting_aliases_many(env):
         },
         extra_aliases = ["my_special"],
         native = struct(
-            alias = lambda name, actual, visibility = None: got.update({name: actual}),
+            alias = lambda *, name, actual, visibility = None, tags = None: got.update({name: actual}),
             config_setting = lambda **_: None,
         ),
         select = mock_select,
@@ -174,7 +174,7 @@ def _test_multiplatform_whl_aliases(env):
         },
         extra_aliases = [],
         native = struct(
-            alias = lambda name, actual, visibility = None: got.update({name: actual}),
+            alias = lambda *, name, actual, visibility = None, tags = None: got.update({name: actual}),
         ),
         select = mock_select,
         glibc_versions = [],
