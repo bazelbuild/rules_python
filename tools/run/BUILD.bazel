@@ -1,0 +1,10 @@
+load(":run.bzl", "interpreter")
+
+interpreter(
+    name = "run",
+)
+
+label_flag(
+    name = "bin",
+    build_setting_default = "//python:none",
+)
