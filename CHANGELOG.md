@@ -75,6 +75,9 @@ Unreleased changes template.
   are now printing more details and include the currently active flag
   values. Fixes [#2466](https://github.com/bazelbuild/rules_python/issues/2466).
 * (py_proto_library) Fix import paths in Bazel 8.
+* (whl_library) Now the changes to the dependencies are correctly tracked when
+  PyPI packages used in {bzl:obj}`whl_library` during the `repository_rule` phase
+  change. Fixes [#2468](https://github.com/bazelbuild/rules_python/issues/2468).
 
 [pep-695]: https://peps.python.org/pep-0695/
 
