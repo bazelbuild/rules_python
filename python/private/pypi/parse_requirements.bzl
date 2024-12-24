@@ -184,6 +184,7 @@ def parse_requirements(
                 req.distribution: None
                 for reqs in requirements_by_platform.values()
                 for req in reqs.values()
+                if req.srcs.shas
             }),
         )
 
