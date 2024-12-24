@@ -52,6 +52,7 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
   tested by CI, so functionality cannot be guaranteed.
@@ -88,6 +89,14 @@ Unreleased changes template.
   To select the free-threaded interpreter in the repo phase, please use
   the documented [env](/environment-variables.html) variables.
   Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).
+* (toolchains) Use the latest astrahl-sh toolchain release [20241206] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.8
+    * 3.13.1
+
+[20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
 {#v0-0-0-removed}
 ### Removed
