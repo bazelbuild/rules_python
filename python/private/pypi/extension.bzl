@@ -105,7 +105,6 @@ def _create_whl_repos(
 
     # containers to aggregate outputs from this function
     whl_map = {}
-    exposed_packages = {}
     extra_aliases = {
         whl_name: {alias: True for alias in aliases}
         for whl_name, aliases in pip_attr.extra_hub_aliases.items()
@@ -261,11 +260,8 @@ def _create_whl_repos(
             if v != default
         })
 
-        is_exposed = False
-
         # TODO @aignas 2024-05-26: move to a separate function
         for requirement in requirements:
-            is_exposed = is_exposed or requirement.is_exposed
             dists = requirement.whls
             if not pip_attr.download_only and requirement.sdist:
                 dists = dists + [requirement.sdist]
@@ -333,13 +329,14 @@ def _create_whl_repos(
                 target_platforms = target_platforms or None,
             )] = repo_name
 
-        if is_exposed:
-            exposed_packages[whl_name] = None
-
     return struct(
         is_reproducible = is_reproducible,
         whl_map = whl_map,
-        exposed_packages = exposed_packages,
+        exposed_packages = {
+            normalize_name(whl_name): None
+            for whl_name, requirements in requirements_by_platform.items()
+            if len([r for r in requirements if r.is_exposed]) > 0
+        },
         extra_aliases = extra_aliases,
         whl_libraries = whl_libraries,
     )
