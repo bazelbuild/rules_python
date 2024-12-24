@@ -124,6 +124,13 @@ py_library(
 
 # Collate all the repository names so they can be easily consumed
 all_repo_names = [name for (name, _, _) in _RULE_DEPS]
+record_files = {
+    name: Label("@{}//:{}.dist-info/RECORD".format(
+        name,
+        url.rpartition("/")[-1].partition("-py3-none")[0],
+    ))
+    for (name, url, _) in _RULE_DEPS
+}
 
 def pypi_deps():
     """
