@@ -16,6 +16,7 @@
 
 import atexit
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -117,7 +118,6 @@ def main(
     absolute_path_prefix = resolved_requirements_file[
         : -(len(requirements_file) - len(repository_prefix))
     ]
-
     # As srcs might contain references to generated files we want to
     # use the runfiles file first. Thus, we need to compute the relative path
     # from the execution root.
@@ -162,11 +162,18 @@ def main(
     argv.append(
         f"--output-file={requirements_file_relative if UPDATE else requirements_out}"
     )
-    argv.extend(
+    src_files = [
         (src_relative if Path(src_relative).exists() else resolved_src)
         for src_relative, resolved_src in zip(srcs_relative, resolved_srcs)
-    )
+    ]
+    argv.extend(src_files)
     argv.extend(extra_args)
+
+    # Replace in the output lock file
+    # the lines like: # via -r /absolute/path/to/<requirements_file>
+    # with: # via -r <requirements_file>
+    # For Windows, we should explicitly call .as_posix() to convert \\ -> /
+    absolute_src_prefixes = [Path(src).absolute().parent.as_posix() + "/" for src in src_files]
 
     if UPDATE:
         print("Updating " + requirements_file_relative)
@@ -185,14 +192,14 @@ def main(
             # and we should copy the updated requirements back to the source tree.
             if not absolute_output_file.samefile(requirements_file_tree):
                 atexit.register(
-                    lambda: shutil.copy(
-                        absolute_output_file, requirements_file_tree
-                    )
+                    lambda: shutil.copy(absolute_output_file, requirements_file_tree)
                 )
-        cli(argv, standalone_mode = False)
+        cli(argv, standalone_mode=False)
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
+        for absolute_src_prefix in absolute_src_prefixes:
+            content = content.replace(absolute_src_prefix, "")
         requirements_file_relative_path.write_text(content)
     else:
         # cli will exit(0) on success
@@ -214,6 +221,15 @@ def main(
                 golden = open(_locate(bazel_runfiles, requirements_file)).readlines()
                 out = open(requirements_out).readlines()
                 out = [line.replace(absolute_path_prefix, "") for line in out]
+
+                def replace_via_minus_r(line):
+                    if "# via -r " in line:
+                        for absolute_src_prefix in absolute_src_prefixes:
+                            line = line.replace(absolute_src_prefix, "")
+                        return line
+                    return line
+
+                out = [replace_via_minus_r(line) for line in out]
                 if golden != out:
                     import difflib
 
