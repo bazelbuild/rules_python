@@ -56,6 +56,10 @@ Unreleased changes template.
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
   tested by CI, so functionality cannot be guaranteed.
+* ({bzl:obj}`pip.parse`) From now we will make fewer calls to indexes when
+  fetching the metadata from SimpleAPI. The calls will be done in parallel to
+  each index separately, so the extension evaluation time might slow down if
+  not using {bzl:obj}`pip.parse.experimental_index_url_overrides`.
 
 {#v0-0-0-fixed}
 ### Fixed
