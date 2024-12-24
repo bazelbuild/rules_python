@@ -23,6 +23,127 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
 load(":parse_simpleapi_html.bzl", "parse_simpleapi_html")
 
+def simpleapi_download(
+        ctx,
+        *,
+        attr,
+        cache,
+        parallel_download = True,
+        read_simpleapi = None,
+        _fail = fail):
+    """Download Simple API HTML.
+
+    Args:
+        ctx: The module_ctx or repository_ctx.
+        attr: Contains the parameters for the download. They are grouped into a
+          struct for better clarity. It must have attributes:
+           * index_url: str, the index.
+           * index_url_overrides: dict[str, str], the index overrides for
+             separate packages.
+           * extra_index_urls: Extra index URLs that will be looked up after
+             the main is looked up.
+           * sources: list[str], the sources to download things for. Each value is
+             the contents of requirements files.
+           * envsubst: list[str], the envsubst vars for performing substitution in index url.
+           * netrc: The netrc parameter for ctx.download, see http_file for docs.
+           * auth_patterns: The auth_patterns parameter for ctx.download, see
+               http_file for docs.
+        cache: A dictionary that can be used as a cache between calls during a
+            single evaluation of the extension. We use a dictionary as a cache
+            so that we can reuse calls to the simple API when evaluating the
+            extension. Using the canonical_id parameter of the module_ctx would
+            deposit the simple API responses to the bazel cache and that is
+            undesirable because additions to the PyPI index would not be
+            reflected when re-evaluating the extension unless we do
+            `bazel clean --expunge`.
+        parallel_download: A boolean to enable usage of bazel 7.1 non-blocking downloads.
+        read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
+            Used in tests.
+        _fail: a function to print a failure. Used in tests.
+
+    Returns:
+        dict of pkg name to the parsed HTML contents - a list of structs.
+    """
+    index_url_overrides = {
+        normalize_name(p): i
+        for p, i in (attr.index_url_overrides or {}).items()
+    }
+
+    download_kwargs = {}
+    if bazel_features.external_deps.download_has_block_param:
+        download_kwargs["block"] = not parallel_download
+
+    # NOTE @aignas 2024-03-31: we are not merging results from multiple indexes
+    # to replicate how `pip` would handle this case.
+    contents = {}
+    index_urls = [attr.index_url] + attr.extra_index_urls
+    read_simpleapi = read_simpleapi or _read_simpleapi
+
+    found_on_index = {}
+    warn_overrides = False
+    for i, index_url in enumerate(index_urls):
+        if i != 0:
+            # Warn the user about a potential fix for the overrides
+            warn_overrides = True
+
+        async_downloads = {}
+        sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
+        for pkg in sources:
+            pkg_normalized = normalize_name(pkg)
+            result = read_simpleapi(
+                ctx = ctx,
+                url = "{}/{}/".format(
+                    index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
+                    pkg,
+                ),
+                attr = attr,
+                cache = cache,
+                **download_kwargs
+            )
+            if hasattr(result, "wait"):
+                # We will process it in a separate loop:
+                async_downloads[pkg] = struct(
+                    pkg_normalized = pkg_normalized,
+                    wait = result.wait,
+                )
+            elif result.success:
+                contents[pkg_normalized] = result.output
+                found_on_index[pkg] = index_url
+
+        if not async_downloads:
+            continue
+
+        # If we use `block` == False, then we need to have a second loop that is
+        # collecting all of the results as they were being downloaded in parallel.
+        for pkg, download in async_downloads.items():
+            result = download.wait()
+
+            if result.success:
+                contents[download.pkg_normalized] = result.output
+                found_on_index[pkg] = index_url
+
+    failed_sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
+    if failed_sources:
+        _fail("Failed to download metadata for {} for from urls: {}".format(
+            failed_sources,
+            index_urls,
+        ))
+        return None
+
+    if warn_overrides:
+        index_url_overrides = {
+            pkg: found_on_index[pkg]
+            for pkg in attr.sources
+            if found_on_index[pkg] != attr.index_url
+        }
+
+        # buildifier: disable=print
+        print("You can use the following `index_url_overrides` to avoid the 404 warnings:\n{}".format(
+            render.dict(index_url_overrides),
+        ))
+
+    return contents
+
 def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     """Read SimpleAPI.
 
@@ -89,126 +210,6 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
         )
 
     return _read_index_result(ctx, download, output, real_url, cache, cache_key)
-
-def simpleapi_download(
-        ctx,
-        *,
-        attr,
-        cache,
-        parallel_download = True,
-        read_simpleapi = _read_simpleapi,
-        _fail = fail):
-    """Download Simple API HTML.
-
-    Args:
-        ctx: The module_ctx or repository_ctx.
-        attr: Contains the parameters for the download. They are grouped into a
-          struct for better clarity. It must have attributes:
-           * index_url: str, the index.
-           * index_url_overrides: dict[str, str], the index overrides for
-             separate packages.
-           * extra_index_urls: Extra index URLs that will be looked up after
-             the main is looked up.
-           * sources: list[str], the sources to download things for. Each value is
-             the contents of requirements files.
-           * envsubst: list[str], the envsubst vars for performing substitution in index url.
-           * netrc: The netrc parameter for ctx.download, see http_file for docs.
-           * auth_patterns: The auth_patterns parameter for ctx.download, see
-               http_file for docs.
-        cache: A dictionary that can be used as a cache between calls during a
-            single evaluation of the extension. We use a dictionary as a cache
-            so that we can reuse calls to the simple API when evaluating the
-            extension. Using the canonical_id parameter of the module_ctx would
-            deposit the simple API responses to the bazel cache and that is
-            undesirable because additions to the PyPI index would not be
-            reflected when re-evaluating the extension unless we do
-            `bazel clean --expunge`.
-        parallel_download: A boolean to enable usage of bazel 7.1 non-blocking downloads.
-        read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
-            Used in tests.
-        _fail: a function to print a failure. Used in tests.
-
-    Returns:
-        dict of pkg name to the parsed HTML contents - a list of structs.
-    """
-    index_url_overrides = {
-        normalize_name(p): i
-        for p, i in (attr.index_url_overrides or {}).items()
-    }
-
-    download_kwargs = {}
-    if bazel_features.external_deps.download_has_block_param:
-        download_kwargs["block"] = not parallel_download
-
-    # NOTE @aignas 2024-03-31: we are not merging results from multiple indexes
-    # to replicate how `pip` would handle this case.
-    contents = {}
-    index_urls = [attr.index_url] + attr.extra_index_urls
-
-    found_on_index = {}
-    warn_overrides = False
-    for i, index_url in enumerate(index_urls):
-        if i != 0:
-            # Warn the user about a potential fix for the overrides
-            warn_overrides = True
-
-        async_downloads = {}
-        sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
-        for pkg in sources:
-            pkg_normalized = normalize_name(pkg)
-            result = read_simpleapi(
-                ctx = ctx,
-                url = "{}/{}/".format(
-                    index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
-                    pkg,
-                ),
-                attr = attr,
-                cache = cache,
-                **download_kwargs
-            )
-            if hasattr(result, "wait"):
-                # We will process it in a separate loop:
-                async_downloads[pkg] = struct(
-                    pkg_normalized = pkg_normalized,
-                    wait = result.wait,
-                )
-            elif result.success:
-                contents[pkg_normalized] = result.output
-                found_on_index[pkg] = index_url
-
-        if not async_downloads:
-            continue
-
-        # If we use `block` == False, then we need to have a second loop that is
-        # collecting all of the results as they were being downloaded in parallel.
-        for pkg, download in async_downloads.items():
-            result = download.wait()
-
-            if result.success:
-                contents[download.pkg_normalized] = result.output
-                found_on_index[pkg] = index_url
-
-    failed_sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
-    if failed_sources:
-        _fail("Failed to download metadata for {} for from urls: {}".format(
-            failed_sources,
-            index_urls,
-        ))
-        return None
-
-    if warn_overrides:
-        index_url_overrides = {
-            pkg: found_on_index[pkg]
-            for pkg in attr.sources
-            if found_on_index[pkg] != attr.index_url
-        }
-
-        # buildifier: disable=print
-        print("You can use the following `index_url_overrides` to avoid the 404 warnings:\n{}".format(
-            render.dict(index_url_overrides),
-        ))
-
-    return contents
 
 def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:
