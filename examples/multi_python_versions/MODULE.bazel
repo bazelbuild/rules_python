@@ -36,6 +36,7 @@ use_repo(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 use_repo(pip, "pypi")
+use_repo(pip, "pypi_3_10_only")
 pip.parse(
     hub_name = "pypi",
     python_version = "3.8",
@@ -55,6 +56,11 @@ pip.parse(
     hub_name = "pypi",
     python_version = "3.11",
     requirements_lock = "//requirements:requirements_lock_3_11.txt",
+)
+pip.parse(
+    hub_name = "pypi_3_10_only",
+    python_version = "3.11",
+    requirements_lock = "//requirements:requirements_lock_3_10_only.txt",
 )
 
 # example test dependencies
