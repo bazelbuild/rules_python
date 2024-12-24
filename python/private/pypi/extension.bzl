@@ -262,66 +262,64 @@ def _create_whl_repos(
         })
 
         is_exposed = False
-        if get_index_urls:
-            # TODO @aignas 2024-05-26: move to a separate function
-            found_something = False
-            for requirement in requirements:
-                is_exposed = is_exposed or requirement.is_exposed
-                dists = requirement.whls
-                if not pip_attr.download_only and requirement.sdist:
-                    dists = dists + [requirement.sdist]
 
-                for distribution in dists:
-                    found_something = True
-                    is_reproducible = False
+        # TODO @aignas 2024-05-26: move to a separate function
+        found_something = False
+        for requirement in requirements:
+            is_exposed = is_exposed or requirement.is_exposed
+            dists = requirement.whls
+            if not pip_attr.download_only and requirement.sdist:
+                dists = dists + [requirement.sdist]
 
-                    args = dict(whl_library_args)
-                    if pip_attr.netrc:
-                        args["netrc"] = pip_attr.netrc
-                    if pip_attr.auth_patterns:
-                        args["auth_patterns"] = pip_attr.auth_patterns
+            for distribution in dists:
+                found_something = True
+                is_reproducible = False
 
-                    if not distribution.filename.endswith(".whl"):
-                        # pip is not used to download wheels and the python
-                        # `whl_library` helpers are only extracting things, however
-                        # for sdists, they will be built by `pip`, so we still
-                        # need to pass the extra args there.
-                        args["extra_pip_args"] = requirement.extra_pip_args
+                args = dict(whl_library_args)
+                if pip_attr.netrc:
+                    args["netrc"] = pip_attr.netrc
+                if pip_attr.auth_patterns:
+                    args["auth_patterns"] = pip_attr.auth_patterns
 
-                    # This is no-op because pip is not used to download the wheel.
-                    args.pop("download_only", None)
+                if not distribution.filename.endswith(".whl"):
+                    # pip is not used to download wheels and the python
+                    # `whl_library` helpers are only extracting things, however
+                    # for sdists, they will be built by `pip`, so we still
+                    # need to pass the extra args there.
+                    args["extra_pip_args"] = requirement.extra_pip_args
 
-                    repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
-                    args["requirement"] = requirement.srcs.requirement
-                    args["urls"] = [distribution.url]
-                    args["sha256"] = distribution.sha256
-                    args["filename"] = distribution.filename
-                    args["experimental_target_platforms"] = requirement.target_platforms
+                # This is no-op because pip is not used to download the wheel.
+                args.pop("download_only", None)
 
-                    # Pure python wheels or sdists may need to have a platform here
-                    target_platforms = None
-                    if distribution.filename.endswith("-any.whl") or not distribution.filename.endswith(".whl"):
-                        if len(requirements) > 1:
-                            target_platforms = requirement.target_platforms
+                repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
+                args["requirement"] = requirement.srcs.requirement
+                args["urls"] = [distribution.url]
+                args["sha256"] = distribution.sha256
+                args["filename"] = distribution.filename
+                args["experimental_target_platforms"] = requirement.target_platforms
 
-                    whl_libraries[repo_name] = args
+                # Pure python wheels or sdists may need to have a platform here
+                target_platforms = None
+                if distribution.filename.endswith("-any.whl") or not distribution.filename.endswith(".whl"):
+                    if len(requirements) > 1:
+                        target_platforms = requirement.target_platforms
 
-                    whl_map.setdefault(whl_name, {})[whl_config_setting(
-                        version = major_minor,
-                        filename = distribution.filename,
-                        target_platforms = target_platforms,
-                    )] = repo_name
+                whl_libraries[repo_name] = args
 
-            if found_something:
-                if is_exposed:
-                    exposed_packages[whl_name] = None
-                continue
+                whl_map.setdefault(whl_name, {})[whl_config_setting(
+                    version = major_minor,
+                    filename = distribution.filename,
+                    target_platforms = target_platforms,
+                )] = repo_name
+
+        if found_something:
+            if is_exposed:
+                exposed_packages[whl_name] = None
+            continue
 
         is_exposed = False
         for requirement in requirements:
             is_exposed = is_exposed or requirement.is_exposed
-            if get_index_urls:
-                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.srcs.requirement_line))
 
             args = dict(whl_library_args)  # make a copy
             args["requirement"] = requirement.srcs.requirement_line
