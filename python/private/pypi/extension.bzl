@@ -218,8 +218,6 @@ def _create_whl_repos(
     )
 
     for whl_name, requirements in requirements_by_platform.items():
-        whl_name = normalize_name(whl_name)
-
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
@@ -333,7 +331,7 @@ def _create_whl_repos(
         is_reproducible = is_reproducible,
         whl_map = whl_map,
         exposed_packages = {
-            normalize_name(whl_name): None
+            whl_name: None
             for whl_name, requirements in requirements_by_platform.items()
             if len([r for r in requirements if r.is_exposed]) > 0
         },
