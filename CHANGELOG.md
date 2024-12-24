@@ -56,6 +56,8 @@ Unreleased changes template.
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
   tested by CI, so functionality cannot be guaranteed.
+* ({bzl:obj}`pip.parse`) Only query SimpleAPI for packages that have
+  sha values in the `requirements.txt` file.
 
 {#v0-0-0-fixed}
 ### Fixed

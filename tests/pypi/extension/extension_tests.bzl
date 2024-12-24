@@ -575,7 +575,7 @@ some_pkg==0.0.1
             index_url = "pypi.org",
             index_url_overrides = {},
             netrc = None,
-            sources = ["simple", "some_pkg"],
+            sources = ["simple"],
         ),
         "cache": {},
         "parallel_download": False,
