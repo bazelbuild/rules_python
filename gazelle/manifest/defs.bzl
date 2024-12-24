@@ -79,7 +79,7 @@ def gazelle_python_manifest(
 
     update_args = [
         "--manifest-generator-hash=$(execpath {})".format(manifest_generator_hash),
-        "--requirements=$(rootpath {})".format(requirements) if requirements else "--requirements=",
+        "--requirements=$(execpath {})".format(requirements) if requirements else "--requirements=",
         "--pip-repository-name={}".format(pip_repository_name),
         "--modules-mapping=$(execpath {})".format(modules_mapping),
         "--output=$(execpath {})".format(generated_manifest),
