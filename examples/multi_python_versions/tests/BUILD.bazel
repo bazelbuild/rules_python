@@ -78,6 +78,13 @@ py_test_3_10(
     deps = ["//libs/my_lib"],
 )
 
+py_test_3_10(
+    name = "my_lib_3_10_only_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_310_only_lib"],
+)
+
 py_test_3_11(
     name = "my_lib_3_11_test",
     srcs = ["my_lib_test.py"],
