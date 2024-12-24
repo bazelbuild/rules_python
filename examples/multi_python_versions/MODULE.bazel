@@ -59,7 +59,7 @@ pip.parse(
 )
 pip.parse(
     hub_name = "pypi_3_10_only",
-    python_version = "3.11",
+    python_version = "3.10",
     requirements_lock = "//requirements:requirements_lock_3_10_only.txt",
 )
 
