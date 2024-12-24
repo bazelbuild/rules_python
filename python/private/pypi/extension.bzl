@@ -264,7 +264,6 @@ def _create_whl_repos(
         is_exposed = False
 
         # TODO @aignas 2024-05-26: move to a separate function
-        found_something = False
         for requirement in requirements:
             is_exposed = is_exposed or requirement.is_exposed
             dists = requirement.whls
@@ -272,9 +271,6 @@ def _create_whl_repos(
                 dists = dists + [requirement.sdist]
 
             for distribution in dists:
-                found_something = True
-                is_reproducible = False
-
                 args = dict(whl_library_args)
                 if pip_attr.netrc:
                     args["netrc"] = pip_attr.netrc
@@ -312,15 +308,11 @@ def _create_whl_repos(
                     target_platforms = target_platforms,
                 )] = repo_name
 
-        if found_something:
-            if is_exposed:
-                exposed_packages[whl_name] = None
-            continue
+            if dists:
+                is_reproducible = False
+                continue
 
-        is_exposed = False
-        for requirement in requirements:
-            is_exposed = is_exposed or requirement.is_exposed
-
+            # Fallback to a pip-installed wheel
             args = dict(whl_library_args)  # make a copy
             args["requirement"] = requirement.srcs.requirement_line
             if requirement.extra_pip_args:
