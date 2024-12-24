@@ -86,7 +86,7 @@ class TestCase(unittest.TestCase):
             "RUNFILES_DIR": os.environ["TEST_SRCDIR"]
         }
 
-    def run_bazel(self, *args: str, check: bool = True) -> ExecuteResult:
+    def run_bazel(self, *args: str, input=None, check: bool = True) -> ExecuteResult:
         """Run a bazel invocation.
 
         Args:
@@ -104,6 +104,7 @@ class TestCase(unittest.TestCase):
         proc_result = subprocess.run(
             args=args,
             text=True,
+            input=input,
             capture_output=True,
             cwd=cwd,
             env=env,
