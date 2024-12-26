@@ -8,4 +8,8 @@ py_library(
     deps = [
         requirement("flask")
     ],
+    target_compatible_with = select({
+        "@rules_python//python/config_settings:is_python_3.10": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    })
 )
