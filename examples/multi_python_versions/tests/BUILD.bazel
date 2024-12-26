@@ -80,8 +80,8 @@ py_test_3_10(
 
 py_test_3_10(
     name = "my_lib_3_10_only_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
+    srcs = ["my_310_only_lib_test.py"],
+    main = "my_310_only_lib_test.py",
     deps = ["//libs/my_310_only_lib"],
 )
 

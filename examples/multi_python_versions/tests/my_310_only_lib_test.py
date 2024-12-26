@@ -12,8 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
+import os
+import sys
 
+import libs.my_310_only_lib as my_lib
 
-def flask_is_for_python_version(sanitized_version_check):
-    return f"pypi_{sanitized_version_check}_only_310_flask" in flask.__file__
+workspace_version = f"{sys.version_info.major}_{sys.version_info.minor}"
+bzlmod_version = f"{sys.version_info.major}{sys.version_info.minor}"
+
+if not my_lib.flask_is_for_python_version(
+    workspace_version
+) and not my_lib.flask_is_for_python_version(bzlmod_version):
+    print(
+        "expected package for Python version is different than returned\n"
+        f"expected either {workspace_version} or {bzlmod_version}\n"
+        f"but got {my_lib.flask.__file__}"
+    )
+    sys.exit(1)
