@@ -60,7 +60,7 @@ def _repr_config_setting(alias):
         )
     else:
         return repr(
-            alias.config_setting or ("//_config:is_python_" + alias.version),
+            alias.config_setting or "//_config:is_cp{}".format(alias.version.replace(".", "")),
         )
 
 def _repr_actual(aliases):

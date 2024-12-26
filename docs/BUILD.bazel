@@ -103,6 +103,8 @@ sphinx_stardocs(
         "//python/private:py_runtime_rule_bzl",
         "//python/private:py_test_rule_bzl",
         "//python/private/api:py_common_api_bzl",
+        "//python/private/pypi:config_settings_bzl",
+        "//python/private/pypi:pkg_aliases_bzl",
     ] + ([
         # Bazel 6 + Stardoc isn't able to parse something about the python bzlmod extension
         "//python/extensions:python_bzl",

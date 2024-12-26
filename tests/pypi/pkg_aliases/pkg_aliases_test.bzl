@@ -186,9 +186,9 @@ def _test_multiplatform_whl_aliases(env):
     want = {
         "pkg": {
             "//:my_config_setting": "@bzlmod_repo//:pkg",
-            "//_config:is_cp3.9_linux_x86_64": "@bzlmod_repo_for_a_particular_platform//:pkg",
-            "//_config:is_cp3.9_py3_none_any": "@filename_repo//:pkg",
-            "//_config:is_cp3.9_py3_none_any_linux_x86_64": "@filename_repo_for_platform//:pkg",
+            "//_config:is_cp39_linux_x86_64": "@bzlmod_repo_for_a_particular_platform//:pkg",
+            "//_config:is_cp39_py3_none_any": "@filename_repo//:pkg",
+            "//_config:is_cp39_py3_none_any_linux_x86_64": "@filename_repo_for_platform//:pkg",
             "//conditions:default": "_no_matching_repository",
         },
     }
@@ -197,9 +197,9 @@ def _test_multiplatform_whl_aliases(env):
     env.expect.that_str(actual_no_match_error[0]).contains("""\
 configuration settings:
     //:my_config_setting
-    //_config:is_cp3.9_linux_x86_64
-    //_config:is_cp3.9_py3_none_any
-    //_config:is_cp3.9_py3_none_any_linux_x86_64
+    //_config:is_cp39_linux_x86_64
+    //_config:is_cp39_py3_none_any
+    //_config:is_cp39_py3_none_any_linux_x86_64
 
 """)
 
@@ -286,8 +286,8 @@ def _test_multiplatform_whl_aliases_nofilename_target_platforms(env):
     got = multiplatform_whl_aliases(aliases = aliases)
 
     want = {
-        "//_config:is_cp3.1_linux_aarch64": "foo",
-        "//_config:is_cp3.1_linux_x86_64": "foo",
+        "//_config:is_cp31_linux_aarch64": "foo",
+        "//_config:is_cp31_linux_x86_64": "foo",
     }
     env.expect.that_dict(got).contains_exactly(want)
 
@@ -305,11 +305,11 @@ def _test_multiplatform_whl_aliases_filename(env):
         ): "foo-py3-0.0.1",
         whl_config_setting(
             filename = "foo-0.0.1-cp313-cp313-any.whl",
-            version = "3.1",
+            version = "3.13",
         ): "foo-cp-0.0.1",
         whl_config_setting(
             filename = "foo-0.0.1-cp313-cp313t-any.whl",
-            version = "3.1",
+            version = "3.13",
         ): "foo-cpt-0.0.1",
         whl_config_setting(
             filename = "foo-0.0.2-py3-none-any.whl",
@@ -327,12 +327,12 @@ def _test_multiplatform_whl_aliases_filename(env):
         osx_versions = [],
     )
     want = {
-        "//_config:is_cp3.1_cp3x_cp_any": "foo-cp-0.0.1",
-        "//_config:is_cp3.1_cp3x_cpt_any": "foo-cpt-0.0.1",
-        "//_config:is_cp3.1_py3_none_any": "foo-py3-0.0.1",
-        "//_config:is_cp3.1_py3_none_any_linux_aarch64": "foo-0.0.2",
-        "//_config:is_cp3.1_py3_none_any_linux_x86_64": "foo-0.0.2",
-        "//_config:is_cp3.2_py3_none_any": "foo-py3-0.0.3",
+        "//_config:is_cp313_cp313_any": "foo-cp-0.0.1",
+        "//_config:is_cp313_cp313t_any": "foo-cpt-0.0.1",
+        "//_config:is_cp31_py3_none_any": "foo-py3-0.0.1",
+        "//_config:is_cp31_py3_none_any_linux_aarch64": "foo-0.0.2",
+        "//_config:is_cp31_py3_none_any_linux_x86_64": "foo-0.0.2",
+        "//_config:is_cp32_py3_none_any": "foo-py3-0.0.3",
     }
     env.expect.that_dict(got).contains_exactly(want)
 
@@ -378,12 +378,12 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
         # For this to fully work we need to have the pypi:config_settings.bzl to generate the
         # extra targets that use the FeatureFlagInfo and this to generate extra aliases for the
         # config settings.
-        "//_config:is_cp3.1_py3_none_manylinux_2_17_x86_64": "glibc-2.17",
-        "//_config:is_cp3.1_py3_none_manylinux_2_18_x86_64": "glibc-2.18",
-        "//_config:is_cp3.1_py3_none_manylinux_x86_64": "glibc-2.17",
-        "//_config:is_cp3.1_py3_none_musllinux_1_1_x86_64": "musl-1.1",
-        "//_config:is_cp3.1_py3_none_musllinux_1_2_x86_64": "musl-1.1",
-        "//_config:is_cp3.1_py3_none_musllinux_x86_64": "musl-1.1",
+        "//_config:is_cp31_py3_none_manylinux_2_17_x86_64": "glibc-2.17",
+        "//_config:is_cp31_py3_none_manylinux_2_18_x86_64": "glibc-2.18",
+        "//_config:is_cp31_py3_none_manylinux_x86_64": "glibc-2.17",
+        "//_config:is_cp31_py3_none_musllinux_1_1_x86_64": "musl-1.1",
+        "//_config:is_cp31_py3_none_musllinux_1_2_x86_64": "musl-1.1",
+        "//_config:is_cp31_py3_none_musllinux_x86_64": "musl-1.1",
     }
     env.expect.that_dict(got).contains_exactly(want)
 
