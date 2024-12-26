@@ -75,6 +75,8 @@ Unreleased changes template.
   are now printing more details and include the currently active flag
   values. Fixes [#2466](https://github.com/bazelbuild/rules_python/issues/2466).
 * (py_proto_library) Fix import paths in Bazel 8.
++ (gazelle) Gazelle no longer ignores `setup.py` files by default. To restore
+  this behavior, apply the `# gazelle:python_ignore_files setup.py` directive.
 
 [pep-695]: https://peps.python.org/pep-0695/
 
