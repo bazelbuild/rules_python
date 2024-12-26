@@ -126,7 +126,6 @@ const (
 // defaultIgnoreFiles is the list of default values used in the
 // python_ignore_files option.
 var defaultIgnoreFiles = map[string]struct{}{
-	"setup.py": {},
 }
 
 // Configs is an extension of map[string]*Config. It provides finding methods
