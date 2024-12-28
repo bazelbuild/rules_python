@@ -442,7 +442,9 @@ def create_py_info(
     py_info.direct_original_sources.add(original_sources)
     py_info.transitive_original_sources.add(original_sources)
     py_info.direct_pyc_files.add(required_pyc_files)
+    py_info.direct_pyi_files.add(ctx.files.pyi_srcs)
     py_info.transitive_pyc_files.add(required_pyc_files)
+    py_info.transitive_pyi_files.add(ctx.files.pyi_srcs)
     py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)
     py_info.transitive_implicit_pyc_source_files.add(implicit_pyc_source_files)
     py_info.imports.add(imports)
@@ -461,6 +463,10 @@ def create_py_info(
                 if f.extension == "py":
                     py_info.transitive_sources.add(f)
                 py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
+    for target in ctx.attr.pyi_deps:
+        # PyInfo may not be present e.g. cc_library rules.
+        if PyInfo in target or (BuiltinPyInfo != None and BuiltinPyInfo in target):
+            py_info.merge(_get_py_info(target))
 
     deps_transitive_sources = py_info.transitive_sources.build()
     py_info.transitive_sources.add(required_py_files)
