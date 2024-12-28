@@ -60,6 +60,8 @@ Unreleased changes template.
   fetching the metadata from SimpleAPI. The calls will be done in parallel to
   each index separately, so the extension evaluation time might slow down if
   not using {bzl:obj}`pip.parse.experimental_index_url_overrides`.
+* ({bzl:obj}`pip.parse`) Only query SimpleAPI for packages that have
+  sha values in the `requirements.txt` file.
 
 {#v0-0-0-fixed}
 ### Fixed

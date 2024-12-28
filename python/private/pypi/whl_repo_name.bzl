@@ -18,18 +18,17 @@
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":parse_whl_name.bzl", "parse_whl_name")
 
-def whl_repo_name(prefix, filename, sha256):
+def whl_repo_name(filename, sha256):
     """Return a valid whl_library repo name given a distribution filename.
 
     Args:
-        prefix: {type}`str` the prefix of the whl_library.
         filename: {type}`str` the filename of the distribution.
         sha256: {type}`str` the sha256 of the distribution.
 
     Returns:
         a string that can be used in {obj}`whl_library`.
     """
-    parts = [prefix]
+    parts = []
 
     if not filename.endswith(".whl"):
         # Then the filename is basically foo-3.2.1.<ext>
@@ -51,11 +50,10 @@ def whl_repo_name(prefix, filename, sha256):
 
     return "_".join(parts)
 
-def pypi_repo_name(prefix, whl_name, *target_platforms):
+def pypi_repo_name(whl_name, *target_platforms):
     """Return a valid whl_library given a requirement line.
 
     Args:
-        prefix: {type}`str` the prefix of the whl_library.
         whl_name: {type}`str` the whl_name to use.
         *target_platforms: {type}`list[str]` the target platforms to use in the name.
 
@@ -63,7 +61,6 @@ def pypi_repo_name(prefix, whl_name, *target_platforms):
         {type}`str` that can be used in {obj}`whl_library`.
     """
     parts = [
-        prefix,
         normalize_name(whl_name),
     ]
     parts.extend([p.partition("_")[-1] for p in target_platforms])
