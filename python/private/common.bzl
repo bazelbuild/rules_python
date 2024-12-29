@@ -437,12 +437,11 @@ def create_py_info(
         transitive sources collected from dependencies (the latter is only
         necessary for deprecated extra actions support).
     """
-
     py_info = PyInfoBuilder()
     py_info.direct_original_sources.add(original_sources)
-    py_info.transitive_original_sources.add(original_sources)
     py_info.direct_pyc_files.add(required_pyc_files)
     py_info.direct_pyi_files.add(ctx.files.pyi_srcs)
+    py_info.transitive_original_sources.add(original_sources)
     py_info.transitive_pyc_files.add(required_pyc_files)
     py_info.transitive_pyi_files.add(ctx.files.pyi_srcs)
     py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)

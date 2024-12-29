@@ -63,6 +63,7 @@ def _test_py_info_populated(name, config):
     rt_util.helper_target(
         config.base_test_rule,
         name = name + "_subject",
+        srcs = [name + "_subject.py"],
         pyi_srcs = ["subject.pyi"],
         pyi_deps = [name + "_lib2"],
     )
