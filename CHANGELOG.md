@@ -97,10 +97,13 @@ Unreleased changes template.
     * 3.11.11
     * 3.12.8
     * 3.13.1
+* (rules) Attributes for type definition files (`.pyi` files) and type-checking
+  only dependencies added. See {obj}`py_library.pyi_srcs` and
+  `py_library.pyi_deps` (and the same named attributes for `py_binary` and
+  `py_test`).
 * (providers) {obj}`PyInfo` has new fields to aid static analysis tools:
   {obj}`direct_original_sources`, {obj}`direct_pyi_files`,
-  {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`. NOTE: these
-  are not yet fully populated by `py_library`
+  {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`.
 
 [20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
