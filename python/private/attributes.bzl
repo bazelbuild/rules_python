@@ -375,6 +375,35 @@ in the resulting output or not. Valid values are:
 * `omit_source`: Don't include the original py source.
 """,
         ),
+        "pyi_deps": attr.label_list(
+            doc = """
+Dependencies providing type definitions the library needs.
+
+These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
+These are build-time only dependencies and not included as part of a runnable
+program (packaging rules may include them, however).
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+            providers = [
+                [PyInfo],
+                [CcInfo],
+            ] + _MaybeBuiltinPyInfo,
+        ),
+        "pyi_srcs": attr.label_list(
+            doc = """
+Type definition files for the library.
+
+These are typically `.pyi` files, but other file types for type-checker specific
+formats are allowed. These files are build-time only dependencies and not included
+as part of a runnable program (packaging rules may include them, however).
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+            allow_files = True,
+        ),
         # Required attribute, but details vary by rule.
         # Use create_srcs_attr to create one.
         "srcs": None,
@@ -395,35 +424,6 @@ in the resulting output or not. Valid values are:
         # Force enabling auto exec groups, see
         # https://bazel.build/extending/auto-exec-groups#how-enable-particular-rule
         "_use_auto_exec_groups": attr.bool(default = True),
-        "pyi_srcs": attr.label_list(
-            doc = """
-Type definition files for the library.
-
-These are typically `.pyi` files, but other file types for type-checker specific
-formats are allowed. These files are build-time only dependencies and not included
-as part of a runnable program (packaging rules may include them, however).
-
-:::{versionadded} VERSION_NEXT_FEATURE
-:::
-""",
-            allow_files = True,
-        ),
-        "pyi_deps": attr.label_list(
-            doc = """
-Dependencies providing type definitions the library needs.
-
-These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
-These are build-time only dependencies and not included as part of a runnable
-program (packaging rules may include them, however).
-
-:::{versionadded} VERSION_NEXT_FEATURE
-:::
-""",
-            providers = [
-                [PyInfo],
-                [CcInfo],
-            ] + _MaybeBuiltinPyInfo,
-        ),
     },
     allow_none = True,
 )
