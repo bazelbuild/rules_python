@@ -76,6 +76,7 @@ load(
 _py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"
 _ZIP_RUNFILES_DIRECTORY_NAME = "runfiles"
+_PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
 
 # Bazel 5.4 doesn't have config_common.toolchain_type
 _CC_TOOLCHAINS = [config_common.toolchain_type(
@@ -132,16 +133,34 @@ Valid values are:
   target level.
 """,
         ),
-        # TODO(b/203567235): In Google, this attribute is deprecated, and can
-        # only effectively be PY3. Externally, with Bazel, this attribute has
-        # a separate story.
         "python_version": attr.string(
             # TODO(b/203567235): In the Java impl, the default comes from
             # --python_version. Not clear what the Starlark equivalent is.
-            default = "PY3",
-            # NOTE: Some tests care about the order of these values.
-            values = ["PY2", "PY3"],
-            doc = "Defunct, unused, does nothing.",
+            doc = """
+The Python version this target should use.
+
+The value should be in `X.Y` or `X.Y.Z` (or compatible) format. If empty or
+unspecified, the incoming configuration's {obj}`--python_version` flag is
+inherited. For backwards compatibility, the values `PY2` and `PY3` are
+accepted, but treated as an empty/unspecified value.
+
+:::{note}
+In order for the requested version to be used, there must be a
+toolchain configured to match the Python version. If there isn't, then it
+may be silently ignored, or an error may occur, depending on the toolchain
+configuration.
+:::
+
+:::{versionchanged} VERSION_NEXT_PATCH
+
+This attribute was changed from only accepting `PY2` and `PY3` values to
+accepting arbitrary Python versions.
+:::
+""",
+        ),
+        # Required to opt-in to the transition feature.
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
         "_bootstrap_impl_flag": attr.label(
             default = "//python/config_settings:bootstrap_impl",
@@ -1008,7 +1027,7 @@ def _get_build_info(ctx, cc_toolchain):
         return build_info_files.redacted_build_info_files.to_list()
 
 def _validate_executable(ctx):
-    if ctx.attr.python_version != "PY3":
+    if ctx.attr.python_version == "PY2":
         fail("It is not allowed to use Python 2")
 
 def _declare_executable_file(ctx):
@@ -1691,9 +1710,26 @@ def _create_run_environment_info(ctx, inherited_environment):
         inherited_environment = inherited_environment,
     )
 
+def _transition_executable_impl(input_settings, attr):
+    settings = {
+        _PYTHON_VERSION_FLAG: input_settings[_PYTHON_VERSION_FLAG],
+    }
+    if attr.python_version and attr.python_version not in ("PY2", "PY3"):
+        settings[_PYTHON_VERSION_FLAG] = attr.python_version
+    return settings
+
+_transition_executable = transition(
+    implementation = _transition_executable_impl,
+    inputs = [
+        _PYTHON_VERSION_FLAG,
+    ],
+    outputs = [
+        _PYTHON_VERSION_FLAG,
+    ],
+)
+
 def create_executable_rule(*, attrs, **kwargs):
     return create_base_executable_rule(
-        ##attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
         attrs = attrs,
         fragments = ["py", "bazel_py"],
         **kwargs
@@ -1715,6 +1751,7 @@ def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
         fragments = fragments + ["py"]
     kwargs.setdefault("provides", []).append(PyExecutableInfo)
     kwargs["exec_groups"] = REQUIRED_EXEC_GROUPS | (kwargs.get("exec_groups") or {})
+    kwargs.setdefault("cfg", _transition_executable)
     return rule(
         # TODO: add ability to remove attrs, i.e. for imports attr
         attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
