@@ -408,6 +408,7 @@ def collect_runfiles(ctx, files = depset()):
 def create_py_info(
         ctx,
         *,
+        original_sources,
         required_py_files,
         required_pyc_files,
         implicit_pyc_files,
@@ -417,6 +418,7 @@ def create_py_info(
 
     Args:
         ctx: rule ctx.
+        original_sources: `depset[File]`; the original input sources from `srcs`
         required_py_files: `depset[File]`; the direct, `.py` sources for the
             target that **must** be included by downstream targets. This should
             only be Python source files. It should not include pyc files.
@@ -435,10 +437,13 @@ def create_py_info(
         transitive sources collected from dependencies (the latter is only
         necessary for deprecated extra actions support).
     """
-
     py_info = PyInfoBuilder()
+    py_info.direct_original_sources.add(original_sources)
     py_info.direct_pyc_files.add(required_pyc_files)
+    py_info.direct_pyi_files.add(ctx.files.pyi_srcs)
+    py_info.transitive_original_sources.add(original_sources)
     py_info.transitive_pyc_files.add(required_pyc_files)
+    py_info.transitive_pyi_files.add(ctx.files.pyi_srcs)
     py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)
     py_info.transitive_implicit_pyc_source_files.add(implicit_pyc_source_files)
     py_info.imports.add(imports)
@@ -457,6 +462,10 @@ def create_py_info(
                 if f.extension == "py":
                     py_info.transitive_sources.add(f)
                 py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
+    for target in ctx.attr.pyi_deps:
+        # PyInfo may not be present e.g. cc_library rules.
+        if PyInfo in target or (BuiltinPyInfo != None and BuiltinPyInfo in target):
+            py_info.merge(_get_py_info(target))
 
     deps_transitive_sources = py_info.transitive_sources.build()
     py_info.transitive_sources.add(required_py_files)
