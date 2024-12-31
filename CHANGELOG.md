@@ -62,6 +62,14 @@ Unreleased changes template.
   not using {bzl:obj}`pip.parse.experimental_index_url_overrides`.
 * ({bzl:obj}`pip.parse`) Only query SimpleAPI for packages that have
   sha values in the `requirements.txt` file.
+* (rules) The version-aware rules have been folded into the base rules and
+  the version-aware rules are now simply aliases for the base rules. The
+  `python_version` attribute is still used to specify the Python version.
+
+{#v0-0-0-deprecations}
+#### Deprecations
+* `//python/config_settings:transitions.bzl` and its `py_binary` and `py_test`
+  wrappers are deprecated. Use the regular rules instead.
 
 {#v0-0-0-fixed}
 ### Fixed
