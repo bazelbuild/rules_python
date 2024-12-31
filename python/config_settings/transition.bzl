@@ -31,18 +31,26 @@ is deprecated. It is an alias to the regular rule; use it directly instead:
 """
 
 def py_binary(**kwargs):
-    """[DEPRECATED] Deprecated alias for py_binary."""
+    """[DEPRECATED] Deprecated alias for py_binary.
+
+    Args:
+        **kwargs: keyword args forwarded onto {obj}`py_binary`.
+    """
 
     deprecation = _DEPRECATION_MESSAGE.format(name = "py_binary")
     if kwargs.get("deprecation"):
-        deprecation = deprecation + "\n\n" + deprecation
+        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
     kwargs["deprecation"] = deprecation
     _py_binary(**kwargs)
 
 def py_test(**kwargs):
-    """[DEPRECATED] Deprecated alias for py_test."""
+    """[DEPRECATED] Deprecated alias for py_test.
+
+    Args:
+        **kwargs: keyword args forwarded onto {obj}`py_binary`.
+    """
     deprecation = _DEPRECATION_MESSAGE.format(name = "py_test")
     if kwargs.get("deprecation"):
-        deprecation = deprecation + "\n\n" + deprecation
+        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
     kwargs["deprecation"] = deprecation
     _py_test(**kwargs)
