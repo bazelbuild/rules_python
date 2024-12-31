@@ -1004,6 +1004,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         runfiles_details = runfiles_details,
         main_py = main_py,
         imports = imports,
+        original_sources = direct_sources,
         required_py_files = required_py_files,
         required_pyc_files = required_pyc_files,
         implicit_pyc_files = implicit_pyc_files,
@@ -1567,6 +1568,7 @@ def _create_providers(
         ctx,
         executable,
         main_py,
+        original_sources,
         required_py_files,
         required_pyc_files,
         implicit_pyc_files,
@@ -1585,6 +1587,8 @@ def _create_providers(
         ctx: The rule ctx.
         executable: File; the target's executable file.
         main_py: File; the main .py entry point.
+        original_sources: `depset[File]` the direct `.py` sources for the
+            target that were the original input sources.
         required_py_files: `depset[File]` the direct, `.py` sources for the
             target that **must** be included by downstream targets. This should
             only be Python source files. It should not include pyc files.
@@ -1668,6 +1672,7 @@ def _create_providers(
 
     py_info, deps_transitive_sources, builtin_py_info = create_py_info(
         ctx,
+        original_sources = original_sources,
         required_py_files = required_py_files,
         required_pyc_files = required_pyc_files,
         implicit_pyc_files = implicit_pyc_files,
