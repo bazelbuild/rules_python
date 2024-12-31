@@ -24,5 +24,25 @@ of them should be changed to load the regular rules directly.
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 
-py_binary = _py_binary
-py_test = _py_test
+_DEPRECATION_MESSAGE = """
+The {name} symbol in @rules_python//python/config_settings:transition.bzl
+is deprecated. It is an alias to the regular rule; use it directly instead:
+    load("@rules_python//python:{name}.bzl", "{name}")
+"""
+
+def py_binary(**kwargs):
+    """[DEPRECATED] Deprecated alias for py_binary."""
+
+    deprecation = _DEPRECATION_MESSAGE.format(name = "py_binary")
+    if kwargs.get("deprecation"):
+        deprecation = deprecation + "\n\n" + deprecation
+    kwargs["deprecation"] = deprecation
+    _py_binary(**kwargs)
+
+def py_test(**kwargs):
+    """[DEPRECATED] Deprecated alias for py_test."""
+    deprecation = _DEPRECATION_MESSAGE.format(name = "py_test")
+    if kwargs.get("deprecation"):
+        deprecation = deprecation + "\n\n" + deprecation
+    kwargs["deprecation"] = deprecation
+    _py_test(**kwargs)
