@@ -102,6 +102,7 @@ def py_library_impl(ctx, *, semantics):
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
         ctx,
+        original_sources = direct_sources,
         required_py_files = required_py_files,
         required_pyc_files = required_pyc_files,
         implicit_pyc_files = implicit_pyc_files,
