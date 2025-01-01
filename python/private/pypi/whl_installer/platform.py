@@ -81,6 +81,10 @@ def host_interpreter_minor_version() -> int:
     return sys.version_info.minor
 
 
+def host_interpreter_micro_version() -> int:
+    return sys.version_info.micro
+
+
 @dataclass(frozen=True)
 class Platform:
     os: Optional[OS] = None
@@ -281,6 +285,13 @@ class Platform:
     def env_markers(self, extra: str) -> Dict[str, str]:
         # If it is None, use the host version
         minor_version = self.minor_version or host_interpreter_minor_version()
+        # NOTE: We use the `micro_version` from the current interpreter, which
+        # currently works around
+        # https://github.com/bazelbuild/rules_python/issues/2319
+        #
+        # If we wanted to pass it to this function then we would have a combinatorial
+        # explosion.
+        micro_version = host_interpreter_micro_version()
 
         return {
             "extra": extra,
@@ -291,11 +302,8 @@ class Platform:
             "platform_release": "",  # unset
             "platform_version": "",  # unset
             "python_version": f"3.{minor_version}",
-            # FIXME @aignas 2024-01-14: is putting zero last a good idea? Maybe we should
-            # use `20` or something else to avoid having weird issues where the full version is used for
-            # matching and the author decides to only support 3.y.5 upwards.
-            "implementation_version": f"3.{minor_version}.0",
-            "python_full_version": f"3.{minor_version}.0",
+            "implementation_version": f"3.{minor_version}.{micro_version}",
+            "python_full_version": f"3.{minor_version}.{micro_version}",
             # we assume that the following are the same as the interpreter used to setup the deps:
             # "implementation_name": "cpython"
             # "platform_python_implementation: "CPython",
