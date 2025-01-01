@@ -109,8 +109,7 @@ def _test_py_binary_windows_build_python_zip_false_impl(env, target):
         # have the "_" prefix on them (those are coming from the underlying
         # wrapped binary).
         env.expect.that_target(target).default_outputs().contains_exactly([
-            "{package}/_{test_name}_subject",
-            "{package}/_{test_name}_subject.exe",
+            "{package}/{test_name}_subject.exe",
             "{package}/{test_name}_subject",
             "{package}/{test_name}_subject.py",
         ])
@@ -136,8 +135,7 @@ def _test_py_binary_windows_build_python_zip_true_impl(env, target):
         # have the "_" prefix on them (those are coming from the underlying
         # wrapped binary).
         default_outputs.contains_exactly([
-            "{package}/_{test_name}_subject.exe",
-            "{package}/_{test_name}_subject.zip",
+            "{package}/{test_name}_subject.exe",
             "{package}/{test_name}_subject.py",
             "{package}/{test_name}_subject.zip",
         ])
