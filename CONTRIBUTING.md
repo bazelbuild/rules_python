@@ -137,18 +137,57 @@ If a breaking change is introduced, then `BREAKING CHANGE:` is required; see
 the [Breaking Changes](#breaking-changes) section for how to introduce breaking
 changes.
 
+User visible changes, such as features, fixes, or notable refactors, should
+be documneted in CHANGELOG.md and their respective API doc. See [Documenting
+changes] for how to do so.
+
 Common `type`s:
 
 * `build:` means it affects the building or development workflow.
 * `docs:` means only documentation is being added, updated, or fixed.
-* `feat:` means a user-visible feature is being added.
-* `fix:` means a user-visible behavior is being fixed.
-* `refactor:` means some sort of code cleanup that doesn't change user-visible behavior.
+* `feat:` means a user-visible feature is being added. See [Documenting version
+  changes] for how to documenAdd `{versionadded}`
+  to appropriate docs.
+* `fix:` means a user-visible behavior is being fixed. If the fix is changing
+  behavior of a function, add `{versionchanged}` to appropriate docs, as necessary.
+* `refactor:` means some sort of code cleanup that doesn't change user-visible
+  behavior. Add `{versionchanged}` to appropriate docs, as necessary.
 * `revert:` means a prior change is being reverted in some way.
 * `test:` means only tests are being added.
 
 For the full details of types, see
 [Conventional Commits](https://www.conventionalcommits.org/).
+
+### Documenting changes
+
+Changes are documented in two places: CHANGELOG.md and API docs.
+
+CHANGELOG.md contains a brief, human friendly, description. This text is
+intended for easy skimming so that, when people upgrade, they can quickly get a
+sense of what's relevant to them.
+
+API documentation are the doc strings for functions, fields, attributes, etc.
+When user-visible or notable behavior is added, changed, or removed, the
+`{versionadded}`, `{versionchanged}` or `{versionremoved}` directives should be
+used to note the change. When specifying the version, use the values
+`VERSION_NEXT_FEATURE` or `VERSION_NEXT_PATCH` to indicate what sort of
+version increase the change requires.
+
+These directives use Sphinx MyST syntax, e.g.
+
+```
+:::{versionadded} VERSION_NEXT_FEATURE
+The `allow_new_thing` arg was added.
+:::
+
+:::{versionchanged} VERSION_NEXT_PATCH
+Large numbers no longer consume exponential memory.
+:::
+
+:::{versionremoved} VERSION_NEXT_FEATURE
+The `legacy_foo` arg was removed
+:::
+```
 
 ## Generated files
 
