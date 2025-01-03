@@ -120,6 +120,11 @@ rules_python_integration_test(
     py_main = "custom_commands_test.py",
 )
 
+rules_python_integration_test(
+    name = "interpreter_test",
+    py_main = "interpreter_test.py",
+)
+
 py_library(
     name = "runner_lib",
     srcs = ["runner.py"],
