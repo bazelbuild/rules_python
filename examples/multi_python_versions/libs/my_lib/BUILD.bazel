@@ -5,5 +5,7 @@ py_library(
     name = "my_lib",
     srcs = ["__init__.py"],
     visibility = ["@//tests:__pkg__"],
-    deps = [requirement("websockets")],
+    deps = [
+        requirement("websockets")
+    ],
 )

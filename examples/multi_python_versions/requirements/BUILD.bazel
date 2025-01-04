@@ -21,6 +21,12 @@ compile_pip_requirements_3_10(
     requirements_txt = "requirements_lock_3_10.txt",
 )
 
+compile_pip_requirements_3_10(
+    name = "requirements_3_10_only",
+    src = "requirements_3_10_only.in",
+    requirements_txt = "requirements_lock_3_10_only.txt",
+)
+
 compile_pip_requirements_3_11(
     name = "requirements_3_11",
     src = "requirements.in",
