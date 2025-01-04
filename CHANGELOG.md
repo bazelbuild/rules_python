@@ -52,9 +52,26 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
   tested by CI, so functionality cannot be guaranteed.
+* ({bzl:obj}`pip.parse`) From now we will make fewer calls to indexes when
+  fetching the metadata from SimpleAPI. The calls will be done in parallel to
+  each index separately, so the extension evaluation time might slow down if
+  not using {bzl:obj}`pip.parse.experimental_index_url_overrides`.
+* ({bzl:obj}`pip.parse`) Only query SimpleAPI for packages that have
+  sha values in the `requirements.txt` file.
+* (rules) The version-aware rules have been folded into the base rules and
+  the version-aware rules are now simply aliases for the base rules. The
+  `python_version` attribute is still used to specify the Python version.
+* (pypi) Updated versions of packages: `pip` to 24.3.1 and
+  `packaging` to 24.2.
+
+{#v0-0-0-deprecations}
+#### Deprecations
+* `//python/config_settings:transitions.bzl` and its `py_binary` and `py_test`
+  wrappers are deprecated. Use the regular rules instead.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -67,6 +84,18 @@ Unreleased changes template.
   Fixes [#2450](https://github.com/bazelbuild/rules_python/issues/2450).
 * (gazelle) Gazelle will now correctly parse Python3.12 files that use [PEP 695 Type
   Parameter Syntax][pep-695]. (#2396)
+* (pypi) Using {bzl:obj}`pip_parse.experimental_requirement_cycles` and
+  {bzl:obj}`pip_parse.use_hub_alias_dependencies` together now works when
+  using WORKSPACE files.
+* (pypi) The error messages when the wheel distributions do not match anything
+  are now printing more details and include the currently active flag
+  values. Fixes [#2466](https://github.com/bazelbuild/rules_python/issues/2466).
+* (py_proto_library) Fix import paths in Bazel 8.
+* (whl_library) Now the changes to the dependencies are correctly tracked when
+  PyPI packages used in {bzl:obj}`whl_library` during the `repository_rule` phase
+  change. Fixes [#2468](https://github.com/bazelbuild/rules_python/issues/2468).
++ (gazelle) Gazelle no longer ignores `setup.py` files by default. To restore
+  this behavior, apply the `# gazelle:python_ignore_files setup.py` directive.
 
 [pep-695]: https://peps.python.org/pep-0695/
 
@@ -81,6 +110,21 @@ Unreleased changes template.
   To select the free-threaded interpreter in the repo phase, please use
   the documented [env](/environment-variables.html) variables.
   Fixes [#2386](https://github.com/bazelbuild/rules_python/issues/2386).
+* (toolchains) Use the latest astrahl-sh toolchain release [20241206] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.8
+    * 3.13.1
+* (rules) Attributes for type definition files (`.pyi` files) and type-checking
+  only dependencies added. See {obj}`py_library.pyi_srcs` and
+  `py_library.pyi_deps` (and the same named attributes for `py_binary` and
+  `py_test`).
+* (providers) {obj}`PyInfo` has new fields to aid static analysis tools:
+  {obj}`direct_original_sources`, {obj}`direct_pyi_files`,
+  {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`.
+
+[20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
 {#v0-0-0-removed}
 ### Removed

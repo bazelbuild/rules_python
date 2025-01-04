@@ -11,9 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Various things common to Bazel and Google rule implementations."""
+"""Various things common to rule implementations."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":cc_helper.bzl", "cc_helper")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_info.bzl", "PyInfo", "PyInfoBuilder")
 load(":py_internal.bzl", "py_internal")
 load(":reexports.bzl", "BuiltinPyInfo")
@@ -262,6 +266,30 @@ def filter_to_py_srcs(srcs):
     # as a valid extension.
     return [f for f in srcs if f.extension == "py"]
 
+def collect_cc_info(ctx, extra_deps = []):
+    """Collect C++ information from dependencies for Bazel.
+
+    Args:
+        ctx: Rule ctx; must have `deps` attribute.
+        extra_deps: list of Target to also collect C+ information from.
+
+    Returns:
+        CcInfo provider of merged information.
+    """
+    deps = ctx.attr.deps
+    if extra_deps:
+        deps = list(deps)
+        deps.extend(extra_deps)
+    cc_infos = []
+    for dep in deps:
+        if CcInfo in dep:
+            cc_infos.append(dep[CcInfo])
+
+        if PyCcLinkParamsInfo in dep:
+            cc_infos.append(dep[PyCcLinkParamsInfo].cc_info)
+
+    return cc_common.merge_cc_infos(cc_infos = cc_infos)
+
 def collect_imports(ctx, semantics):
     """Collect the direct and transitive `imports` strings.
 
@@ -279,6 +307,37 @@ def collect_imports(ctx, semantics):
         if BuiltinPyInfo != None and BuiltinPyInfo in dep:
             transitive.append(dep[BuiltinPyInfo].imports)
     return depset(direct = semantics.get_imports(ctx), transitive = transitive)
+
+def get_imports(ctx):
+    """Gets the imports from a rule's `imports` attribute.
+
+    See create_binary_semantics_struct for details about this function.
+
+    Args:
+        ctx: Rule ctx.
+
+    Returns:
+        List of strings.
+    """
+    prefix = "{}/{}".format(
+        ctx.workspace_name,
+        py_internal.get_label_repo_runfiles_path(ctx.label),
+    )
+    result = []
+    for import_str in ctx.attr.imports:
+        import_str = ctx.expand_make_variables("imports", import_str, {})
+        if import_str.startswith("/"):
+            continue
+
+        # To prevent "escaping" out of the runfiles tree, we normalize
+        # the path and ensure it doesn't have up-level references.
+        import_path = paths.normalize("{}/{}".format(prefix, import_str))
+        if import_path.startswith("../") or import_path == "..":
+            fail("Path '{}' references a path above the execution root".format(
+                import_str,
+            ))
+        result.append(import_path)
+    return result
 
 def collect_runfiles(ctx, files = depset()):
     """Collects the necessary files from the rule's context.
@@ -349,6 +408,7 @@ def collect_runfiles(ctx, files = depset()):
 def create_py_info(
         ctx,
         *,
+        original_sources,
         required_py_files,
         required_pyc_files,
         implicit_pyc_files,
@@ -358,6 +418,7 @@ def create_py_info(
 
     Args:
         ctx: rule ctx.
+        original_sources: `depset[File]`; the original input sources from `srcs`
         required_py_files: `depset[File]`; the direct, `.py` sources for the
             target that **must** be included by downstream targets. This should
             only be Python source files. It should not include pyc files.
@@ -376,10 +437,13 @@ def create_py_info(
         transitive sources collected from dependencies (the latter is only
         necessary for deprecated extra actions support).
     """
-
     py_info = PyInfoBuilder()
+    py_info.direct_original_sources.add(original_sources)
     py_info.direct_pyc_files.add(required_pyc_files)
+    py_info.direct_pyi_files.add(ctx.files.pyi_srcs)
+    py_info.transitive_original_sources.add(original_sources)
     py_info.transitive_pyc_files.add(required_pyc_files)
+    py_info.transitive_pyi_files.add(ctx.files.pyi_srcs)
     py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)
     py_info.transitive_implicit_pyc_source_files.add(implicit_pyc_source_files)
     py_info.imports.add(imports)
@@ -398,6 +462,10 @@ def create_py_info(
                 if f.extension == "py":
                     py_info.transitive_sources.add(f)
                 py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
+    for target in ctx.attr.pyi_deps:
+        # PyInfo may not be present e.g. cc_library rules.
+        if PyInfo in target or (BuiltinPyInfo != None and BuiltinPyInfo in target):
+            py_info.merge(_get_py_info(target))
 
     deps_transitive_sources = py_info.transitive_sources.build()
     py_info.transitive_sources.add(required_py_files)

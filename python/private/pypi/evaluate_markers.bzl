@@ -14,13 +14,14 @@
 
 """A simple function that evaluates markers using a python interpreter."""
 
+load(":deps.bzl", "record_files")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
 # Used as a default value in a rule to ensure we fetch the dependencies.
 SRCS = [
     # When the version, or any of the files in `packaging` package changes,
     # this file will change as well.
-    Label("@pypi__packaging//:packaging-24.0.dist-info/RECORD"),
+    record_files["pypi__packaging"],
     Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
     Label("//python/private/pypi/whl_installer:platform.py"),
 ]
