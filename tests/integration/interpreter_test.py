@@ -24,7 +24,7 @@ class InterpreterTest(runner.TestCase):
         result = self.run_bazel(
             "run",
             f"--@rules_python//python/config_settings:python_version={expected_version}",
-            "@rules_python//python/bin:interpreter",
+            "@rules_python//python/bin:python",
             input = "\r".join([
                 "import sys",
                 "v = sys.version_info",
@@ -48,7 +48,7 @@ class InterpreterTest(runner.TestCase):
         result = self.run_bazel(
             "run",
             f"--@rules_python//python/config_settings:python_version={version}",
-            "@rules_python//python/bin:interpreter",
+            "@rules_python//python/bin:python",
             "--",
             "-m",
             "json.tool",

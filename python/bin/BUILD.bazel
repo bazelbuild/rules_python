@@ -10,13 +10,13 @@ filegroup(
 )
 
 interpreter(
-    name = "interpreter",
-    binary = ":interpreter_src",
+    name = "python",
+    binary = ":python_src",
 )
 
 # The user can modify this flag to source different interpreters for the
-# `interpreter` target above.
+# `python` target above.
 label_flag(
-    name = "interpreter_src",
+    name = "python_src",
     build_setting_default = "//python:none",
 )

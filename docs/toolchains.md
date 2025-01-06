@@ -468,34 +468,34 @@ Currently the following flags are used to influence toolchain selection:
 * {obj}`--@rules_python//python/config_settings:py_freethreaded` for selecting
   the freethreaded experimental Python builds available from `3.13.0` onwards.
 
-## Accessing the underlying interpreter
+## Running the underlying interpreter
 
-To access the interpreter that bazel manages, you can use the
-`@rules_python//python/bin:interpreter` target. This is a binary target with
+To run the interpreter that Bazel will use, you can use the
+`@rules_python//python/bin:python` target. This is a binary target with
 the executable pointing at the `python3` binary plus the relevent runfiles.
 
 ```
-$ bazel run @rules_python//python/bin:interpreter
+$ bazel run @rules_python//python/bin:python
 Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>>
-$ bazel run @rules_python//python/bin:interpreter --@rules_python//python/config_settings:python_version=3.12
+$ bazel run @rules_python//python/bin:python --@rules_python//python/config_settings:python_version=3.12
 Python 3.12.0 (main, Oct  3 2023, 01:27:23) [Clang 17.0.1 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
 You can also access a specific binary's interpreter this way by using the
-`@rules_python//python/bin:interpreter_src` target.
+`@rules_python//python/bin:python_src` target.
 
 ```
-$ bazel run @rules_python//python/bin:interpreter --@rules_python//python/bin:interpreter_src=//path/to:bin
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=//path/to:bin
 Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
 :::{note}
-The interpreter target does not provide access to any modules from `py_*`
+The `python` target does not provide access to any modules from `py_*`
 targets on its own. Work is ongoing to support that.
 :::
