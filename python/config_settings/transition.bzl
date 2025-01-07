@@ -15,7 +15,7 @@
 """The transition module contains the rule definitions to wrap py_binary and py_test and transition
 them to the desired target platform.
 
-:::{versionchanged} VERSION_NEXT_PATCH
+:::{versionchanged} 1.1.0
 The `py_binary` and `py_test` symbols are aliases to the regular rules. Usages
 of them should be changed to load the regular rules directly.
 :::
