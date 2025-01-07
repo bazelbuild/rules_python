@@ -13,6 +13,8 @@
 # limitations under the License.
 """Allows detecting of rules_python features that aren't easily detected."""
 
+load("@rules_python_internal//:rules_python_config.bzl", "config")
+
 # This is a magic string expanded by `git archive`, as set by `.gitattributes`
 # See https://git-scm.com/docs/git-archive/2.29.0#Documentation/git-archive.txt-export-subst
 _VERSION_PRIVATE = "$Format:%(describe:tags=true)$"
@@ -20,4 +22,5 @@ _VERSION_PRIVATE = "$Format:%(describe:tags=true)$"
 features = struct(
     version = _VERSION_PRIVATE if "$Format" not in _VERSION_PRIVATE else "",
     precompile = True,
+    uses_builtin_rules = not config.enable_pystar,
 )
