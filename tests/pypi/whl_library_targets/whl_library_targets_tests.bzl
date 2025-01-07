@@ -316,12 +316,14 @@ def _test_group(env):
         {
             "name": "_pkg",
             "srcs": _glob(["site-packages/**/*.py"], exclude = [], allow_empty = True),
+            "pyi_srcs": _glob(["site-packages/**/*.pyi"], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
                 exclude = [
                     "**/*.py",
                     "**/*.pyc",
                     "**/*.pyc.*",
+                    "**/*.pyi",
                     "**/*.dist-info/RECORD",
                 ] + glob_excludes.version_dependent_exclusions(),
             ),

@@ -247,6 +247,7 @@ def whl_library_targets(
             ),
             pyi_srcs = native.glob(
                 ["site-packages/**/*.pyi"],
+                allow_empty = True,
             ),
             data = data + native.glob(
                 ["site-packages/**/*"],
