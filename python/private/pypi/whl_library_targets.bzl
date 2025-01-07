@@ -226,6 +226,7 @@ def whl_library_targets(
             "**/*.py",
             "**/*.pyc",
             "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNNN are created
+            "**/*.pyi",
             # RECORD is known to contain sha256 checksums of files which might include the checksums
             # of generated files produced when wheels are installed. The file is ignored to avoid
             # Bazel caching issues.
@@ -243,6 +244,9 @@ def whl_library_targets(
                 # Empty sources are allowed to support wheels that don't have any
                 # pure-Python code, e.g. pymssql, which is written in Cython.
                 allow_empty = True,
+            ),
+            pyi_srcs = native.glob(
+                ["site-packages/**/*.pyi"],
             ),
             data = data + native.glob(
                 ["site-packages/**/*"],
