@@ -119,6 +119,9 @@ Unreleased changes template.
   change. Fixes [#2468](https://github.com/bazelbuild/rules_python/issues/2468).
 + (gazelle) Gazelle no longer ignores `setup.py` files by default. To restore
   this behavior, apply the `# gazelle:python_ignore_files setup.py` directive.
+* Don't re-fetch whl_library, python_repository, etc. repository rules
+  whenever `PATH` changes. Fixes
+  [#2551](https://github.com/bazelbuild/rules_python/issues/2551).
 
 [pep-695]: https://peps.python.org/pep-0695/
 
