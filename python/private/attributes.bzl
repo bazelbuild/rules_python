@@ -383,7 +383,7 @@ These are dependencies that satisfy imports guarded by `typing.TYPE_CHECKING`.
 These are build-time only dependencies and not included as part of a runnable
 program (packaging rules may include them, however).
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.1.0
 :::
 """,
             providers = [
@@ -399,7 +399,7 @@ These are typically `.pyi` files, but other file types for type-checker specific
 formats are allowed. These files are build-time only dependencies and not included
 as part of a runnable program (packaging rules may include them, however).
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.1.0
 :::
 """,
             allow_files = True,
