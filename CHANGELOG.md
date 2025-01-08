@@ -52,6 +52,27 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-1-0}
+## [1.1.0] - 2025-01-07
+
+[1.1.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.1.0
+
+{#v1-1-0-changed}
+### Changed
 * (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
@@ -68,12 +89,12 @@ Unreleased changes template.
 * (pypi) Updated versions of packages: `pip` to 24.3.1 and
   `packaging` to 24.2.
 
-{#v0-0-0-deprecations}
+{#v1-1-0-deprecations}
 #### Deprecations
 * `//python/config_settings:transitions.bzl` and its `py_binary` and `py_test`
   wrappers are deprecated. Use the regular rules instead.
 
-{#v0-0-0-fixed}
+{#v1-1-0-fixed}
 ### Fixed
 * (py_wheel) Use the default shell environment when building wheels to allow
   toolchains that search PATH to be used for the wheel builder tool.
@@ -99,7 +120,7 @@ Unreleased changes template.
 
 [pep-695]: https://peps.python.org/pep-0695/
 
-{#v0-0-0-added}
+{#v1-1-0-added}
 ### Added
 * (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
   automatically includes corresponding stub packages for third-party libraries
@@ -126,7 +147,7 @@ Unreleased changes template.
 
 [20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
-{#v0-0-0-removed}
+{#v1-1-0-removed}
 ### Removed
 * `find_requirements` in `//python:defs.bzl` has been removed.
 
