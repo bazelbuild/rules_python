@@ -88,6 +88,8 @@ Unreleased changes template.
   `python_version` attribute is still used to specify the Python version.
 * (pypi) Updated versions of packages: `pip` to 24.3.1 and
   `packaging` to 24.2.
+* (pypi) For pypi-generated targets, `*.pyi` files are included in the
+  `pyi_srcs` attribute instead of the `data` attribute.
 
 {#v1-1-0-deprecations}
 #### Deprecations
@@ -141,6 +143,7 @@ Unreleased changes template.
   only dependencies added. See {obj}`py_library.pyi_srcs` and
   `py_library.pyi_deps` (and the same named attributes for `py_binary` and
   `py_test`).
+* (pypi) pypi-generated targets set `pyi_srcs` to include `*.pyi` files.
 * (providers) {obj}`PyInfo` has new fields to aid static analysis tools:
   {obj}`direct_original_sources`, {obj}`direct_pyi_files`,
   {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`.
