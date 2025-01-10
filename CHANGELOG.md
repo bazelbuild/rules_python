@@ -4,7 +4,7 @@
 # rules_python Changelog
 
 This is a human-friendly changelog in a keepachangelog.com style format.
-Because this changelog is for end-user consumption of meaningful changes,only
+Because this changelog is for end-user consumption of meaningful changes, only
 a summary of a release's changes is described. This means every commit is not
 necessarily mentioned, and internal refactors or code cleanups are omitted
 unless they're particularly notable.
@@ -56,7 +56,7 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 
 {#v0-0-0-added}
 ### Added
