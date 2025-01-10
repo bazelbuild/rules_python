@@ -147,7 +147,7 @@ the same conventions as the standard CPython interpreter.
 
 The runtime's ABI flags, i.e. `sys.abiflags`.
 
-:::{versionadded} 0.41.0
+:::{versionadded} 1.0.0
 :::
 """,
         "bootstrap_template": """
@@ -281,7 +281,7 @@ are (only) `"PY2"` and `"PY3"`.
 The template to use for the binary-specific site-init hook run by the
 interpreter at startup.
 
-:::{versionadded} 0.41.0
+:::{versionadded} 1.0.0
 :::
 """,
         "stage2_bootstrap_template": """

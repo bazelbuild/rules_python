@@ -52,6 +52,27 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-1-0}
+## [1.1.0] - 2025-01-07
+
+[1.1.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.1.0
+
+{#v1-1-0-changed}
+### Changed
 * (toolchains) 3.13 means 3.13.1 (previously 3.13.0)
 * Bazel 6 support is dropped and Bazel 7.4.1 is the minimum supported
   version, per our Bazel support matrix. Earlier versions are not
@@ -67,13 +88,15 @@ Unreleased changes template.
   `python_version` attribute is still used to specify the Python version.
 * (pypi) Updated versions of packages: `pip` to 24.3.1 and
   `packaging` to 24.2.
+* (pypi) For pypi-generated targets, `*.pyi` files are included in the
+  `pyi_srcs` attribute instead of the `data` attribute.
 
-{#v0-0-0-deprecations}
+{#v1-1-0-deprecations}
 #### Deprecations
 * `//python/config_settings:transitions.bzl` and its `py_binary` and `py_test`
   wrappers are deprecated. Use the regular rules instead.
 
-{#v0-0-0-fixed}
+{#v1-1-0-fixed}
 ### Fixed
 * (py_wheel) Use the default shell environment when building wheels to allow
   toolchains that search PATH to be used for the wheel builder tool.
@@ -96,10 +119,13 @@ Unreleased changes template.
   change. Fixes [#2468](https://github.com/bazelbuild/rules_python/issues/2468).
 + (gazelle) Gazelle no longer ignores `setup.py` files by default. To restore
   this behavior, apply the `# gazelle:python_ignore_files setup.py` directive.
+* Don't re-fetch whl_library, python_repository, etc. repository rules
+  whenever `PATH` changes. Fixes
+  [#2551](https://github.com/bazelbuild/rules_python/issues/2551).
 
 [pep-695]: https://peps.python.org/pep-0695/
 
-{#v0-0-0-added}
+{#v1-1-0-added}
 ### Added
 * (gazelle) Added `include_stub_packages`  flag to `modules_mapping`. When set to `True`, this
   automatically includes corresponding stub packages for third-party libraries
@@ -120,13 +146,14 @@ Unreleased changes template.
   only dependencies added. See {obj}`py_library.pyi_srcs` and
   `py_library.pyi_deps` (and the same named attributes for `py_binary` and
   `py_test`).
+* (pypi) pypi-generated targets set `pyi_srcs` to include `*.pyi` files.
 * (providers) {obj}`PyInfo` has new fields to aid static analysis tools:
   {obj}`direct_original_sources`, {obj}`direct_pyi_files`,
   {obj}`transitive_original_sources`, {obj}`transitive_pyi_files`.
 
 [20241206]: https://github.com/astral-sh/python-build-standalone/releases/tag/20241206
 
-{#v0-0-0-removed}
+{#v1-1-0-removed}
 ### Removed
 * `find_requirements` in `//python:defs.bzl` has been removed.
 

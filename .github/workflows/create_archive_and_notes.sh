@@ -17,7 +17,8 @@ set -o errexit -o nounset -o pipefail
 
 # Exclude dot directories, specifically, this file so that we don't
 # find the substring we're looking for in our own file.
-if grep --exclude-dir=.* VERSION_NEXT_ -r; then
+# Exclude CONTRIBUTING.md because it documents how to use these strings.
+if grep --exclude=CONTRIBUTING.md --exclude-dir=.* VERSION_NEXT_ -r; then
   echo
   echo "Found VERSION_NEXT markers indicating version needs to be specified"
   exit 1

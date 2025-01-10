@@ -151,7 +151,7 @@ may be silently ignored, or an error may occur, depending on the toolchain
 configuration.
 :::
 
-:::{versionchanged} VERSION_NEXT_PATCH
+:::{versionchanged} 1.1.0
 
 This attribute was changed from only accepting `PY2` and `PY3` values to
 accepting arbitrary Python versions.
