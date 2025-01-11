@@ -112,6 +112,9 @@ Type definition files (usually `.pyi` files) for the Python modules provided by
 this target. Usually they describe the source files listed in
 `direct_original_sources`. This field is primarily for static analysis tools.
 
+These files are _usually_ build-time only and not included as part of a runnable
+program.
+
 :::{note}
 This may contain implementation-specific file types specific to a particular
 type checker.
@@ -189,6 +192,9 @@ The transitive set of type definition files (usually `.pyi` files) for the
 Python modules for this target and its transitive dependencies. this target.
 Usually they describe the source files listed in `transitive_original_sources`.
 This field is primarily for static analysis tools.
+
+These files are _usually_ build-time only and not included as part of a runnable
+program.
 
 :::{note}
 This may contain implementation-specific file types specific to a particular
