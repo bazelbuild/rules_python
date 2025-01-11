@@ -169,11 +169,11 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     # them to ctx.download if we want to correctly handle the relative URLs.
     # TODO: Add a test that env subbed index urls do not leak into the lock file.
 
-    real_url = envsubst(
+    real_url = strip_empty_path_segments(envsubst(
         url,
         attr.envsubst,
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
-    )
+    ))
 
     cache_key = real_url
     if cache_key in cache:
@@ -194,11 +194,13 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
 
     output = ctx.path(output_str.strip("_").lower() + ".html")
 
+    _get_auth = ctx.get_auth if hasattr(ctx, "get_auth") else get_auth
+
     # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
         output = output,
-        auth = get_auth(ctx, [real_url], ctx_attr = attr),
+        auth = _get_auth(ctx, [real_url], ctx_attr = attr),
         allow_fail = True,
         **download_kwargs
     )
@@ -210,6 +212,27 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
         )
 
     return _read_index_result(ctx, download, output, real_url, cache, cache_key)
+
+def strip_empty_path_segments(url):
+    """Removes empty path segments from a URL. Does nothing for urls with no scheme.
+
+    Public only for testing.
+
+    Args:
+        url: The url to remove empty path segments from
+
+    Returns:
+        The url with empty path segments removed and any trailing slash preserved.
+        If the url had no scheme it is returned unchanged.
+    """
+    scheme, _, rest = url.partition("://")
+    if rest == "":
+        return url
+    stripped = "/".join([p for p in rest.split("/") if p])
+    if url.endswith("/"):
+        return "{}://{}/".format(scheme, stripped)
+    else:
+        return "{}://{}".format(scheme, stripped)
 
 def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:
