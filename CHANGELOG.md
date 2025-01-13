@@ -88,8 +88,6 @@ Unreleased changes template.
   `python_version` attribute is still used to specify the Python version.
 * (pypi) Updated versions of packages: `pip` to 24.3.1 and
   `packaging` to 24.2.
-* (pypi) For pypi-generated targets, `*.pyi` files are included in the
-  `pyi_srcs` attribute instead of the `data` attribute.
 
 {#v1-1-0-deprecations}
 #### Deprecations
