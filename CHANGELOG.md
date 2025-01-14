@@ -57,7 +57,8 @@ Unreleased changes template.
 {#v0-0-0-fixed}
 ### Fixed
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
-* (bazel downloader) Handle trailing slashes in pip index URLs in environment variables
+* (pypi) Handle trailing slashes in pip index URLs in environment variables,
+  fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
 
 {#v0-0-0-added}
 ### Added
