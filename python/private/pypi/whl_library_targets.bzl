@@ -222,11 +222,13 @@ def whl_library_targets(
         )
 
     if hasattr(rules, "py_library"):
+        # NOTE: pyi files should probably be excluded because they're carried
+        # by the pyi_srcs attribute. However, historical behavior included
+        # them in data and some tools currently rely on that.
         _data_exclude = [
             "**/*.py",
             "**/*.pyc",
             "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNNN are created
-            "**/*.pyi",
             # RECORD is known to contain sha256 checksums of files which might include the checksums
             # of generated files produced when wheels are installed. The file is ignored to avoid
             # Bazel caching issues.

@@ -13,31 +13,59 @@
 # limitations under the License.
 
 """
-This module is used to construct the config settings for selecting which distribution is used in the pip hub repository.
+The {obj}`config_settings` macro is used to create the config setting targets
+that can be used in the {obj}`pkg_aliases` macro for selecting the compatible
+repositories.
 
 Bazel's selects work by selecting the most-specialized configuration setting
-that matches the target platform. We can leverage this fact to ensure that the
-most specialized wheels are used by default with the users being able to
-configure string_flag values to select the less specialized ones.
+that matches the target platform, which is further described in [bazel documentation][docs].
+We can leverage this fact to ensure that the most specialized matches are used
+by default with the users being able to configure string_flag values to select
+the less specialized ones.
 
-The list of specialization of the dists goes like follows (cpxyt stands for freethreaded
-environments):
-* sdist
-* py*-none-any.whl
-* py*-abi3-any.whl
-* py*-cpxy-any.whl or py*-cpxyt-any.whl
-* cp*-none-any.whl
-* cp*-abi3-any.whl
-* cp*-cpxy-any.whl or cp*-cpxyt-any.whl
-* py*-none-plat.whl
-* py*-abi3-plat.whl
-* py*-cpxy-plat.whl or py*-cpxyt-plat.whl
-* cp*-none-plat.whl
-* cp*-abi3-plat.whl
-* cp*-cpxy-plat.whl or cp*-cpxyt-plat.whl
+[docs]: https://bazel.build/docs/configurable-attributes
 
-Note, that here the specialization of musl vs manylinux wheels is the same in
-order to ensure that the matching fails if the user requests for `musl` and we don't have it or vice versa.
+The config settings in the order from the least specialized to the most
+specialized is as follows:
+* `:is_cp3<minor_version><suffix>`
+* `:is_cp3<minor_version>_sdist<suffix>`
+* `:is_cp3<minor_version>_py_none_any<suffix>`
+* `:is_cp3<minor_version>_py3_none_any<suffix>`
+* `:is_cp3<minor_version>_py3_abi3_any<suffix>`
+* `:is_cp3<minor_version>_none_any<suffix>`
+* `:is_cp3<minor_version>_any_any<suffix>`
+* `:is_cp3<minor_version>_cp3<minor_version>_any<suffix>` and `:is_cp3<minor_version>_cp3<minor_version>t_any<suffix>`
+* `:is_cp3<minor_version>_py_none_<platform_suffix>`
+* `:is_cp3<minor_version>_py3_none_<platform_suffix>`
+* `:is_cp3<minor_version>_py3_abi3_<platform_suffix>`
+* `:is_cp3<minor_version>_none_<platform_suffix>`
+* `:is_cp3<minor_version>_abi3_<platform_suffix>`
+* `:is_cp3<minor_version>_cp3<minor_version>_<platform_suffix>` and `:is_cp3<minor_version>_cp3<minor_version>t_<platform_suffix>`
+
+The specialization of free-threaded vs non-free-threaded wheels is the same as
+they are just variants of each other. The same goes for the specialization of
+`musllinux` vs `manylinux`.
+
+The goal of this macro is to provide config settings that provide unambigous
+matches if any pair of them is used together for any target configuration
+setting. We achieve this by using dummy internal `flag_values` keys to force the
+items further down the list to appear to be more specialized than the ones above.
+
+What is more, the names of the config settings are as similar to the platform wheel
+specification as possible. How the wheel names map to the config setting names defined
+in here is described in {obj}`pkg_aliases` documentation.
+
+:::{note}
+Right now the specialization of adjacent config settings where one is with
+`constraint_values` and one is without is ambiguous. I.e. `py_none_any` and
+`sdist_linux_x86_64` have the same specialization from bazel point of view
+because one has one `flag_value` entry and `constraint_values` and the
+other has 2 flag_value entries. And unfortunately there is no way to disambiguate
+it, because we are essentially in two dimensions here (`flag_values` and
+`constraint_values`). Hence, when using the `config_settings` from here,
+either have all of them with empty `suffix` or all of them with a non-empty
+suffix.
+:::
 """
 
 load("//python/private:flags.bzl", "LibcFlag")
@@ -83,8 +111,7 @@ def config_settings(
         osx_versions = [],
         target_platforms = [],
         name = None,
-        visibility = None,
-        native = native):
+        **kwargs):
     """Generate all of the pip config settings.
 
     Args:
@@ -99,35 +126,19 @@ def config_settings(
             config settings for.
         target_platforms (list[str]): The list of "{os}_{cpu}" for deriving
             constraint values for each condition.
-        visibility (list[str], optional): The visibility to be passed to the
-            exposed labels. All other labels will be private.
-        native (struct): The struct containing alias and config_setting rules
-            to use for creating the objects. Can be overridden for unit tests
-            reasons.
+        **kwargs: Other args passed to the underlying implementations, such as
+            {obj}`native`.
     """
 
     glibc_versions = [""] + glibc_versions
     muslc_versions = [""] + muslc_versions
     osx_versions = [""] + osx_versions
-    target_platforms = [("", "")] + [
+    target_platforms = [("", ""), ("osx", "universal2")] + [
         t.split("_", 1)
         for t in target_platforms
     ]
 
-    for python_version in [""] + python_versions:
-        is_python = "is_python_{}".format(python_version or "version_unset")
-
-        # The aliases defined in @rules_python//python/config_settings may not
-        # have config settings for the versions we need, so define our own
-        # config settings instead.
-        native.config_setting(
-            name = is_python,
-            flag_values = {
-                Label("//python/config_settings:python_version_major_minor"): python_version,
-            },
-            visibility = visibility,
-        )
-
+    for python_version in python_versions:
         for os, cpu in target_platforms:
             constraint_values = []
             suffix = ""
@@ -135,8 +146,9 @@ def config_settings(
                 constraint_values.append("@platforms//os:" + os)
                 suffix += "_" + os
             if cpu:
-                constraint_values.append("@platforms//cpu:" + cpu)
                 suffix += "_" + cpu
+                if cpu != "universal2":
+                    constraint_values.append("@platforms//cpu:" + cpu)
 
             _dist_config_settings(
                 suffix = suffix,
@@ -149,20 +161,24 @@ def config_settings(
                 ),
                 constraint_values = constraint_values,
                 python_version = python_version,
-                is_python = is_python,
-                visibility = visibility,
-                native = native,
+                **kwargs
             )
 
-def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
-    if kwargs.get("constraint_values"):
-        # Add python version + platform config settings
-        _dist_config_setting(
-            name = suffix.strip("_"),
-            **kwargs
-        )
+def _dist_config_settings(*, suffix, plat_flag_values, python_version, **kwargs):
+    flag_values = {
+        Label("//python/config_settings:python_version_major_minor"): python_version,
+    }
 
-    flag_values = {_flags.dist: ""}
+    cpv = "cp" + python_version.replace(".", "")
+    prefix = "is_{}".format(cpv)
+
+    _dist_config_setting(
+        name = prefix + suffix,
+        flag_values = flag_values,
+        **kwargs
+    )
+
+    flag_values[_flags.dist] = ""
 
     # First create an sdist, we will be building upon the flag values, which
     # will ensure that each sdist config setting is the least specialized of
@@ -170,9 +186,9 @@ def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
     # have `sdist` for any platform, hence we have a non-empty `flag_values`
     # here.
     _dist_config_setting(
-        name = "sdist{}".format(suffix),
+        name = "{}_sdist{}".format(prefix, suffix),
         flag_values = flag_values,
-        is_pip_whl = FLAGS.is_pip_whl_no,
+        compatible_with = (FLAGS.is_pip_whl_no, FLAGS.is_pip_whl_auto),
         **kwargs
     )
 
@@ -184,29 +200,28 @@ def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
     # The discussion here also reinforces this notion:
     # https://discuss.python.org/t/pep-703-making-the-global-interpreter-lock-optional-3-12-updates/26503/99
 
-    for name, f, abi in [
-        ("py_none", _flags.whl_py2_py3, None),
+    for name, f, compatible_with in [
+        ("py_none", _flags.whl, None),
         ("py3_none", _flags.whl_py3, None),
         ("py3_abi3", _flags.whl_py3_abi3, (FLAGS.is_py_non_freethreaded,)),
-        ("cp3x_none", _flags.whl_pycp3x, None),
-        ("cp3x_abi3", _flags.whl_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
+        ("none", _flags.whl_pycp3x, None),
+        ("abi3", _flags.whl_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
         # The below are not specializations of one another, they are variants
-        ("cp3x_cp", _flags.whl_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
-        ("cp3x_cpt", _flags.whl_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
+        (cpv, _flags.whl_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
+        (cpv + "t", _flags.whl_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
     ]:
-        if (f, abi) in used_flags:
+        if (f, compatible_with) in used_flags:
             # This should never happen as all of the different whls should have
             # unique flag values
             fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
         else:
-            flag_values[f] = ""
-            used_flags[(f, abi)] = True
+            flag_values[f] = "yes" if f == _flags.whl else ""
+            used_flags[(f, compatible_with)] = True
 
         _dist_config_setting(
-            name = "{}_any{}".format(name, suffix),
+            name = "{}_{}_any{}".format(prefix, name, suffix),
             flag_values = flag_values,
-            is_pip_whl = FLAGS.is_pip_whl_only,
-            abi = abi,
+            compatible_with = compatible_with,
             **kwargs
         )
 
@@ -217,29 +232,28 @@ def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
         used_flags = {(f, None): True for f in flag_values} | generic_used_flags
         flag_values = flag_values | generic_flag_values
 
-        for name, f, abi in [
+        for name, f, compatible_with in [
             ("py_none", _flags.whl_plat, None),
             ("py3_none", _flags.whl_plat_py3, None),
             ("py3_abi3", _flags.whl_plat_py3_abi3, (FLAGS.is_py_non_freethreaded,)),
-            ("cp3x_none", _flags.whl_plat_pycp3x, None),
-            ("cp3x_abi3", _flags.whl_plat_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
+            ("none", _flags.whl_plat_pycp3x, None),
+            ("abi3", _flags.whl_plat_pycp3x_abi3, (FLAGS.is_py_non_freethreaded,)),
             # The below are not specializations of one another, they are variants
-            ("cp3x_cp", _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
-            ("cp3x_cpt", _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
+            (cpv, _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_non_freethreaded,)),
+            (cpv + "t", _flags.whl_plat_pycp3x_abicp, (FLAGS.is_py_freethreaded,)),
         ]:
-            if (f, abi) in used_flags:
+            if (f, compatible_with) in used_flags:
                 # This should never happen as all of the different whls should have
                 # unique flag values.
                 fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
             else:
                 flag_values[f] = ""
-                used_flags[(f, abi)] = True
+                used_flags[(f, compatible_with)] = True
 
             _dist_config_setting(
-                name = "{}_{}".format(name, suffix),
+                name = "{}_{}_{}".format(prefix, name, suffix),
                 flag_values = flag_values,
-                is_pip_whl = FLAGS.is_pip_whl_only,
-                abi = abi,
+                compatible_with = compatible_with,
                 **kwargs
             )
 
@@ -256,23 +270,19 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
     elif os == "windows":
         ret.append(("{}_{}".format(os, cpu), {}))
     elif os == "osx":
-        for cpu_, arch in {
-            cpu: UniversalWhlFlag.ARCH,
-            cpu + "_universal2": UniversalWhlFlag.UNIVERSAL,
-        }.items():
-            for osx_version in osx_versions:
-                flags = {
-                    FLAGS.pip_whl_osx_version: _to_version_string(osx_version),
-                }
-                if arch == UniversalWhlFlag.ARCH:
-                    flags[FLAGS.pip_whl_osx_arch] = arch
+        for osx_version in osx_versions:
+            flags = {
+                FLAGS.pip_whl_osx_version: _to_version_string(osx_version),
+            }
+            if cpu != "universal2":
+                flags[FLAGS.pip_whl_osx_arch] = UniversalWhlFlag.ARCH
 
-                if not osx_version:
-                    suffix = "{}_{}".format(os, cpu_)
-                else:
-                    suffix = "{}_{}_{}".format(os, _to_version_string(osx_version, "_"), cpu_)
+            if not osx_version:
+                suffix = "{}_{}".format(os, cpu)
+            else:
+                suffix = "{}_{}_{}".format(os, _to_version_string(osx_version, "_"), cpu)
 
-                ret.append((suffix, flags))
+            ret.append((suffix, flags))
 
     elif os == "linux":
         for os_prefix, linux_libc in {
@@ -309,16 +319,12 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, abi = None, native = native, **kwargs):
-    """A macro to create a target that matches is_pip_whl_auto and one more value.
+def _dist_config_setting(*, name, compatible_with = None, native = native, **kwargs):
+    """A macro to create a target for matching Python binary and source distributions.
 
     Args:
         name: The name of the public target.
-        is_pip_whl: The config setting to match in addition to
-            `is_pip_whl_auto` when evaluating the config setting.
-        is_python: The python version config_setting to match.
-        python_version: The python version name.
-        abi: {type}`tuple[Label]` A collection of ABI config settings that are
+        compatible_with: {type}`tuple[Label]` A collection of config settings that are
             compatible with the given dist config setting. For example, if only
             non-freethreaded python builds are allowed, add
             FLAGS.is_py_non_freethreaded here.
@@ -328,50 +334,17 @@ def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, 
         **kwargs: The kwargs passed to the config_setting rule. Visibility of
             the main alias target is also taken from the kwargs.
     """
-    _name = "_is_" + name
-
-    visibility = kwargs.get("visibility")
-    native.alias(
-        name = "is_cp{}_{}".format(python_version, name) if python_version else "is_{}".format(name),
-        actual = select({
-            # First match by the python version and then by ABI
-            is_python: _name + ("_abi" if abi else ""),
-            _DEFAULT: _INCOMPATIBLE,
-        }),
-        visibility = visibility,
-    )
-
-    if python_version:
-        # Reuse the config_setting targets that we use with the default
-        # `python_version` setting.
-        return
-
-    if not is_pip_whl:
-        native.config_setting(name = _name, **kwargs)
-        return
-
-    config_setting_name = _name + "_setting"
-    native.config_setting(name = config_setting_name, **kwargs)
-
-    if abi:
+    if compatible_with:
+        dist_config_setting_name = "_" + name
         native.alias(
-            name = _name + "_abi",
+            name = name,
             actual = select(
-                {k: _name for k in abi} | {
+                {setting: dist_config_setting_name for setting in compatible_with} | {
                     _DEFAULT: _INCOMPATIBLE,
                 },
             ),
-            visibility = visibility,
+            visibility = kwargs.get("visibility"),
         )
+        name = dist_config_setting_name
 
-    # Next match by the `pip_whl` flag value and then match by the flags that
-    # are intrinsic to the distribution.
-    native.alias(
-        name = _name,
-        actual = select({
-            _DEFAULT: _INCOMPATIBLE,
-            FLAGS.is_pip_whl_auto: config_setting_name,
-            is_pip_whl: config_setting_name,
-        }),
-        visibility = visibility,
-    )
+    native.config_setting(name = name, **kwargs)
