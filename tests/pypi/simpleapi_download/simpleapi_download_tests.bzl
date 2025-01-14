@@ -22,10 +22,11 @@ _tests = []
 def _test_simple(env):
     calls = []
 
-    def read_simpleapi(ctx, url, attr, cache, block):
+    def read_simpleapi(ctx, url, attr, cache, get_auth, block):
         _ = ctx  # buildifier: disable=unused-variable
         _ = attr
         _ = cache
+        _ = get_auth
         env.expect.that_bool(block).equals(False)
         calls.append(url)
         if "foo" in url and "main" in url:
@@ -73,10 +74,11 @@ def _test_fail(env):
     calls = []
     fails = []
 
-    def read_simpleapi(ctx, url, attr, cache, block):
+    def read_simpleapi(ctx, url, attr, cache, get_auth, block):
         _ = ctx  # buildifier: disable=unused-variable
         _ = attr
         _ = cache
+        _ = get_auth
         env.expect.that_bool(block).equals(False)
         calls.append(url)
         if "foo" in url:
@@ -133,7 +135,6 @@ def _test_download_url(env):
             download = download,
             read = lambda i: "contents of " + i,
             path = lambda i: "path/for/" + i,
-            get_auth = lambda ctx, urls, ctx_attr: struct(),
         ),
         attr = struct(
             index_url_overrides = {},
@@ -144,6 +145,7 @@ def _test_download_url(env):
         ),
         cache = {},
         parallel_download = False,
+        get_auth = lambda ctx, urls, ctx_attr: struct(),
     )
 
     env.expect.that_dict(downloads).contains_exactly({
@@ -168,7 +170,6 @@ def _test_download_url_parallel(env):
             download = download,
             read = lambda i: "contents of " + i,
             path = lambda i: "path/for/" + i,
-            get_auth = lambda ctx, urls, ctx_attr: struct(),
         ),
         attr = struct(
             index_url_overrides = {},
@@ -179,6 +180,7 @@ def _test_download_url_parallel(env):
         ),
         cache = {},
         parallel_download = True,
+        get_auth = lambda ctx, urls, ctx_attr: struct(),
     )
 
     env.expect.that_dict(downloads).contains_exactly({
@@ -203,7 +205,6 @@ def _test_download_envsubst_url(env):
             download = download,
             read = lambda i: "contents of " + i,
             path = lambda i: "path/for/" + i,
-            get_auth = lambda ctx, urls, ctx_attr: struct(),
         ),
         attr = struct(
             index_url_overrides = {},
@@ -214,6 +215,7 @@ def _test_download_envsubst_url(env):
         ),
         cache = {},
         parallel_download = False,
+        get_auth = lambda ctx, urls, ctx_attr: struct(),
     )
 
     env.expect.that_dict(downloads).contains_exactly({

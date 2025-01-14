@@ -17,7 +17,7 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python/private:auth.bzl", "get_auth")
+load("//python/private:auth.bzl", _get_auth = "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
@@ -30,6 +30,7 @@ def simpleapi_download(
         cache,
         parallel_download = True,
         read_simpleapi = None,
+        get_auth = None,
         _fail = fail):
     """Download Simple API HTML.
 
@@ -59,6 +60,7 @@ def simpleapi_download(
         parallel_download: A boolean to enable usage of bazel 7.1 non-blocking downloads.
         read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
             Used in tests.
+        get_auth: A function to get auth information passed to read_simpleapi. Used in tests.
         _fail: a function to print a failure. Used in tests.
 
     Returns:
@@ -98,6 +100,7 @@ def simpleapi_download(
                 ),
                 attr = attr,
                 cache = cache,
+                get_auth = get_auth,
                 **download_kwargs
             )
             if hasattr(result, "wait"):
@@ -144,7 +147,7 @@ def simpleapi_download(
 
     return contents
 
-def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
+def _read_simpleapi(ctx, url, attr, cache, get_auth = None, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
@@ -157,6 +160,7 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
         cache: A dict for storing the results.
+        get_auth: A function to get auth information. Used in tests.
         **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
@@ -194,13 +198,13 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
 
     output = ctx.path(output_str.strip("_").lower() + ".html")
 
-    _get_auth = ctx.get_auth if hasattr(ctx, "get_auth") else get_auth
+    get_auth = get_auth or _get_auth
 
     # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
         output = output,
-        auth = _get_auth(ctx, [real_url], ctx_attr = attr),
+        auth = get_auth(ctx, [real_url], ctx_attr = attr),
         allow_fail = True,
         **download_kwargs
     )
