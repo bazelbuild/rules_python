@@ -116,9 +116,9 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(python_version = "3.12")
 
 # BUILD.bazel
-load("@python_versions//3.12:defs.bzl", "py_binary")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
-py_binary(...)
+py_binary(..., python_version="3.12")
 ```
 
 ### Pinning to a Python version
@@ -132,21 +132,60 @@ is most useful for two cases:
    typically in a mono-repo situation.
 
 To configure a submodule with the version-aware rules, request the particular
-version you need, then use the `@python_versions` repo to use the rules that
-force specific versions:
+version you need when defining the toolchain:
 
 ```starlark
+# MODULE.bazel
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(
     python_version = "3.11",
 )
-use_repo(python, "python_versions")
+use_repo(python)
 ```
 
-Then use e.g. `load("@python_versions//3.11:defs.bzl", "py_binary")` to use
-the rules that force that particular version. Multiple versions can be specified
-and use within a single build.
+Then use the `@rules_python` repo in your BUILD file to explicity pin the python version when calling the rule:
+
+```starlark
+# BUILD.bazel
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+py_binary(..., python_version="3.11")
+py_test(..., python_version="3.11")
+```
+
+Multiple versions can be specified and use within a single build.
+
+```starlark
+# MODULE.bazel
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+python.toolchain(
+    python_version = "3.11",
+    is_default = True,
+)
+
+python.toolchain(
+    python_version = "3.12",
+)
+use_repo(python)
+
+# BUILD.bazel
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+# Defaults to 3.11
+py_binary(...)
+py_test(...)
+
+# Explicitly using python 3.11
+py_binary(..., python_version="3.11")
+py_test(..., python_version="3.11")
+
+# Explicitly using python 3.12
+py_binary(..., python_version="3.12")
+py_test(..., python_version="3.12")
+```
 
 For more documentation, see the bzlmod examples under the {gh-path}`examples`
 folder.  Look for the examples that contain a `MODULE.bazel` file.
@@ -158,6 +197,16 @@ The `python.toolchain()` call makes its contents available under a repo named
 `python.toolchain(python_version="3.11")` creates the repo `@python_3_11`.
 Remember to call `use_repo()` to make repos visible to your module:
 `use_repo(python, "python_3_11")`
+
+
+:::{note}
+Deprecation warning v1.1.0: The toolchain specific `py_binary` and `py_test` symbols are aliases to the regular rules. 
+i.e. Deprecated `load("@python_versions//3.11:defs.bzl", "py_binary")` & `load("@python_versions//3.11:defs.bzl", "py_test")`
+
+Usages of them should be changed to load the regular rules directly; 
+i.e.  Use `load("@rules_python//python:py_binary.bzl", "py_binary")` & `load("@rules_python//python:py_test.bzl", "py_test")` and then specify the `python_version` when using the rules corresponding to the python version you defined in your toolchain. {ref}`Library modules with version constraints`
+:::
+
 
 #### Toolchain usage in other rules
 

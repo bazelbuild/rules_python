@@ -1,16 +1,185 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
-load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
-load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_python//python:py_test.bzl", "py_test")
 load("@rules_python//python:versions.bzl", DEFAULT_MINOR_MAPPING = "MINOR_MAPPING", DEFAULT_TOOL_VERSIONS = "TOOL_VERSIONS")
 load("@rules_python//python/private:text_util.bzl", "render")  # buildifier: disable=bzl-visibility
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+
+################################################################################
+# Defining py_binary with different versions
+
+py_binary(
+    name = "version_default",
+    srcs = ["version.py"],
+    main = "version.py",
+    # NOTE: # The default python_version used by this rule is defined in the WORKSPACE / MODULE.bazel
+)
+
+py_binary(
+    name = "version_3_8",
+    srcs = ["version.py"],
+    main = "version.py",
+    # NOTE: The value specified with python_version must be a toolchain configured to match the Python version
+    python_version = "3.8"
+)
+
+py_binary(
+    name = "version_3_9",
+    srcs = ["version.py"],
+    main = "version.py",
+    python_version = "3.9"
+)
+
+py_binary(
+    name = "version_3_10",
+    srcs = ["version.py"],
+    main = "version.py",
+    python_version = "3.10"
+)
+
+py_binary(
+    name = "version_3_11",
+    srcs = ["version.py"],
+    main = "version.py",
+    python_version = "3.11"
+)
+
+################################################################################
+# Defining py_test with different versions with deps
+
+py_test(
+    name = "my_lib_default_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+    # NOTE: # The default python_version used by this rule is defined in the WORKSPACE / MODULE.bazel
+)
+
+py_test(
+    name = "my_lib_3_8_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+    python_version = "3.8"
+)
+
+py_test(
+    name = "my_lib_3_9_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+    python_version = "3.9"
+)
+
+py_test(
+    name = "my_lib_3_10_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+    python_version = "3.10"
+)
+
+py_test(
+    name = "my_lib_3_11_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
+
+################################################################################
+# Sanity check that py_test is using the expected python verion
+
+copy_file(
+    name = "copy_version_test",
+    src = "version_test.py",
+    out = "version_default_test.py",
+    is_executable = True,
+)
+
+py_test(
+    name = "version_default_test",
+    srcs = ["version_default_test.py"],
+    # The default python_version used by this rule is defined in the WORKSPACE / MODULE.bazel
+    env = {"VERSION_CHECK": "3.9"},  
+)
+
+py_test(
+    name = "version_3_9_test",
+    srcs = ["version_test.py"],
+    env = {"VERSION_CHECK": "3.9"},
+    main = "version_test.py",
+    python_version = "3.9" # We can explicity mention the python version instead of using the default python version
+)
+
+py_test(
+    name = "version_3_8_test",
+    srcs = ["version_test.py"],
+    env = {"VERSION_CHECK": "3.8"},
+    main = "version_test.py",
+    python_version = "3.8"
+)
+
+py_test(
+    name = "version_3_10_test",
+    srcs = ["version_test.py"],
+    env = {"VERSION_CHECK": "3.10"},
+    main = "version_test.py",
+    python_version = "3.10"
+)
+
+py_test(
+    name = "version_3_11_test",
+    srcs = ["version_test.py"],
+    env = {"VERSION_CHECK": "3.11"},
+    main = "version_test.py",
+    python_version = "3.11"
+)
+
+################################################################################
+# Cross Version Target Usage
+
+py_test(
+    name = "python_version_default_takes_3_10_subprocess_test",
+    srcs = ["cross_version_test.py"],
+    data = [":version_3_10"],
+    env = {
+        "SUBPROCESS_VERSION_CHECK": "3.10",
+        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_10)",
+        "VERSION_CHECK": "3.9",
+    },
+    main = "cross_version_test.py",
+)
+
+py_test(
+    name = "python_version_3_10_takes_3_9_subprocess_test",
+    srcs = ["cross_version_test.py"],
+    data = [":version_3_9"],
+    env = {
+        "SUBPROCESS_VERSION_CHECK": "3.9",
+        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_9)",
+        "VERSION_CHECK": "3.10",
+    },
+    main = "cross_version_test.py",
+    python_version = "3.10"
+)
+
+################################################################################
+# Using Multiple Python Versions with sh_test
+
+sh_test(
+    name = "version_test_binary_3_8",
+    srcs = ["version_test.sh"],
+    data = [":version_3_8"],
+    env = {
+        # The python version is transiently obtained from the py_binary target :version_3_8; which in this case is 3.8
+        "VERSION_CHECK": "3.8", 
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_8)",
+    },
+)
 
 copy_file(
     name = "copy_version",
@@ -24,130 +193,7 @@ copy_file(
 py_binary(
     name = "version_default",
     srcs = ["version_default.py"],
-)
-
-py_binary_3_8(
-    name = "version_3_8",
-    srcs = ["version.py"],
-    main = "version.py",
-)
-
-py_binary_3_9(
-    name = "version_3_9",
-    srcs = ["version.py"],
-    main = "version.py",
-)
-
-py_binary_3_10(
-    name = "version_3_10",
-    srcs = ["version.py"],
-    main = "version.py",
-)
-
-py_binary_3_11(
-    name = "version_3_11",
-    srcs = ["version.py"],
-    main = "version.py",
-)
-
-py_test(
-    name = "my_lib_default_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
-    deps = ["//libs/my_lib"],
-)
-
-py_test_3_8(
-    name = "my_lib_3_8_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
-    deps = ["//libs/my_lib"],
-)
-
-py_test_3_9(
-    name = "my_lib_3_9_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
-    deps = ["//libs/my_lib"],
-)
-
-py_test_3_10(
-    name = "my_lib_3_10_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
-    deps = ["//libs/my_lib"],
-)
-
-py_test_3_11(
-    name = "my_lib_3_11_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
-    deps = ["//libs/my_lib"],
-)
-
-copy_file(
-    name = "copy_version_test",
-    src = "version_test.py",
-    out = "version_default_test.py",
-    is_executable = True,
-)
-
-py_test(
-    name = "version_default_test",
-    srcs = ["version_default_test.py"],
-    env = {"VERSION_CHECK": "3.9"},  # The default defined in the WORKSPACE.
-)
-
-py_test_3_8(
-    name = "version_3_8_test",
-    srcs = ["version_test.py"],
-    env = {"VERSION_CHECK": "3.8"},
-    main = "version_test.py",
-)
-
-py_test_3_9(
-    name = "version_3_9_test",
-    srcs = ["version_test.py"],
-    env = {"VERSION_CHECK": "3.9"},
-    main = "version_test.py",
-)
-
-py_test_3_10(
-    name = "version_3_10_test",
-    srcs = ["version_test.py"],
-    env = {"VERSION_CHECK": "3.10"},
-    main = "version_test.py",
-)
-
-py_test_3_11(
-    name = "version_3_11_test",
-    srcs = ["version_test.py"],
-    env = {"VERSION_CHECK": "3.11"},
-    main = "version_test.py",
-)
-
-py_test(
-    name = "version_default_takes_3_10_subprocess_test",
-    srcs = ["cross_version_test.py"],
-    data = [":version_3_10"],
-    env = {
-        "SUBPROCESS_VERSION_CHECK": "3.10",
-        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_10)",
-        "VERSION_CHECK": "3.9",
-    },
-    main = "cross_version_test.py",
-)
-
-py_test_3_10(
-    name = "version_3_10_takes_3_9_subprocess_test",
-    srcs = ["cross_version_test.py"],
-    data = [":version_3_9"],
-    env = {
-        "SUBPROCESS_VERSION_CHECK": "3.9",
-        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpaths :version_3_9)",
-        "VERSION_CHECK": "3.10",
-    },
-    main = "cross_version_test.py",
+    # The default python_version used by this rule is defined in the WORKSPACE / MODULE.bazel
 )
 
 sh_test(
@@ -155,18 +201,10 @@ sh_test(
     srcs = ["version_test.sh"],
     data = [":version_default"],
     env = {
-        "VERSION_CHECK": "3.9",  # The default defined in the WORKSPACE.
+        # The python version is transiently obtained from the py_binary target :version_default, 
+        # which happens to be the default python_version defined by the toolchain in workspace/MODULE.bazel
+        "VERSION_CHECK": "3.9",  
         "VERSION_PY_BINARY": "$(rootpaths :version_default)",
-    },
-)
-
-sh_test(
-    name = "version_test_binary_3_8",
-    srcs = ["version_test.sh"],
-    data = [":version_3_8"],
-    env = {
-        "VERSION_CHECK": "3.8",
-        "VERSION_PY_BINARY": "$(rootpaths :version_3_8)",
     },
 )
 
