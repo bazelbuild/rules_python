@@ -93,7 +93,7 @@ def _toolchains_repo_impl(rctx):
 load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
 
 """.format(
-        rules_python = rctx.attr._rules_python_workspace.workspace_name,
+        rules_python = rctx.attr._rules_python_workspace.repo_name,
     )
 
     toolchains = python_toolchain_build_file_content(
@@ -301,7 +301,7 @@ this repo causes an eager fetch of the toolchain for the host platform.
 )
 
 def _multi_toolchain_aliases_impl(rctx):
-    rules_python = rctx.attr._rules_python_workspace.workspace_name
+    rules_python = rctx.attr._rules_python_workspace.repo_name
 
     for python_version, repository_name in rctx.attr.python_versions.items():
         file = "{}/defs.bzl".format(python_version)
