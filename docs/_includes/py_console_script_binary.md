@@ -37,7 +37,7 @@ py_console_script_binary(
 
 #### Using a specific Python version
 
-A specific Python version can be forced by passing the desired python version, e.g. to force Python 3.9:
+A specific Python version can be forced by passing the desired Python version, e.g. to force Python 3.9:
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
