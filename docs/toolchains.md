@@ -181,7 +181,7 @@ py_test(...)
 py_binary(..., python_version = "3.11")
 py_test(..., python_version = "3.11")
 
-# Explicitly using python 3.12
+# Explicitly use Python 3.12
 py_binary(..., python_version = "3.12")
 py_test(..., python_version = "3.12")
 ```
