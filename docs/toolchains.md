@@ -144,17 +144,17 @@ python.toolchain(
 use_repo(python)
 ```
 
-Then use the `@rules_python` repo in your BUILD file to explicity pin the python version when calling the rule:
+Then use the `@rules_python` repo in your BUILD file to explicity pin the Python version when calling the rule:
 
 ```starlark
 # BUILD.bazel
 load("@rules_python//python:py_binary.bzl", "py_binary")
 
-py_binary(..., python_version="3.11")
-py_test(..., python_version="3.11")
+py_binary(..., python_version = "3.11")
+py_test(..., python_version = "3.11")
 ```
 
-Multiple versions can be specified and use within a single build.
+Multiple versions can be specified and used within a single build.
 
 ```starlark
 # MODULE.bazel
@@ -168,7 +168,6 @@ python.toolchain(
 python.toolchain(
     python_version = "3.12",
 )
-use_repo(python)
 
 # BUILD.bazel
 load("@rules_python//python:py_binary.bzl", "py_binary")
@@ -178,7 +177,7 @@ load("@rules_python//python:py_test.bzl", "py_test")
 py_binary(...)
 py_test(...)
 
-# Explicitly using python 3.11
+# Explicitly use Python 3.11
 py_binary(..., python_version="3.11")
 py_test(..., python_version="3.11")
 
@@ -199,8 +198,8 @@ Remember to call `use_repo()` to make repos visible to your module:
 `use_repo(python, "python_3_11")`
 
 
-:::{note}
-Deprecation warning v1.1.0: The toolchain specific `py_binary` and `py_test` symbols are aliases to the regular rules. 
+:::{deprecated} 1.1.0
+The toolchain specific `py_binary` and `py_test` symbols are aliases to the regular rules. 
 i.e. Deprecated `load("@python_versions//3.11:defs.bzl", "py_binary")` & `load("@python_versions//3.11:defs.bzl", "py_test")`
 
 Usages of them should be changed to load the regular rules directly; 
