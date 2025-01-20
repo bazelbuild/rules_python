@@ -56,7 +56,7 @@ class _ManifestBased:
     def _LoadRunfiles(path: str) -> Dict[str, str]:
         """Loads the runfiles manifest."""
         result = {}
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8", newline="\n") as f:
             for line in f:
                 line = line.rstrip("\n")
                 if line.startswith(" "):
@@ -367,7 +367,7 @@ def _ParseRepoMapping(repo_mapping_path: Optional[str]) -> Dict[Tuple[str, str],
     if not repo_mapping_path:
         return {}
     try:
-        with open(repo_mapping_path, "r") as f:
+        with open(repo_mapping_path, "r", encoding="utf-8", newline="\n") as f:
             content = f.read()
     except FileNotFoundError:
         return {}
