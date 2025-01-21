@@ -177,7 +177,7 @@ def py_console_script_binary(name, **kwargs):
         **with_deprecation(
             kwargs,
             symbol_name = "py_console_script_binary",
-            load_name = "entry_points:py_console_script_binary",
+            load_name = "/entry_points:py_console_script_binary",
             python_version = "{python_version}",
             deprecated = "@{name}//:defs.bzl",
         ),
@@ -358,7 +358,7 @@ def py_console_script_binary(name, **kwargs):
         **with_deprecation(
             kwargs,
             symbol_name = "py_console_script_binary",
-            load_name = "entry_points:py_console_script_binary",
+            load_name = "/entry_points:py_console_script_binary",
             python_version = "{python_version}",
             deprecated = "@{name}//{python_version}:defs.bzl",
         ),
