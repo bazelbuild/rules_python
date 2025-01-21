@@ -38,7 +38,21 @@ load("@rules_python//python{load_name}.bzl", "{name}")
 """
 
 def with_deprecation(kwargs, *, symbol_name, python_version, load_name = None, deprecated = "rules_python//python/config_settings:transition.bzl"):
-    """Internal function to propagate the deprecation warning."""
+    """An internal function to propagate the deprecation warning.
+
+    This is not an API that should be used outside `rules_python`.
+
+    Args:
+        kwargs: Arguments to modify.
+        symbol_name: {type}`str` the symbol name that is deprecated.
+        python_version: {type}`str` the python version to be used.
+        load_name: {type}`str` the load location under `//python`. Should start
+            either with `/` or `:`. Defaults to `:<symbol_name>`.
+        deprecated: {type}`str` the symbol import location that we are deprecating.
+
+    Returns:
+        The kwargs to be used in the macro creation.
+    """
 
     # TODO @aignas 2025-01-21: should we add a flag that silences this?
     load_name = load_name or (":" + symbol_name)
