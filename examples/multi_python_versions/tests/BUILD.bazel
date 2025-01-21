@@ -23,31 +23,31 @@ py_binary(
 )
 
 py_binary(
-    python_version = "3.8",
     name = "version_3_8",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.8",
 )
 
 py_binary(
-    python_version = "3.9",
     name = "version_3_9",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.9",
 )
 
 py_binary(
-    python_version = "3.10",
     name = "version_3_10",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.10",
 )
 
 py_binary(
-    python_version = "3.11",
     name = "version_3_11",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.11",
 )
 
 py_test(
@@ -58,34 +58,34 @@ py_test(
 )
 
 py_test(
-    python_version = "3.8",
     name = "my_lib_3_8_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.8",
     deps = ["//libs/my_lib"],
 )
 
 py_test(
-    python_version = "3.9",
     name = "my_lib_3_9_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.9",
     deps = ["//libs/my_lib"],
 )
 
 py_test(
-    python_version = "3.10",
     name = "my_lib_3_10_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.10",
     deps = ["//libs/my_lib"],
 )
 
 py_test(
-    python_version = "3.11",
     name = "my_lib_3_11_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.11",
     deps = ["//libs/my_lib"],
 )
 
@@ -103,35 +103,35 @@ py_test(
 )
 
 py_test(
-    python_version = "3.8",
     name = "version_3_8_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.8"},
     main = "version_test.py",
+    python_version = "3.8",
 )
 
 py_test(
-    python_version = "3.9",
     name = "version_3_9_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.9"},
     main = "version_test.py",
+    python_version = "3.9",
 )
 
 py_test(
-    python_version = "3.10",
     name = "version_3_10_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.10"},
     main = "version_test.py",
+    python_version = "3.10",
 )
 
 py_test(
-    python_version = "3.11",
     name = "version_3_11_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.11"},
     main = "version_test.py",
+    python_version = "3.11",
 )
 
 py_test(
@@ -147,7 +147,6 @@ py_test(
 )
 
 py_test(
-    python_version = "3.10",
     name = "version_3_10_takes_3_9_subprocess_test",
     srcs = ["cross_version_test.py"],
     data = [":version_3_9"],
@@ -157,6 +156,7 @@ py_test(
         "VERSION_CHECK": "3.10",
     },
     main = "cross_version_test.py",
+    python_version = "3.10",
 )
 
 sh_test(
