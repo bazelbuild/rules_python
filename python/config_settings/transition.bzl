@@ -25,20 +25,21 @@ load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 
 _DEPRECATION_MESSAGE = """
-The {name} symbol in @{deprecated}
+The '{name}' symbol in @{deprecated}
 is deprecated. It is an alias to the regular rule; use it directly instead:
 
 load("@rules_python//python{load_name}.bzl", "{name}")
 
 {name}(
     # ...
-    python_version = {python_version},
+    python_version = "{python_version}",
     # ...
 )
 """
 
 def with_deprecation(kwargs, *, symbol_name, python_version, load_name = None, deprecated = "rules_python//python/config_settings:transition.bzl"):
     """Internal function to propagate the deprecation warning."""
+
     # TODO @aignas 2025-01-21: should we add a flag that silences this?
     load_name = load_name or (":" + symbol_name)
 
