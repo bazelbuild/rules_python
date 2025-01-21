@@ -387,7 +387,9 @@ You cannot use both the additive_build_content and additive_build_content_file a
     for module in module_ctx.modules:
         for attr in module.tags.override:
             if not module.is_root:
-                fail("overrides are only supported in root modules")
+                # Overrides are only supported in root modules. Silently
+                # ignore the override:
+                continue
 
             if not attr.file.endswith(".whl"):
                 fail("Only whl overrides are supported at this time")
