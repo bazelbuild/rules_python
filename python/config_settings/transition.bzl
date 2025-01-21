@@ -25,10 +25,34 @@ load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 
 _DEPRECATION_MESSAGE = """
-The {name} symbol in @rules_python//python/config_settings:transition.bzl
+The {name} symbol in @{deprecated}
 is deprecated. It is an alias to the regular rule; use it directly instead:
-    load("@rules_python//python:{name}.bzl", "{name}")
+
+load("@rules_python//python{load_name}.bzl", "{name}")
+
+{name}(
+    # ...
+    python_version = {python_version},
+    # ...
+)
 """
+
+def with_deprecation(kwargs, *, symbol_name, python_version, load_name = None, deprecated = "rules_python//python/config_settings:transition.bzl"):
+    """Internal function to propagate the deprecation warning."""
+    # TODO @aignas 2025-01-21: should we add a flag that silences this?
+    load_name = load_name or (":" + symbol_name)
+
+    deprecation = _DEPRECATION_MESSAGE.format(
+        name = symbol_name,
+        load_name = load_name,
+        python_version = python_version,
+        deprecated = deprecated,
+    )
+    if kwargs.get("deprecation"):
+        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
+    kwargs["deprecation"] = deprecation
+    kwargs["python_version"] = python_version
+    return kwargs
 
 def py_binary(**kwargs):
     """[DEPRECATED] Deprecated alias for py_binary.
@@ -37,11 +61,7 @@ def py_binary(**kwargs):
         **kwargs: keyword args forwarded onto {obj}`py_binary`.
     """
 
-    deprecation = _DEPRECATION_MESSAGE.format(name = "py_binary")
-    if kwargs.get("deprecation"):
-        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
-    kwargs["deprecation"] = deprecation
-    _py_binary(**kwargs)
+    _py_binary(**with_deprecation(kwargs, name = "py_binary", python_version = kwargs.get("python_version")))
 
 def py_test(**kwargs):
     """[DEPRECATED] Deprecated alias for py_test.
@@ -49,8 +69,4 @@ def py_test(**kwargs):
     Args:
         **kwargs: keyword args forwarded onto {obj}`py_binary`.
     """
-    deprecation = _DEPRECATION_MESSAGE.format(name = "py_test")
-    if kwargs.get("deprecation"):
-        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
-    kwargs["deprecation"] = deprecation
-    _py_test(**kwargs)
+    _py_test(**with_deprecation(kwargs, name = "py_test", python_version = kwargs.get("python_version")))
