@@ -20,10 +20,13 @@ settings for rules to later use.
 
 _ENABLE_PYSTAR_ENVVAR_NAME = "RULES_PYTHON_ENABLE_PYSTAR"
 _ENABLE_PYSTAR_DEFAULT = "1"
+_ENABLE_DEPRECATION_WARNINGS_ENVVAR_NAME = "RULES_PYTHON_DEPRECATION_WARNINGS"
+_ENABLE_DEPRECATION_WARNINGS_DEFAULT = "0"
 
 _CONFIG_TEMPLATE = """\
 config = struct(
   enable_pystar = {enable_pystar},
+  enable_deprecation_warnings = {enable_deprecation_warnings},
   BuiltinPyInfo = getattr(getattr(native, "legacy_globals", None), "PyInfo", {builtin_py_info_symbol}),
   BuiltinPyRuntimeInfo = getattr(getattr(native, "legacy_globals", None), "PyRuntimeInfo", {builtin_py_runtime_info_symbol}),
   BuiltinPyCcLinkParamsProvider = getattr(getattr(native, "legacy_globals", None), "PyCcLinkParamsProvider", {builtin_py_cc_link_params_provider}),
@@ -60,6 +63,7 @@ bzl_library(
 
 def _internal_config_repo_impl(rctx):
     pystar_requested = _bool_from_environ(rctx, _ENABLE_PYSTAR_ENVVAR_NAME, _ENABLE_PYSTAR_DEFAULT)
+    deprecation_warnings_requested = _bool_from_environ(rctx, _ENABLE_DEPRECATION_WARNINGS_ENVVAR_NAME, _ENABLE_DEPRECATION_WARNINGS_DEFAULT)
 
     # Bazel 7+ (dev and later) has native.starlark_doc_extract, and thus the
     # py_internal global, which are necessary for the pystar implementation.
@@ -67,6 +71,8 @@ def _internal_config_repo_impl(rctx):
         enable_pystar = pystar_requested
     else:
         enable_pystar = False
+
+    enable_deprecation_warnings = deprecation_warnings_requested
 
     if not native.bazel_version or int(native.bazel_version.split(".")[0]) >= 8:
         builtin_py_info_symbol = "None"
@@ -79,6 +85,7 @@ def _internal_config_repo_impl(rctx):
 
     rctx.file("rules_python_config.bzl", _CONFIG_TEMPLATE.format(
         enable_pystar = enable_pystar,
+        enable_deprecation_warnings = enable_deprecation_warnings,
         builtin_py_info_symbol = builtin_py_info_symbol,
         builtin_py_runtime_info_symbol = builtin_py_runtime_info_symbol,
         builtin_py_cc_link_params_provider = builtin_py_cc_link_params_provider,

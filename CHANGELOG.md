@@ -54,6 +54,9 @@ Unreleased changes template.
 ### Changed
 * (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
   fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
+* (rules) deprecation warnings for deprecated symbols have been turned off by
+  default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
+  env var.
 
 {#v0-0-0-fixed}
 ### Fixed

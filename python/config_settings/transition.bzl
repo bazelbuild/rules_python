@@ -21,6 +21,7 @@ of them should be changed to load the regular rules directly.
 :::
 """
 
+load("@rules_python_internal//:rules_python_config.bzl", "config")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 
@@ -54,18 +55,18 @@ def with_deprecation(kwargs, *, symbol_name, python_version, load_name = None, d
         The kwargs to be used in the macro creation.
     """
 
-    # TODO @aignas 2025-01-21: should we add a flag that silences this?
-    load_name = load_name or (":" + symbol_name)
+    if config.enable_deprecation_warnings:
+        load_name = load_name or (":" + symbol_name)
 
-    deprecation = _DEPRECATION_MESSAGE.format(
-        name = symbol_name,
-        load_name = load_name,
-        python_version = python_version,
-        deprecated = deprecated,
-    )
-    if kwargs.get("deprecation"):
-        deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
-    kwargs["deprecation"] = deprecation
+        deprecation = _DEPRECATION_MESSAGE.format(
+            name = symbol_name,
+            load_name = load_name,
+            python_version = python_version,
+            deprecated = deprecated,
+        )
+        if kwargs.get("deprecation"):
+            deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
+        kwargs["deprecation"] = deprecation
     kwargs["python_version"] = python_version
     return kwargs
 
