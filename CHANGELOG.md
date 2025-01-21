@@ -52,7 +52,8 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
+  fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
 
 {#v0-0-0-fixed}
 ### Fixed
