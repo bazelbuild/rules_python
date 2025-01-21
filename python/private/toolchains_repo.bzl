@@ -183,11 +183,21 @@ def py_test(name, **kwargs):
         **kwargs
     )
 
+_DEPRECATION_MESSAGE = \"\"\"
+The {name} symbol in @rules_python//python/config_settings:transition.bzl
+is deprecated. It is an alias to the regular rule; use it directly instead:
+    load("@rules_python//python:{name}.bzl", "{name}")
+\"\"\"
+
 def compile_pip_requirements(name, **kwargs):
+    deprecation = _DEPRECATION_MESSAGE.format(name = "compile_pip_requirements")
+    if kwargs.get("deprecation"):
+        deprecation = kwargs.pop("deprecation") + "\n\n" + deprecation
+    kwargs["deprecation"] = deprecation
+
     return _compile_pip_requirements(
         name = name,
-        py_binary = py_binary,
-        py_test = py_test,
+        python_version = "{python_version}",
         **kwargs
     )
 

@@ -1,4 +1,4 @@
-load("//python/config_settings:transition.bzl", "py_binary")
+load("//python:py_binary.bzl", "py_binary")
 load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 load("//tools/private:publish_deps.bzl", "publish_deps")
 
