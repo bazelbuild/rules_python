@@ -17,7 +17,6 @@
 
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
-load("//python/config_settings:transition.bzl", transition_py_binary = "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 visibility(["//..."])
@@ -94,7 +93,7 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
         ],
     )
     if python_version:
-        py_binary_rule = lambda *args, **kwargs: transition_py_binary(python_version = python_version, *args, **kwargs)
+        py_binary_rule = lambda *args, **kwargs: py_binary(python_version = python_version, *args, **kwargs)
     else:
         py_binary_rule = py_binary
 
