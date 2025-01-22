@@ -1,17 +1,17 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load(
+    "@python//3.11:defs.bzl",
+    hub_compile_pip_requirements = "compile_pip_requirements",
+    hub_py_binary = "py_binary",
+    hub_py_console_script_binary = "py_console_script_binary",
+    hub_py_test = "py_test",
+)
+load(
     "@python_3_11//:defs.bzl",
     versioned_compile_pip_requirements = "compile_pip_requirements",
     versioned_py_binary = "py_binary",
     versioned_py_console_script_binary = "py_console_script_binary",
     versioned_py_test = "py_test",
-)
-load(
-    "@python_versions//3.11:defs.bzl",
-    hub_compile_pip_requirements = "compile_pip_requirements",
-    hub_py_binary = "py_binary",
-    hub_py_console_script_binary = "py_console_script_binary",
-    hub_py_test = "py_test",
 )
 load("//python/config_settings:transition.bzl", transition_py_binary = "py_binary", transition_py_test = "py_test")
 
