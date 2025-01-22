@@ -343,7 +343,7 @@ def compile_pip_requirements(**kwargs):
             repository_name = repository_name,
             name = rctx.attr.name,
             python_version = python_version,
-            rules_python = "@" + rules_python,
+            rules_python = get_repository_name(rctx.attr._rules_python_workspace),
         ))
         rctx.file("{}/BUILD.bazel".format(python_version), "")
 
