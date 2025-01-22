@@ -49,11 +49,23 @@ py_test(
 )
 
 py_test(
-    name = "my_lib_3_9_test",
-    srcs = ["my_lib_test.py"],
-    main = "my_lib_test.py",
+    name = "coverage_rc_is_set_test",
+    srcs = ["coverage_rc_is_set_test.py"],
+    main = "coverage_rc_is_set_test.py",
+)
+
+py_test(
+    name = "coverage_rc_is_set_3_9_test",
+    srcs = ["coverage_rc_is_set_test.py"],
+    main = "coverage_rc_is_set_test.py",
     python_version = "3.9",
-    deps = ["//libs/my_lib"],
+)
+
+py_test(
+    name = "coverage_rc_is_set_3_11_test",
+    srcs = ["coverage_rc_is_set_test.py"],
+    main = "coverage_rc_is_set_test.py",
+    python_version = "3.11",
 )
 
 py_test(

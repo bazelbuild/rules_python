@@ -68,7 +68,9 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (toolchain) Using testing toolchain to configure py_test coverage.
+   This opens the potential to configure differnt test runners.
+  ([#2246](https://github.com/bazelbuild/rules_python/pull/2246)).
 
 {#v0-0-0-removed}
 ### Removed

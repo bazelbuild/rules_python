@@ -363,3 +363,8 @@ exports_files([
 current_py_toolchain(
     name = "current_py_toolchain",
 )
+
+toolchain_type(
+    name = "py_test_toolchain_type",
+    visibility = ["//visibility:public"],
+)
