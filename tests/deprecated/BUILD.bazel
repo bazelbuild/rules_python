@@ -76,7 +76,7 @@ hub_py_console_script_binary(
 hub_compile_pip_requirements(
     name = "hub_compile_pip_requirements",
     src = "requirements.in",
-    requirements_txt = "requirements.txt",
+    requirements_txt = "requirements_hub.txt",
 )
 
 build_test(
