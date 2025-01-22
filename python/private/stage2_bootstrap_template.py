@@ -106,8 +106,8 @@ def print_verbose(*args, mapping=None, values=None):
 
 def print_verbose_coverage(*args):
     """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
-    if os.environ.get("VERBOSE_COVERAGE"):
-        print(*args, file=sys.stderr, flush=True)
+    if is_verbose_coverage():
+        print("bootstrap: coverage:", *args, file=sys.stderr, flush=True)
 
 
 def is_verbose_coverage():
@@ -397,6 +397,8 @@ def main():
         coverage_enabled = _bazel_site_init.COVERAGE_SETUP
     else:
         coverage_enabled = False
+
+    print_verbose_coverage("coverage_enabled:", coverage_enabled)
 
     with _maybe_collect_coverage(enable=coverage_enabled):
         # The first arg is this bootstrap, so drop that for the re-invocation.

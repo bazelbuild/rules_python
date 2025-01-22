@@ -185,7 +185,7 @@ def _setup_sys_path():
             coverage_setup = True
         else:
             _print_verbose_coverage(
-                "Coverage was enabled, but python coverage tool was not configured."
+                "Coverage was enabled, but python coverage tool was not configured. "
                 + "To enable coverage, consult the docs at "
                 + "https://rules-python.readthedocs.io/en/latest/coverage.html"
             )
