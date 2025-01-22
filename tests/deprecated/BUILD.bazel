@@ -15,7 +15,7 @@ load(
 )
 load("//python/config_settings:transition.bzl", transition_py_binary = "py_binary", transition_py_test = "py_test")
 
-# TODO remove the referenced symbols when releasing v2
+# TODO @aignas 2025-01-22: remove the referenced symbols when releasing v2
 
 transition_py_binary(
     name = "transition_py_binary",
