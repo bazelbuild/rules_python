@@ -18,6 +18,8 @@ such as globals available to Bazel versions, or propagating user environment
 settings for rules to later use.
 """
 
+load(":repo_utils.bzl", "repo_utils")
+
 _ENABLE_PYSTAR_ENVVAR_NAME = "RULES_PYTHON_ENABLE_PYSTAR"
 _ENABLE_PYSTAR_DEFAULT = "1"
 _ENABLE_DEPRECATION_WARNINGS_ENVVAR_NAME = "RULES_PYTHON_DEPRECATION_WARNINGS"
@@ -116,4 +118,4 @@ internal_config_repo = repository_rule(
 )
 
 def _bool_from_environ(rctx, key, default):
-    return bool(int(rctx.os.environ.get(key, default)))
+    return bool(int(repo_utils.getenv(rctx, key, default)))

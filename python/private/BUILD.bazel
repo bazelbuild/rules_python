@@ -139,6 +139,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "deprecation_bzl",
+    srcs = ["deprecation.bzl"],
+    deps = [
+        "@rules_python_internal//:rules_python_config_bzl",
+    ],
+)
+
+bzl_library(
     name = "enum_bzl",
     srcs = ["enum.bzl"],
 )

@@ -21,54 +21,20 @@ of them should be changed to load the regular rules directly.
 :::
 """
 
-load("@rules_python_internal//:rules_python_config.bzl", "config")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
+load("//python/private:deprecation.bzl", "with_deprecation")
+load("//python/private:text_util.bzl", "render")
 
-_DEPRECATION_MESSAGE = """
-The '{name}' symbol in @{deprecated}
-is deprecated. It is an alias to the regular rule; use it directly instead:
-
-load("@rules_python//python{load_name}.bzl", "{name}")
-
-{name}(
-    # ...
-    python_version = "{python_version}",
-    # ...
-)
-"""
-
-def with_deprecation(kwargs, *, symbol_name, python_version, load_name = None, deprecated = "rules_python//python/config_settings:transition.bzl"):
-    """An internal function to propagate the deprecation warning.
-
-    This is not an API that should be used outside `rules_python`.
-
-    Args:
-        kwargs: Arguments to modify.
-        symbol_name: {type}`str` the symbol name that is deprecated.
-        python_version: {type}`str` the python version to be used.
-        load_name: {type}`str` the load location under `//python`. Should start
-            either with `/` or `:`. Defaults to `:<symbol_name>`.
-        deprecated: {type}`str` the symbol import location that we are deprecating.
-
-    Returns:
-        The kwargs to be used in the macro creation.
-    """
-
-    if config.enable_deprecation_warnings:
-        load_name = load_name or (":" + symbol_name)
-
-        deprecation = _DEPRECATION_MESSAGE.format(
-            name = symbol_name,
-            load_name = load_name,
-            python_version = python_version,
-            deprecated = deprecated,
-        )
-        if kwargs.get("deprecation"):
-            deprecation = kwargs.get("deprecation") + "\n\n" + deprecation
-        kwargs["deprecation"] = deprecation
+def _with_deprecation(kwargs, *, name, python_version):
     kwargs["python_version"] = python_version
-    return kwargs
+    return with_deprecation.symbol(
+        kwargs,
+        symbol_name = name,
+        old_load = "@rules_python//python/config_settings:transition.bzl",
+        new_load = "@rules_python//python:{}.bzl".format(name),
+        snippet = render.call(name, **{k: repr(v) for k, v in kwargs.items()}),
+    )
 
 def py_binary(**kwargs):
     """[DEPRECATED] Deprecated alias for py_binary.
@@ -77,7 +43,7 @@ def py_binary(**kwargs):
         **kwargs: keyword args forwarded onto {obj}`py_binary`.
     """
 
-    _py_binary(**with_deprecation(kwargs, name = "py_binary", python_version = kwargs.get("python_version")))
+    _py_binary(**_with_deprecation(kwargs, name = "py_binary", python_version = kwargs.get("python_version")))
 
 def py_test(**kwargs):
     """[DEPRECATED] Deprecated alias for py_test.
@@ -85,4 +51,4 @@ def py_test(**kwargs):
     Args:
         **kwargs: keyword args forwarded onto {obj}`py_binary`.
     """
-    _py_test(**with_deprecation(kwargs, name = "py_test", python_version = kwargs.get("python_version")))
+    _py_test(**_with_deprecation(kwargs, name = "py_test", python_version = kwargs.get("python_version")))
