@@ -557,25 +557,14 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
     site_init = ctx.actions.declare_file("{}/_bazel_site_init.py".format(site_packages))
     computed_subs = ctx.actions.template_dict()
     computed_subs.add_joined("%imports%", imports, join_with = ":", map_each = _map_each_identity)
-
-    if (ctx.configuration.coverage_enabled and
-        runtime and
-        runtime.coverage_tool):
-        coverage_tool_runfiles_path = "{}/{}".format(
-            ctx.workspace_name,
-            runtime.coverage_tool.short_path,
-        )
-    else:
-        coverage_tool_runfiles_path = ""
-
     ctx.actions.expand_template(
         template = runtime.site_init_template,
         output = site_init,
         substitutions = {
+            "%coverage_tool%": _get_coverage_tool_runfiles_path(ctx, runtime),
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%site_init_runfiles_path%": "{}/{}".format(ctx.workspace_name, site_init.short_path),
             "%workspace_name%": ctx.workspace_name,
-            "%coverage_tool%": coverage_tool_runfiles_path,
         },
         computed_substitutions = computed_subs,
     )
@@ -589,6 +578,17 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
 
 def _map_each_identity(v):
     return v
+
+def _get_coverage_tool_runfiles_path(ctx, runtime):
+    if (ctx.configuration.coverage_enabled and
+        runtime and
+        runtime.coverage_tool):
+        return "{}/{}".format(
+            ctx.workspace_name,
+            runtime.coverage_tool.short_path,
+        )
+    else:
+        return ""
 
 def _create_stage2_bootstrap(
         ctx,
@@ -605,15 +605,6 @@ def _create_stage2_bootstrap(
         sibling = output_sibling,
     )
     runtime = runtime_details.effective_runtime
-    if (ctx.configuration.coverage_enabled and
-        runtime and
-        runtime.coverage_tool):
-        coverage_tool_runfiles_path = "{}/{}".format(
-            ctx.workspace_name,
-            runtime.coverage_tool.short_path,
-        )
-    else:
-        coverage_tool_runfiles_path = ""
 
     template = runtime.stage2_bootstrap_template
 
@@ -621,7 +612,7 @@ def _create_stage2_bootstrap(
         template = template,
         output = output,
         substitutions = {
-            "%coverage_tool%": coverage_tool_runfiles_path,
+            "%coverage_tool%": _get_coverage_tool_runfiles_path(ctx, runtime),
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
             "%main%": "{}/{}".format(ctx.workspace_name, main_py.short_path),

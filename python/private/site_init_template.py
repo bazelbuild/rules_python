@@ -163,7 +163,7 @@ def _setup_sys_path():
         if cov_tool:
             _print_verbose_coverage(f"Using toolchain coverage_tool {cov_tool}")
         elif cov_tool := os.environ.get("PYTHON_COVERAGE"):
-            _print_verbose_coverage(f"PYTHON_COVERAGE: {cov_tool}")
+            _print_verbose_coverage(f"Using env var coverage: PYTHON_COVERAGE={cov_tool}")
 
         if cov_tool:
             if os.path.isabs(cov_tool):
@@ -185,7 +185,7 @@ def _setup_sys_path():
             coverage_setup = True
         else:
             _print_verbose_coverage(
-                "Coverage was enabled, but python coverage tool was not configured. "
+                "Coverage was enabled, but the coverage tool was not found or valid. "
                 + "To enable coverage, consult the docs at "
                 + "https://rules-python.readthedocs.io/en/latest/coverage.html"
             )
@@ -194,3 +194,4 @@ def _setup_sys_path():
 
 
 COVERAGE_SETUP = _setup_sys_path()
+_print_verbose("DONE")

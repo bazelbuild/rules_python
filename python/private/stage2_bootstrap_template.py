@@ -107,7 +107,7 @@ def print_verbose(*args, mapping=None, values=None):
 def print_verbose_coverage(*args):
     """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
     if is_verbose_coverage():
-        print("bootstrap: coverage:", *args, file=sys.stderr, flush=True)
+        print("bootstrap: stage 2: coverage:", *args, file=sys.stderr, flush=True)
 
 
 def is_verbose_coverage():
@@ -271,6 +271,7 @@ def _run_py(main_filename, *, args, cwd=None):
 
 @contextlib.contextmanager
 def _maybe_collect_coverage(enable):
+    print_verbose_coverage("enabled:", enable)
     if not enable:
         yield
         return
@@ -283,7 +284,9 @@ def _maybe_collect_coverage(enable):
     unique_id = uuid.uuid4()
 
     # We need for coveragepy to use relative paths.  This can only be configured
+    # using an rc file.
     rcfile_name = os.path.join(coverage_dir, ".coveragerc_{}".format(unique_id))
+    print_verbose_coverage("coveragerc file:", rcfile_name)
     with open(rcfile_name, "w") as rcfile:
         rcfile.write(
             """[run]
@@ -318,6 +321,7 @@ relative_files = True
         finally:
             cov.stop()
             lcov_path = os.path.join(coverage_dir, "pylcov.dat")
+            print_verbose_coverage("generating lcov from:", lcov_path)
             cov.lcov_report(
                 outfile=lcov_path,
                 # Ignore errors because sometimes instrumented files aren't
@@ -397,8 +401,6 @@ def main():
         coverage_enabled = _bazel_site_init.COVERAGE_SETUP
     else:
         coverage_enabled = False
-
-    print_verbose_coverage("coverage_enabled:", coverage_enabled)
 
     with _maybe_collect_coverage(enable=coverage_enabled):
         # The first arg is this bootstrap, so drop that for the re-invocation.
