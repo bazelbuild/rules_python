@@ -63,6 +63,8 @@ Unreleased changes template.
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
+* (runfiles) Runfile manifest and repository mapping files are now interpreted
+  as UTF-8 on all platforms.
 * (coverage) Coverage with `--bootstrap_impl=script` is fixed
   ([#2572](https://github.com/bazelbuild/rules_python/issues/2572)).
 
