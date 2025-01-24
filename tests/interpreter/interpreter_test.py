@@ -28,26 +28,30 @@ class InterpreterTest(unittest.TestCase):
         """Validates that we can successfully execute arbitrary code from the CLI."""
         expected_version = os.environ["EXPECTED_PYTHON_VERSION"]
 
-        result = subprocess.check_output([self.interpreter],
-                                         text = True,
-            input = "\r".join([
-                "import sys",
-                "v = sys.version_info",
-                "print(f'version: {v.major}.{v.minor}')",
-            ]),
+        result = subprocess.check_output(
+            [self.interpreter],
+            text=True,
+            input="\r".join(
+                [
+                    "import sys",
+                    "v = sys.version_info",
+                    "print(f'version: {v.major}.{v.minor}')",
+                ]
+            ),
         ).strip()
         self.assertEqual(result, f"version: {expected_version}")
 
     def test_json_tool(self):
         """Validates that we can successfully invoke a module from the CLI."""
         # Pass unformatted JSON to the json.tool module.
-        result = subprocess.check_output([
-            self.interpreter,
-            "-m",
-            "json.tool",
-        ],
-                                   text=True,
-            input = '{"json":"obj"}',
+        result = subprocess.check_output(
+            [
+                self.interpreter,
+                "-m",
+                "json.tool",
+            ],
+            text=True,
+            input='{"json":"obj"}',
         ).strip()
         # Validate that we get formatted JSON back.
         self.assertEqual(result, '{\n    "json": "obj"\n}')
