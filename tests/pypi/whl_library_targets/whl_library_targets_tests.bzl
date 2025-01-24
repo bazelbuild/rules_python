@@ -245,6 +245,7 @@ def _test_whl_and_library_deps(env):
                 exclude = [],
                 allow_empty = True,
             ),
+            "pyi_srcs": _glob(["site-packages/**/*.pyi"], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
                 exclude = [
@@ -316,6 +317,7 @@ def _test_group(env):
         {
             "name": "_pkg",
             "srcs": _glob(["site-packages/**/*.py"], exclude = [], allow_empty = True),
+            "pyi_srcs": _glob(["site-packages/**/*.pyi"], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
                 exclude = [

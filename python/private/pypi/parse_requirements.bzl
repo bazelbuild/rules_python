@@ -184,6 +184,7 @@ def parse_requirements(
                 req.distribution: None
                 for reqs in requirements_by_platform.values()
                 for req in reqs.values()
+                if req.srcs.shas
             }),
         )
 
@@ -203,6 +204,9 @@ def parse_requirements(
                 sorted(requirements),
             ))
 
+        # Return normalized names
+        ret_requirements = ret.setdefault(normalize_name(whl_name), [])
+
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
                 requirement = r,
@@ -211,7 +215,7 @@ def parse_requirements(
             )
 
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
-            ret.setdefault(whl_name, []).append(
+            ret_requirements.append(
                 struct(
                     distribution = r.distribution,
                     srcs = r.srcs,

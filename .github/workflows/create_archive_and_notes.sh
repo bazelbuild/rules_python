@@ -15,6 +15,15 @@
 
 set -o errexit -o nounset -o pipefail
 
+# Exclude dot directories, specifically, this file so that we don't
+# find the substring we're looking for in our own file.
+# Exclude CONTRIBUTING.md because it documents how to use these strings.
+if grep --exclude=CONTRIBUTING.md --exclude-dir=.* VERSION_NEXT_ -r; then
+  echo
+  echo "Found VERSION_NEXT markers indicating version needs to be specified"
+  exit 1
+fi
+
 # Set by GH actions, see
 # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 TAG=${GITHUB_REF_NAME}
