@@ -68,12 +68,12 @@ load("//:internal_dev_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
-load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
+load("@pythons_hub//:versions.bzl", "PYTHON_VERSIONS")
 load("//python:repositories.bzl", "python_register_multi_toolchains")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-3],  # Use 3.11.10
+    default_version = "3.11",
     # Integration tests verify each version, so register all of them.
     python_versions = PYTHON_VERSIONS,
 )

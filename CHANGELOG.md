@@ -52,7 +52,11 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
+  fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
+* (rules) deprecation warnings for deprecated symbols have been turned off by
+  default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
+  env var.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -60,6 +64,10 @@ Unreleased changes template.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
 * (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
+* (runfiles) Runfile manifest and repository mapping files are now interpreted
+  as UTF-8 on all platforms.
+* (coverage) Coverage with `--bootstrap_impl=script` is fixed
+  ([#2572](https://github.com/bazelbuild/rules_python/issues/2572)).
 
 {#v0-0-0-added}
 ### Added
