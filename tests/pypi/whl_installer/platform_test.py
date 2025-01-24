@@ -84,6 +84,7 @@ class PlatformTest(unittest.TestCase):
             Platform(os=OS.linux, arch=Arch.x86_32),
             Platform(os=OS.linux, arch=Arch.aarch64),
             Platform(os=OS.linux, arch=Arch.ppc),
+            Platform(os=OS.linux, arch=Arch.ppc64le),
             Platform(os=OS.linux, arch=Arch.s390x),
             Platform(os=OS.linux, arch=Arch.arm),
         ]
