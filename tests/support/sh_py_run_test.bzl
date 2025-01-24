@@ -33,6 +33,8 @@ def _perform_transition_impl(input_settings, attr):
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
     if attr.python_version:
         settings["//python/config_settings:python_version"] = attr.python_version
+    if attr.python_src:
+        settings["//python/bin:python_src"] = attr.python_src
     return settings
 
 _perform_transition = transition(
@@ -41,12 +43,14 @@ _perform_transition = transition(
         "//python/config_settings:bootstrap_impl",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:python_version",
+        "//python/bin:python_src",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
         "//python/config_settings:python_version",
+        "//python/bin:python_src",
         VISIBLE_FOR_TESTING,
     ],
 )
@@ -106,6 +110,7 @@ toolchain.
 """,
         ),
         "python_version": attr.string(),
+        "python_src": attr.label(),
         "target": attr.label(executable = True, cfg = "target"),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
@@ -135,6 +140,7 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
     reconfig_kwargs["env"] = kwargs.get("env")
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
+    reconfig_kwargs["python_src"] = kwargs.pop("python_src", None)
 
     inner_name = "_{}_inner".format(name)
     _py_reconfig_test(

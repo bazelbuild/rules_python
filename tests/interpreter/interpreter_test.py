@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import logging
 import unittest
 import subprocess
 
@@ -39,33 +38,20 @@ class InterpreterTest(unittest.TestCase):
         ).strip()
         self.assertEqual(result, f"version: {expected_version}")
 
-    #def _run_module_test(self, version):
-    #    """Validates that we can successfully invoke a module from the CLI."""
-    #    # Pass unformatted JSON to the json.tool module.
-    #    result = self.run_bazel(
-    #        "run",
-    #        f"--@rules_python//python/config_settings:python_version={version}",
-    #        "@rules_python//python/bin:python",
-    #        "--",
-    #        "-m",
-    #        "json.tool",
-    #        input = '{"json":"obj"}',
-    #    )
-    #    # Validate that we get formatted JSON back.
-    #    self.assert_result_matches(result, r'{\n    "json": "obj"\n}')
-
-    #def test_run_module_3_10(self):
-    #    self._run_module_test("3.10")
-
-    #def test_run_module_3_11(self):
-    #    self._run_module_test("3.11")
-
-    #def test_run_module_3_12(self):
-    #    self._run_module_test("3.12")
-
+    def test_json_tool(self):
+        """Validates that we can successfully invoke a module from the CLI."""
+        # Pass unformatted JSON to the json.tool module.
+        result = subprocess.check_output([
+            self.interpreter,
+            "-m",
+            "json.tool",
+        ],
+                                   text=True,
+            input = '{"json":"obj"}',
+        ).strip()
+        # Validate that we get formatted JSON back.
+        self.assertEqual(result, '{\n    "json": "obj"\n}')
 
 
 if __name__ == "__main__":
-    # Enabling this makes the runner log subprocesses as the test goes along.
-    # logging.basicConfig(level = "INFO")
     unittest.main()
