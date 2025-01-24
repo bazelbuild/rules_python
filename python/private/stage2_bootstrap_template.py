@@ -398,6 +398,7 @@ def main():
 
     if os.environ.get("COVERAGE_DIR"):
         import _bazel_site_init
+
         coverage_enabled = _bazel_site_init.COVERAGE_SETUP
     else:
         coverage_enabled = False

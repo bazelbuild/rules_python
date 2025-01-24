@@ -1,5 +1,4 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")

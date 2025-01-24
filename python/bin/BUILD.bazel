@@ -1,4 +1,3 @@
-load("//python:defs.bzl", "py_binary")
 load(":interpreter.bzl", "interpreter")
 
 package(default_visibility = ["//visibility:public"])

@@ -17,17 +17,17 @@ load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 [py_reconfig_test(
     name = "python_version_%s_test" % python_version,
     srcs = ["interpreter_test.py"],
-    main = "interpreter_test.py",
     data = [
         "//python/bin:python",
     ],
-    deps = [
-        "//python/runfiles",
-    ],
-    python_version = python_version,
     env = {
         "EXPECTED_PYTHON_VERSION": python_version,
     },
+    main = "interpreter_test.py",
+    python_version = python_version,
+    deps = [
+        "//python/runfiles",
+    ],
 ) for python_version in (
     "3.10",
     "3.11",
@@ -37,18 +37,18 @@ load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 [py_reconfig_test(
     name = "python_src_%s_test" % python_version,
     srcs = ["interpreter_test.py"],
-    main = "interpreter_test.py",
     data = [
         "//python/bin:python",
     ],
-    deps = [
-        "//python/runfiles",
-    ],
-    python_src = "//tools/publish:twine",
-    python_version = python_version,
     env = {
         "EXPECTED_PYTHON_VERSION": "3.11",
     },
+    main = "interpreter_test.py",
+    python_src = "//tools/publish:twine",
+    python_version = python_version,
+    deps = [
+        "//python/runfiles",
+    ],
 ) for python_version in (
     "3.10",
     "3.11",

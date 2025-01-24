@@ -173,7 +173,9 @@ def main(
     # the lines like: # via -r /absolute/path/to/<requirements_file>
     # with: # via -r <requirements_file>
     # For Windows, we should explicitly call .as_posix() to convert \\ -> /
-    absolute_src_prefixes = [Path(src).absolute().parent.as_posix() + "/" for src in src_files]
+    absolute_src_prefixes = [
+        Path(src).absolute().parent.as_posix() + "/" for src in src_files
+    ]
 
     if UPDATE:
         print("Updating " + requirements_file_relative)

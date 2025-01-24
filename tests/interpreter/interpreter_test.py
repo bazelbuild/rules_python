@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import os
-import unittest
 import subprocess
+import unittest
 
 from python.runfiles import runfiles
 
