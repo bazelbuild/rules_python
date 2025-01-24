@@ -59,6 +59,7 @@ Unreleased changes template.
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
+* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 
 {#v0-0-0-added}
 ### Added
