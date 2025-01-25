@@ -25,6 +25,6 @@ def py_proto_library(**kwargs):
             symbol_name = "py_proto_library",
             new_load = "@com_google_protobuf//bazel:py_proto_library.bzl",
             old_load = "@rules_python//python:proto.bzl",
-            snippet = render.call(name, **{k: repr(v) for k, v in kwargs.items()}),
+            snippet = render.call(**{k: repr(v) for k, v in kwargs.items()}),
         )
     )
