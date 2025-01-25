@@ -16,7 +16,7 @@
 
 load("@com_google_protobuf//bazel:py_proto_library.bzl", _py_proto_library = "py_proto_library")
 load("//python/private:deprecation.bzl", "with_deprecation")
-load("//python/private:text_utils.bzl", "render")
+load("//python/private:text_util.bzl", "render")
 
 def py_proto_library(**kwargs):
     return _py_proto_library(
