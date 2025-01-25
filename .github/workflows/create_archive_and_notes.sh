@@ -37,6 +37,8 @@ cat > release_notes.txt << EOF
 
 For more detailed setup instructions, see https://rules-python.readthedocs.io/en/latest/getting-started.html
 
+For the user-facing changelog see [here](https://rules-python.readthedocs.io/en/latest/changelog.html#v${TAG//./-})
+
 ## Using Bzlmod
 
 Add to your \`MODULE.bazel\` file:
@@ -44,15 +46,19 @@ Add to your \`MODULE.bazel\` file:
 \`\`\`starlark
 bazel_dep(name = "rules_python", version = "${TAG}")
 
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.13",
+)
 
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    hub_name = "pip",
-    python_version = "3.11",
+    hub_name = "pypi",
+    python_version = "3.13",
     requirements_lock = "//:requirements_lock.txt",
 )
 
-use_repo(pip, "pip")
+use_repo(pip, "pypi")
 \`\`\`
 
 ## Using WORKSPACE
