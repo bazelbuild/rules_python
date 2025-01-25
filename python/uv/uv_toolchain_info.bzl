@@ -1,4 +1,4 @@
-# Copyright 2024 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
+"""The `UvToolchainInfo` provider.
+
 EXPERIMENTAL: This is experimental and may be removed without notice
-
-A toolchain for uv
 """
 
-load("//python/uv/private:providers.bzl", _UvToolchainInfo = "UvToolchainInfo")
+load("//python/uv/private:uv_toolchain_info.bzl", _UvToolchainInfo = "UvToolchainInfo")
 
 UvToolchainInfo = _UvToolchainInfo
