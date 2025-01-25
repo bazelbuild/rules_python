@@ -65,9 +65,6 @@ platform = tag_class(
         "compatible_with": attr.label_list(
             doc = "The compatible with constraint values for toolchain resolution",
         ),
-        "flag_values": attr.label_keyed_string_dict(
-            doc = "The flag values for toolchain resolution",
-        ),
         "name": attr.string(
             doc = "The platform string used in the UV repository to denote the platform triple.",
             mandatory = True,
@@ -113,7 +110,6 @@ def _uv_toolchain_extension(module_ctx):
             config["platforms"].setdefault(platform_attr.name, struct(
                 name = platform_attr.name.replace("-", "_").lower(),
                 compatible_with = platform_attr.compatible_with,
-                flag_values = platform_attr.flag_values,
             ))
 
         for config_attr in mod.tags.config:

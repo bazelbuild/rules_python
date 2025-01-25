@@ -184,7 +184,6 @@ uv.platform(
         "@platforms//os:macos",
         "@platforms//cpu:aarch64",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "aarch64-unknown-linux-gnu",
@@ -192,7 +191,6 @@ uv.platform(
         "@platforms//os:linux",
         "@platforms//cpu:aarch64",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "powerpc64-unknown-linux-gnu",
@@ -200,7 +198,6 @@ uv.platform(
         "@platforms//os:linux",
         "@platforms//cpu:ppc",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "powerpc64le-unknown-linux-gnu",
@@ -208,7 +205,6 @@ uv.platform(
         "@platforms//os:linux",
         "@platforms//cpu:ppc64le",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "s390x-unknown-linux-gnu",
@@ -216,7 +212,6 @@ uv.platform(
         "@platforms//os:linux",
         "@platforms//cpu:s390x",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "x86_64-apple-darwin",
@@ -224,7 +219,6 @@ uv.platform(
         "@platforms//os:macos",
         "@platforms//cpu:x86_64",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "x86_64-pc-windows-msvc",
@@ -232,7 +226,6 @@ uv.platform(
         "@platforms//os:windows",
         "@platforms//cpu:x86_64",
     ],
-    flag_values = {},
 )
 uv.platform(
     name = "x86_64-unknown-linux-gnu",
@@ -240,7 +233,6 @@ uv.platform(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    flag_values = {},
 )
 
 uv_dev = use_extension(
