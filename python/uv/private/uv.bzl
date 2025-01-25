@@ -106,7 +106,7 @@ def _uv_toolchain_extension(module_ctx):
             # NOTE: We may wish to enforce a policy where toolchain configuration is only allowed in the root module, or in rules_python. See https://github.com/bazelbuild/bazel/discussions/22024
             continue
 
-        # Note, that the first registration will always win, givin priority to
+        # Note, that the first registration will always win, giving priority to
         # the root module.
 
         for platform_attr in mod.tags.platform:
