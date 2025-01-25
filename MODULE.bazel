@@ -173,14 +173,86 @@ use_repo(
     "build_bazel_bazel_self",
 )
 
-# EXPERIMENTAL: This is experimental and may be removed without notice
-uv = use_extension(
+uv = use_extension("//python/uv:uv.bzl", "uv")
+
+# Here is how we can define platforms for the `uv` binaries - this will affect
+# all of the downstream callers because we are using the extension without
+# `dev_dependency = True`.
+uv.platform(
+    name = "aarch64-apple-darwin",
+    compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "aarch64-unknown-linux-gnu",
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "powerpc64-unknown-linux-gnu",
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:ppc",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "powerpc64le-unknown-linux-gnu",
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:ppc64le",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "s390x-unknown-linux-gnu",
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "x86_64-apple-darwin",
+    compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "x86_64-pc-windows-msvc",
+    compatible_with = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {},
+)
+uv.platform(
+    name = "x86_64-unknown-linux-gnu",
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {},
+)
+
+uv_dev = use_extension(
     "//python/uv:uv.bzl",
     "uv",
     dev_dependency = True,
 )
-uv.toolchain(uv_version = "0.4.25")
-use_repo(uv, "uv_toolchains")
+uv_dev.toolchain(
+    name = "uv_toolchains",
+    version = "0.5.24",
+)
+use_repo(uv_dev, "uv_toolchains")
 
 register_toolchains(
     "@uv_toolchains//:all",

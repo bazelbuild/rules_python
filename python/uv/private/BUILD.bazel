@@ -57,7 +57,6 @@ bzl_library(
     deps = [
         ":toolchain_types_bzl",
         ":uv_toolchains_repo_bzl",
-        ":versions_bzl",
     ],
 )
 
@@ -81,10 +80,4 @@ bzl_library(
     deps = [
         "//python/private:text_util_bzl",
     ],
-)
-
-bzl_library(
-    name = "versions_bzl",
-    srcs = ["versions.bzl"],
-    visibility = ["//python/uv:__subpackages__"],
 )
