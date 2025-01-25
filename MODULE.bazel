@@ -9,8 +9,7 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.16")
 bazel_dep(name = "platforms", version = "0.0.4")
 
-# Those are loaded only when using py_proto_library
-bazel_dep(name = "rules_proto", version = "7.0.2")
+# Those should be loaded only when using py_proto_library
 bazel_dep(name = "protobuf", version = "29.0-rc2", repo_name = "com_google_protobuf")
 
 internal_deps = use_extension("//python/private:internal_deps.bzl", "internal_deps")

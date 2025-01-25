@@ -57,6 +57,8 @@ Unreleased changes template.
 * (rules) deprecation warnings for deprecated symbols have been turned off by
   default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
   env var.
+* (proto) now `rules_python` just uses the implementation of `py_proto_library`
+  from the [upstream](https://github.com/protocolbuffers/protobuf/blob/main/bazel/py_proto_library.bzl).
 
 {#v0-0-0-fixed}
 ### Fixed
