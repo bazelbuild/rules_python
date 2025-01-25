@@ -411,7 +411,10 @@ Here, we show an example for a semi-complicated toolchain suite, one that is:
 Defining toolchains for this might look something like this:
 
 ```
+# -------------------------------------------------------
 # File: toolchain_impl/BUILD
+# Contains the tool definitions (runtime, headers, libs).
+# -------------------------------------------------------
 load("@rules_python//python:py_cc_toolchain.bzl", "py_cc_toolchain")
 load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
@@ -453,9 +456,11 @@ cc_binary(name = "python3.12", ...)
 cc_library(name = "headers", ...)
 cc_library(name = "libs", ...)
 
+# ------------------------------------------------------------------
 # File: toolchains/BUILD
 # Putting toolchain() calls in a separate package from the toolchain
-# implementations minimizes Bazel loading overhead
+# implementations minimizes Bazel loading overhead.
+# ------------------------------------------------------------------
 
 toolchain(
     name = "runtime_toolchain",
@@ -480,8 +485,10 @@ toolchain(
     exec_comaptible_with = ["@platforms/os:linux"]
 )
 
+# -----------------------------------------------
 # File: MODULE.bazel or WORKSPACE.bazel
-# These toolchains will considered before others
+# These toolchains will considered before others.
+# -----------------------------------------------
 register_toolchains("//toolchains:all")
 ```
 

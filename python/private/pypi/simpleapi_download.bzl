@@ -17,7 +17,7 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python/private:auth.bzl", "get_auth")
+load("//python/private:auth.bzl", _get_auth = "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
@@ -30,6 +30,7 @@ def simpleapi_download(
         cache,
         parallel_download = True,
         read_simpleapi = None,
+        get_auth = None,
         _fail = fail):
     """Download Simple API HTML.
 
@@ -59,6 +60,7 @@ def simpleapi_download(
         parallel_download: A boolean to enable usage of bazel 7.1 non-blocking downloads.
         read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
             Used in tests.
+        get_auth: A function to get auth information passed to read_simpleapi. Used in tests.
         _fail: a function to print a failure. Used in tests.
 
     Returns:
@@ -98,6 +100,7 @@ def simpleapi_download(
                 ),
                 attr = attr,
                 cache = cache,
+                get_auth = get_auth,
                 **download_kwargs
             )
             if hasattr(result, "wait"):
@@ -144,7 +147,7 @@ def simpleapi_download(
 
     return contents
 
-def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
+def _read_simpleapi(ctx, url, attr, cache, get_auth = None, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
@@ -157,6 +160,7 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
         cache: A dict for storing the results.
+        get_auth: A function to get auth information. Used in tests.
         **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
@@ -169,11 +173,11 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     # them to ctx.download if we want to correctly handle the relative URLs.
     # TODO: Add a test that env subbed index urls do not leak into the lock file.
 
-    real_url = envsubst(
+    real_url = strip_empty_path_segments(envsubst(
         url,
         attr.envsubst,
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
-    )
+    ))
 
     cache_key = real_url
     if cache_key in cache:
@@ -194,6 +198,8 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
 
     output = ctx.path(output_str.strip("_").lower() + ".html")
 
+    get_auth = get_auth or _get_auth
+
     # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
@@ -210,6 +216,27 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
         )
 
     return _read_index_result(ctx, download, output, real_url, cache, cache_key)
+
+def strip_empty_path_segments(url):
+    """Removes empty path segments from a URL. Does nothing for urls with no scheme.
+
+    Public only for testing.
+
+    Args:
+        url: The url to remove empty path segments from
+
+    Returns:
+        The url with empty path segments removed and any trailing slash preserved.
+        If the url had no scheme it is returned unchanged.
+    """
+    scheme, _, rest = url.partition("://")
+    if rest == "":
+        return url
+    stripped = "/".join([p for p in rest.split("/") if p])
+    if url.endswith("/"):
+        return "{}://{}/".format(scheme, stripped)
+    else:
+        return "{}://{}".format(scheme, stripped)
 
 def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:

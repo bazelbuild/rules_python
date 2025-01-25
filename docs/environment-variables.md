@@ -40,6 +40,12 @@ When `1`, bzlmod extensions will print debug information about what they're
 doing. This is mostly useful for development to debug errors.
 :::
 
+:::{envvar} RULES_PYTHON_DEPRECATION_WARNINGS
+
+When `1`, the rules_python will warn users about deprecated functionality that will
+be removed in a subsequent major `rules_python` version. Defaults to `0` if unset.
+:::
+
 :::{envvar} RULES_PYTHON_ENABLE_PYSTAR
 
 When `1`, the rules_python Starlark implementation of the core rules is used
