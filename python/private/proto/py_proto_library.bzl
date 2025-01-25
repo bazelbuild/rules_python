@@ -18,13 +18,14 @@ load("@com_google_protobuf//bazel:py_proto_library.bzl", _py_proto_library = "py
 load("//python/private:deprecation.bzl", "with_deprecation")
 load("//python/private:text_util.bzl", "render")
 
-def py_proto_library(**kwargs):
+def py_proto_library(name, **kwargs):
     return _py_proto_library(
+        name = name,
         **with_deprecation.symbol(
             kwargs,
             symbol_name = "py_proto_library",
             new_load = "@com_google_protobuf//bazel:py_proto_library.bzl",
             old_load = "@rules_python//python:proto.bzl",
-            snippet = render.call(**{k: repr(v) for k, v in kwargs.items()}),
+            snippet = render.call(name, **{k: repr(v) for k, v in kwargs.items()}),
         )
     )
