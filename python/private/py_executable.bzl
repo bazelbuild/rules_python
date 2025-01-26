@@ -51,7 +51,7 @@ load(
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(":flags.bzl", "BootstrapImplFlag")
+load(":flags.bzl", "BootstrapImplFlag", "RelativeVenvSymlinksFlag")
 load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_executable_info.bzl", "PyExecutableInfo")
@@ -194,6 +194,10 @@ accepting arbitrary Python versions.
         ),
         "_python_version_flag": attr.label(
             default = "//python/config_settings:python_version",
+        ),
+        "_relative_venv_symlinks_flag": attr.label(
+            default = "//python/config_settings:relative_venv_symlinks",
+            providers = [BuildSettingInfo],
         ),
         "_windows_constraints": attr.label_list(
             default = [
@@ -512,7 +516,25 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
     ctx.actions.write(pyvenv_cfg, "")
 
     runtime = runtime_details.effective_runtime
-    if runtime.interpreter:
+    relative_venv_symlinks_enabled = (
+        RelativeVenvSymlinksFlag.get_value(ctx) == RelativeVenvSymlinksFlag.YES
+    )
+
+    if not relative_venv_symlinks_enabled:
+        if runtime.interpreter:
+            interpreter_actual_path = _runfiles_root_path(ctx, runtime.interpreter.short_path)
+        else:
+            interpreter_actual_path = runtime.interpreter_path
+
+        py_exe_basename = paths.basename(interpreter_actual_path)
+
+        # When the venv symlinks are disabled, the $venv/bin/python3 file isn't
+        # needed or used at runtime. However, the zip code uses the interpreter
+        # File object to figure out some paths.
+        interpreter = ctx.actions.declare_file("{}/bin/{}".format(venv, py_exe_basename))
+        ctx.actions.write(interpreter, "actual:{}".format(interpreter_actual_path))
+
+    elif runtime.interpreter:
         py_exe_basename = paths.basename(runtime.interpreter.short_path)
 
         # Even though ctx.actions.symlink() is used, using
@@ -571,6 +593,7 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
 
     return struct(
         interpreter = interpreter,
+        recreate_venv_at_runtime = not relative_venv_symlinks_enabled,
         # Runfiles root relative path or absolute path
         interpreter_actual_path = interpreter_actual_path,
         files_without_interpreter = [pyvenv_cfg, pth, site_init],
@@ -657,15 +680,13 @@ def _create_stage1_bootstrap(
     else:
         python_binary_path = runtime_details.executable_interpreter_path
 
-    if is_for_zip and venv:
-        python_binary_actual = venv.interpreter_actual_path
-    else:
-        python_binary_actual = ""
+    python_binary_actual = venv.interpreter_actual_path if venv else ""
 
     subs = {
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": python_binary_path,
         "%python_binary_actual%": python_binary_actual,
+        "%recreate_venv_at_runtime%": str(int(venv.recreate_venv_at_runtime)) if venv else "0",
         "%target%": str(ctx.label),
         "%workspace_name%": ctx.workspace_name,
     }

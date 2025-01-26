@@ -9,6 +9,8 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@pip//:requirements.bzl", "all_data_requirements", "all_requirements", "all_whl_requirements", "requirement")
 load("@python_3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@python_versions//3.10:defs.bzl", compile_pip_requirements_3_10 = "compile_pip_requirements")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "pkg_mklink")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_python//python:py_library.bzl", "py_library")
 load("@rules_python//python:py_test.bzl", "py_test")
@@ -48,6 +50,39 @@ py_binary(
     deps = [
         ":lib",
     ],
+)
+
+pkg_tar(
+    name = "mytar",
+    srcs = [
+        ":myfiles",
+        ":myinter",
+    ],
+    allow_duplicates_with_different_content = True,
+    ###
+    ##srcs = [":bzlmod"],
+    ##include_runfiles = True,
+    ##remap_paths = {
+    ##    "bzlmod.runfiles/_main/_bzlmod.venv/bin/python3": "blah/whatever",
+    ##},
+    ##symlinks = {
+    ##    "bzlmod.runfiles/_main/_bzlmod.venv/bin/python3": "../../interpreter",
+    ##},
+)
+
+pkg_files(
+    name = "myfiles",
+    srcs = [":bzlmod"],
+    excludes = [
+        "asdf",
+    ],
+    include_runfiles = True,
+)
+
+pkg_mklink(
+    name = "myinter",
+    link_name = "bzlmod.runfiles/_main/_bzlmod.venv/bin/python3",
+    target = "mytarget",
 )
 
 # see https://bazel.build/reference/be/python#py_test

@@ -212,6 +212,28 @@ Values:
 :::
 ::::
 
+::::{bzl:flag} relative_venv_symlinks
+
+Determines if relative symlinks are created using `declare_symlink()` at build
+time.
+
+This is only intended to work around
+[#2489](https://github.com/bazelbuild/rules_python/issues/2489), where some
+packaging rules don't support `declare_symlink()` artifacts.
+
+Values:
+* `yes`: Use `declare_symlink()` and create relative symlinks at build time.
+* `no`: Do not use `declare_symlink()`. Instead, the venv will be created at
+  runtime.
+
+:::{seealso}
+{envvar}`RULES_PYTHON_VENVS_ROOT` for customizing where the runtime venv
+is created.
+:::
+
+:::{versionadded} VERSION_NEXT_PATCH
+:::
+
 ::::{bzl:flag} bootstrap_impl
 Determine how programs implement their startup process.
 

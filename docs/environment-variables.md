@@ -68,3 +68,16 @@ When `1`, debug information about coverage behavior is printed to stderr.
 
 When `1`, debug information from gazelle is printed to stderr.
 :::
+
+:::{envvar} RULES_PYTHON_VENVS_ROOT
+
+Directory to use as the root for creating venvs for binaries. Only applicable
+when {obj}`--relative_venvs_symlinks=no` is used. A binary will attempt to
+find a unique, reusable, location for itself within this directory. When set,
+the created venv is not deleted upon program exit; it is the responsibility of
+the caller to manage cleanup.
+
+If not set, then a temporary directory will be created and deleted upon program
+exit.
+
+:::

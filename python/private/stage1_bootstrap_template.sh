@@ -9,15 +9,17 @@ fi
 # runfiles-relative path
 STAGE2_BOOTSTRAP="%stage2_bootstrap%"
 
-# runfiles-relative path
+# runfiles-relative path to python interpreter to use
 PYTHON_BINARY='%python_binary%'
 # The path that PYTHON_BINARY should symlink to.
 # runfiles-relative path, absolute path, or single word.
-# Only applicable for zip files.
+# Only applicable for zip files or when venv is recreated at runtime.
 PYTHON_BINARY_ACTUAL="%python_binary_actual%"
 
 # 0 or 1
 IS_ZIPFILE="%is_zipfile%"
+# 0 or 1
+RECREATE_VENV_AT_RUNTIME="%recreate_venv_at_runtime%"
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   # NOTE: Macs have an old version of mktemp, so we must use only the
@@ -104,6 +106,7 @@ python_exe=$(find_python_interpreter $RUNFILES_DIR $PYTHON_BINARY)
 # Zip files have to re-create the venv bin/python3 symlink because they
 # don't contain it already.
 if [[ "$IS_ZIPFILE" == "1" ]]; then
+  use_exec=0
   # It should always be under runfiles, but double check this. We don't
   # want to accidentally create symlinks elsewhere.
   if [[ "$python_exe" != $RUNFILES_DIR/* ]]; then
@@ -121,13 +124,60 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
     symlink_to=$(which $PYTHON_BINARY_ACTUAL)
     # Guard against trying to symlink to an empty value
     if [[ $? -ne 0 ]]; then
-      echo >&2 "ERROR: Python to use found on PATH: $PYTHON_BINARY_ACTUAL"
+      echo >&2 "ERROR: Python to use not found on PATH: $PYTHON_BINARY_ACTUAL"
       exit 1
     fi
   fi
   # The bin/ directory may not exist if it is empty.
   mkdir -p "$(dirname $python_exe)"
   ln -s "$symlink_to" "$python_exe"
+elif [[ "$RECREATE_VENV_AT_RUNTIME" == "1" ]]; then
+  runfiles_venv="$RUNFILES_DIR/$(dirname $(dirname $PYTHON_BINARY))"
+  if [[ -n "$RULES_PYTHON_VENVS_ROOT" ]]; then
+    use_exec=1
+    # Use our runfiles path as a unique, reusable, location for the
+    # binary-specific venv being created.
+    venv="$RULES_PYTHON_VENVS_ROOT/$(dirname $(dirname $PYTHON_BINARY))"
+    mkdir -p $RULES_PYTHON_VENVS_ROOT
+  else
+    # Re-exec'ing can't be used because we have to clean up the temporary
+    # venv directory that is created.
+    use_exec=0
+    venv=$(mktemp -d)
+    if [[ -n "$venv" && -z "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
+      trap 'rm -fr "$venv"' EXIT
+    fi
+  fi
+
+  if [[ "$PYTHON_BINARY_ACTUAL" == /* ]]; then
+    # An absolute path, i.e. platform runtime, e.g. /usr/bin/python3
+    symlink_to=$PYTHON_BINARY_ACTUAL
+  elif [[ "$PYTHON_BINARY_ACTUAL" == */* ]]; then
+    # A runfiles-relative path
+    symlink_to="$RUNFILES_DIR/$PYTHON_BINARY_ACTUAL"
+  else
+    # A plain word, e.g. "python3". Symlink to where PATH leads
+    symlink_to=$(which $PYTHON_BINARY_ACTUAL)
+    # Guard against trying to symlink to an empty value
+    if [[ $? -ne 0 ]]; then
+      echo >&2 "ERROR: Python to use not found on PATH: $PYTHON_BINARY_ACTUAL"
+      exit 1
+    fi
+  fi
+  mkdir -p "$venv/bin"
+  # Match the basename; some tools, e.g. pyvenv key off the executable name
+  python_exe="$venv/bin/$(basename $PYTHON_BINARY_ACTUAL)"
+  if [[ ! -e "$python_exe" ]]; then
+    ln -s "$symlink_to" "$python_exe"
+  fi
+  if [[ ! -e "$venv/pyvenv.cfg" ]]; then
+    ln -s "$runfiles_venv/pyvenv.cfg" "$venv/pyvenv.cfg"
+  fi
+  if [[ ! -e "$venv/lib" ]]; then
+    ln -s "$runfiles_venv/lib" "$venv/lib"
+  fi
+else
+  use_exec=1
 fi
 
 # At this point, we should have a valid reference to the interpreter.
@@ -165,7 +215,6 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
 fi
 
-
 export RUNFILES_DIR
 
 command=(
@@ -186,7 +235,7 @@ command=(
 #
 # However, when running a zip file, we need to clean up the workspace after the
 # process finishes so control must return here.
-if [[ "$IS_ZIPFILE" == "1" ]]; then
+if [[ "$use_exec" == "0" ]]; then
   "${command[@]}"
   exit $?
 else
