@@ -67,6 +67,8 @@ Unreleased changes template.
   as UTF-8 on all platforms.
 * (coverage) Coverage with `--bootstrap_impl=script` is fixed
   ([#2572](https://github.com/bazelbuild/rules_python/issues/2572)).
+* (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
+  Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
 
 {#v0-0-0-added}
 ### Added

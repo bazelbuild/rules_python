@@ -197,7 +197,7 @@ class _MySTRenderer:
             # Ensure a newline between the directive and the doc fields,
             # otherwise they get parsed as directive options instead.
             if not doc_string and tag.attribute:
-                self.write("\n")
+                self._write("\n")
             self._render_attributes(tag.attribute)
             self._write(":::::\n")
         self._write("::::::\n")
