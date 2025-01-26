@@ -31,7 +31,7 @@ PYTHON_VERSIONS_TO_TEST = (
         # the same version.
         "EXPECTED_INTERPRETER_VERSION": python_version,
         "EXPECTED_SELF_VERSION": python_version,
-        "PYTHON_BIN": "$(location //python/bin:python)",
+        "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
     main = "interpreter_test.py",
     python_version = python_version,
