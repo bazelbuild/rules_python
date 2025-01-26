@@ -14,6 +14,7 @@
 
 import os
 import subprocess
+import sys
 import unittest
 
 from python.runfiles import runfiles
@@ -22,11 +23,17 @@ from python.runfiles import runfiles
 class InterpreterTest(unittest.TestCase):
     def setUp(self):
         r = runfiles.Create()
-        self.interpreter = r.Rlocation("rules_python/python/bin/python3")
+        self.interpreter = os.environ["PYTHON_BIN"]
 
-    def test_version(self):
+    def test_self_version(self):
+        """Performs a sanity check on the Python version used for this test."""
+        expected_version = os.environ["EXPECTED_SELF_VERSION"]
+        v = sys.version_info
+        self.assertEqual(expected_version, f"{v.major}.{v.minor}")
+
+    def test_interpreter_version(self):
         """Validates that we can successfully execute arbitrary code from the CLI."""
-        expected_version = os.environ["EXPECTED_PYTHON_VERSION"]
+        expected_version = os.environ["EXPECTED_INTERPRETER_VERSION"]
 
         result = subprocess.check_output(
             [self.interpreter],

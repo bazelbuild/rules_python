@@ -14,6 +14,12 @@
 
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
+PYTHON_VERSIONS_TO_TEST = (
+    "3.10",
+    "3.11",
+    "3.12",
+)
+
 [py_reconfig_test(
     name = "python_version_%s_test" % python_version,
     srcs = ["interpreter_test.py"],
@@ -21,18 +27,18 @@ load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
         "//python/bin:python",
     ],
     env = {
-        "EXPECTED_PYTHON_VERSION": python_version,
+        # Both the interpreter and the test itself are expected to run under
+        # the same version.
+        "EXPECTED_INTERPRETER_VERSION": python_version,
+        "EXPECTED_SELF_VERSION": python_version,
+        "PYTHON_BIN": "$(location //python/bin:python)",
     },
     main = "interpreter_test.py",
     python_version = python_version,
     deps = [
         "//python/runfiles",
     ],
-) for python_version in (
-    "3.10",
-    "3.11",
-    "3.12",
-)]
+) for python_version in PYTHON_VERSIONS_TO_TEST]
 
 [py_reconfig_test(
     name = "python_src_%s_test" % python_version,
@@ -41,7 +47,13 @@ load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
         "//python/bin:python",
     ],
     env = {
-        "EXPECTED_PYTHON_VERSION": "3.11",
+        # Since we're grabbing the interpreter from a binary with a fixed
+        # version, we expect to always see that version. It doesn't matter what
+        # Python version the test itself is running with.
+        "EXPECTED_INTERPRETER_VERSION": "3.11",
+        # The test itself is still running under different Python versions.
+        "EXPECTED_SELF_VERSION": python_version,
+        "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
     main = "interpreter_test.py",
     python_src = "//tools/publish:twine",
@@ -49,8 +61,4 @@ load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
     deps = [
         "//python/runfiles",
     ],
-) for python_version in (
-    "3.10",
-    "3.11",
-    "3.12",
-)]
+) for python_version in PYTHON_VERSIONS_TO_TEST]

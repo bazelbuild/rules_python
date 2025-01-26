@@ -516,7 +516,7 @@ To run the interpreter that Bazel will use, you can use the
 `@rules_python//python/bin:python` target. This is a binary target with
 the executable pointing at the `python3` binary plus the relevent runfiles.
 
-```
+```console
 $ bazel run @rules_python//python/bin:python
 Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
@@ -528,14 +528,23 @@ Type "help", "copyright", "credits" or "license" for more information.
 ```
 
 You can also access a specific binary's interpreter this way by using the
-`@rules_python//python/bin:python_src` target.
+`@rules_python//python/bin:python_src` target. In the example below, it is
+assumed that the `@rules_python//tools/publish:twine` binary is fixed at Python
+3.11.
 
-```
-$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=//path/to:bin
+```console
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine --@rules_python//python/config_settings:python_version=3.12
 Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
+Despite setting the Python version explicitly to 3.12 in the example above, the
+interpreter comes from the `@rules_python//tools/publish:twine` binary. That is
+a fixed version.
 
 :::{note}
 The `python` target does not provide access to any modules from `py_*`
