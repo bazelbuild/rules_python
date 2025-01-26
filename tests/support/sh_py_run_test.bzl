@@ -107,8 +107,8 @@ to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,
         ),
-        "python_version": attr.string(),
         "python_src": attr.label(),
+        "python_version": attr.string(),
         "target": attr.label(executable = True, cfg = "target"),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
@@ -135,9 +135,9 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs = {}
     reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
     reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
+    reconfig_kwargs["python_src"] = kwargs.pop("python_src", None)
     reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
-    reconfig_kwargs["python_src"] = kwargs.pop("python_src", None)
 
     inner_name = "_{}_inner".format(name)
     _py_reconfig_test(
