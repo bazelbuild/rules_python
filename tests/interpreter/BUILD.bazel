@@ -35,9 +35,6 @@ PYTHON_VERSIONS_TO_TEST = (
     },
     main = "interpreter_test.py",
     python_version = python_version,
-    deps = [
-        "//python/runfiles",
-    ],
 ) for python_version in PYTHON_VERSIONS_TO_TEST]
 
 [py_reconfig_test(
@@ -58,7 +55,4 @@ PYTHON_VERSIONS_TO_TEST = (
     main = "interpreter_test.py",
     python_src = "//tools/publish:twine",
     python_version = python_version,
-    deps = [
-        "//python/runfiles",
-    ],
 ) for python_version in PYTHON_VERSIONS_TO_TEST]

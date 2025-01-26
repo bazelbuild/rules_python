@@ -17,12 +17,9 @@ import subprocess
 import sys
 import unittest
 
-from python.runfiles import runfiles
-
 
 class InterpreterTest(unittest.TestCase):
     def setUp(self):
-        r = runfiles.Create()
         self.interpreter = os.environ["PYTHON_BIN"]
 
     def test_self_version(self):
