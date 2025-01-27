@@ -273,11 +273,5 @@ local_path_override(
     path = "other_module",
 )
 
-bazel_dep(name = "foo_external", version = "")
-local_path_override(
-    module_name = "foo_external",
-    path = "py_proto_library/foo_external",
-)
-
 # example test dependencies
 bazel_dep(name = "rules_shell", version = "0.3.0", dev_dependency = True)
