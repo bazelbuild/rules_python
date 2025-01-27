@@ -57,6 +57,11 @@ Unreleased changes template.
 * (rules) deprecation warnings for deprecated symbols have been turned off by
   default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
   env var.
+* (uv) Now the extension can be fully configured via `bzlmod` APIs without the
+  need to patch `rules_python`. The documentation has been added to `rules_python`
+  docs but usage of the extension may result in your setup breaking without any
+  notice. What is more, the URLs and SHA256 values will be retrieved from the
+  GitHub releases page metadata published by the `uv` project.
 
 {#v0-0-0-fixed}
 ### Fixed
