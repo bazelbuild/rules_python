@@ -173,6 +173,8 @@ use_repo(
     "build_bazel_bazel_self",
 )
 
+# TODO @aignas 2025-01-27: should this be moved to `//python/extensions:uv.bzl` or should
+# it stay as it is? I think I may prefer to move it.
 uv = use_extension("//python/uv:uv.bzl", "uv")
 
 # Here is how we can define platforms for the `uv` binaries - this will affect
