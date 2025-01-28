@@ -175,7 +175,7 @@ use_repo(
 
 # EXPERIMENTAL: This is experimental and may be removed without notice
 uv = use_extension(
-    "//python/uv:extensions.bzl",
+    "//python/uv:uv.bzl",
     "uv",
     dev_dependency = True,
 )

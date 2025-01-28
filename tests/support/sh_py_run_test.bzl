@@ -86,16 +86,14 @@ def _py_reconfig_impl(ctx):
                 default_info.default_runfiles,
             ),
         ),
-        testing.TestEnvironment(
-            environment = ctx.attr.env,
-        ),
+        # Inherit the expanded environment from the inner target.
+        ctx.attr.target[RunEnvironmentInfo],
     ]
 
 def _make_reconfig_rule(**kwargs):
     attrs = {
         "bootstrap_impl": attr.string(),
         "build_python_zip": attr.string(default = "auto"),
-        "env": attr.string_dict(),
         "extra_toolchains": attr.string_list(
             doc = """
 Value for the --extra_toolchains flag.
@@ -133,7 +131,6 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
     reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
     reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
-    reconfig_kwargs["env"] = kwargs.get("env")
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
     inner_name = "_{}_inner".format(name)
@@ -172,7 +169,7 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
 
     py_binary_kwargs = {
         key: kwargs.pop(key)
-        for key in ("imports", "deps")
+        for key in ("imports", "deps", "env")
         if key in kwargs
     }
 
