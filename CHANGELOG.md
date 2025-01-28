@@ -57,6 +57,8 @@ Unreleased changes template.
 * (rules) deprecation warnings for deprecated symbols have been turned off by
   default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
   env var.
+* (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
+  `packaging` from `24.2` to `24.0`.
 * (proto) now `rules_python` just uses the implementation of `py_proto_library`
   from the [upstream](https://github.com/protocolbuffers/protobuf/blob/main/bazel/py_proto_library.bzl).
 
@@ -69,6 +71,9 @@ Unreleased changes template.
   as UTF-8 on all platforms.
 * (coverage) Coverage with `--bootstrap_impl=script` is fixed
   ([#2572](https://github.com/bazelbuild/rules_python/issues/2572)).
+* (pypi) Non deterministic behaviour in requirement file usage has been fixed
+  by reverting [#2514](https://github.com/bazelbuild/rules_python/pull/2514).
+  The related issue is [#908](https://github.com/bazelbuild/rules_python/issue/908).
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
 
