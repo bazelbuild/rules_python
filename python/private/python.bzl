@@ -104,7 +104,14 @@ def parse_modules(*, module_ctx, _fail = fail):
                 # * rules_python needs to set a soft default in case the root module doesn't,
                 #   e.g. if the root module doesn't use Python itself.
                 # * The root module is allowed to override the rules_python default.
-                is_default = toolchain_attr.is_default
+                if toolchain_attr.default_version_file == None:
+                    is_default = toolchain_attr.is_default
+                else:
+                    is_default = (
+                        module_ctx.read(toolchain_attr.default_version_file) == toolchain_version
+                    )
+                    if toolchain_attr.is_default and not is_default:
+                        fail("The 'is_default' attribute doesn't work if you set 'default_version_file'.")
 
                 # Also only the root module should be able to decide ignore_root_user_error.
                 # Modules being depended upon don't know the final environment, so they aren't
@@ -560,6 +567,7 @@ def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolcha
         python_version = python_version if python_version else tag.python_version,
         configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
         ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
+        default_version_file = getattr(tag, "default_version_file", None),
     )
 
 def _get_bazel_version_specific_kwargs():
@@ -635,6 +643,18 @@ Then the python interpreter will be available as `my_python_name`.
             mandatory = False,
             doc = "Whether or not to configure the default coverage tool provided by `rules_python` for the compatible toolchains.",
         ),
+        "default_version_file": attr.label(
+            mandatory = False,
+            allow_single_file = True,
+            doc = """\
+File saying what the default Python version should be. If the contents of the
+file match the `python_version` attribute, this toolchain is the default version.
+If this attribute is set, the `is_default` attribute is ignored.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+        ),
         "ignore_root_user_error": attr.bool(
             default = False,
             doc = """\
@@ -651,7 +671,9 @@ can result in spurious build failures.
         ),
         "is_default": attr.bool(
             mandatory = False,
-            doc = "Whether the toolchain is the default version",
+            doc = """\
+Whether the toolchain is the default version. Ignored if `default_version_file`
+is set.""",
         ),
         "python_version": attr.string(
             mandatory = True,
