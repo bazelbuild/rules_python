@@ -33,6 +33,8 @@ def _perform_transition_impl(input_settings, attr):
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
     if attr.python_version:
         settings["//python/config_settings:python_version"] = attr.python_version
+    if attr.relative_venv_symlinks:
+        settings["//python/config_settings:relative_venv_symlinks"] = attr.relative_venv_symlinks
     return settings
 
 _perform_transition = transition(
@@ -41,12 +43,14 @@ _perform_transition = transition(
         "//python/config_settings:bootstrap_impl",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:python_version",
+        "//python/config_settings:relative_venv_symlinks",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
         "//python/config_settings:python_version",
+        "//python/config_settings:relative_venv_symlinks",
         VISIBLE_FOR_TESTING,
     ],
 )
@@ -93,6 +97,7 @@ def _py_reconfig_impl(ctx):
 def _make_reconfig_rule(**kwargs):
     attrs = {
         "bootstrap_impl": attr.string(),
+        "relative_venv_symlinks": attr.string(),
         "build_python_zip": attr.string(default = "auto"),
         "extra_toolchains": attr.string_list(
             doc = """
