@@ -86,8 +86,6 @@ def _py_reconfig_impl(ctx):
                 default_info.default_runfiles,
             ),
         ),
-        # Inherit the expanded environment from the inner target.
-        ctx.attr.target[RunEnvironmentInfo],
     ]
 
 def _make_reconfig_rule(**kwargs):
