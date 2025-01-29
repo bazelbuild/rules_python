@@ -26,7 +26,7 @@ build_test(
 )
 
 py_reconfig_test(
-    name = "bin_bootstrap_script",
+    name = "bin",
     srcs = ["bin.py"],
     bootstrap_impl = "script",
     main = "bin.py",
