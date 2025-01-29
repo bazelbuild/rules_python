@@ -132,10 +132,16 @@ def py_reconfig_test(*, name, **kwargs):
         name: str, name of teset target.
         **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
     """
-    reconfig_kwargs = {}
-    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
-    reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
-    reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
+    reconfig_only_kwarg_names = [
+        "bootstrap_impl",
+        "extra_toolchains",
+        "python_version",
+        "relative_venv_symlinks",
+    ]
+    reconfig_kwargs = {
+        key: kwargs.pop(key, None)
+        for key in reconfig_only_kwarg_names
+    }
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
     inner_name = "_{}_inner".format(name)
@@ -144,6 +150,7 @@ def py_reconfig_test(*, name, **kwargs):
         target = inner_name,
         **reconfig_kwargs
     )
+
     py_test(
         name = inner_name,
         tags = ["manual"],
