@@ -233,8 +233,9 @@ command=(
 # See https://github.com/bazelbuild/rules_python/issues/2043#issuecomment-2215469971
 # for more information.
 #
-# However, when running a zip file, we need to clean up the workspace after the
-# process finishes so control must return here.
+# However, we can't use exec when there is cleanup to do afterwards. Control
+# must return to this process so it can run the trap handlers. Such cases
+# occur when zip mode or recreate_venv_at_runtime creates temporary files.
 if [[ "$use_exec" == "0" ]]; then
   "${command[@]}"
   exit $?
