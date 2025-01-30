@@ -97,7 +97,6 @@ def _py_reconfig_impl(ctx):
 def _make_reconfig_rule(**kwargs):
     attrs = {
         "bootstrap_impl": attr.string(),
-        "relative_venv_symlinks": attr.string(),
         "build_python_zip": attr.string(default = "auto"),
         "extra_toolchains": attr.string_list(
             doc = """
@@ -109,6 +108,7 @@ toolchain.
 """,
         ),
         "python_version": attr.string(),
+        "relative_venv_symlinks": attr.string(),
         "target": attr.label(executable = True, cfg = "target"),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
