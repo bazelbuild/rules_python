@@ -29,6 +29,8 @@ py_reconfig_test(
     srcs = ["bin.py"],
     bootstrap_impl = "script",
     main = "bin.py",
+    # Needed until https://github.com/bazelbuild/rules_pkg/issues/929 is fixed
+    # See: https://github.com/bazelbuild/rules_python/issues/2489
     relative_venv_symlinks = "no",
 )
 
