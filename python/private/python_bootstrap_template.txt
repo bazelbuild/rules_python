@@ -461,6 +461,11 @@ relative_files = True
     kparams['stdout'] = sys.stderr
     kparams['stderr'] = sys.stderr
 
+  # Workaround for coveragepy having weird errors.
+  # See: https://github.com/bazelbuild/rules_python/issues/2575
+  if os.getenv("COVERAGEPY_IGNORE_ERRORS"):
+    params.append("--ignore-errors")
+
   ret_code = subprocess.call(
     params,
     **kparams
