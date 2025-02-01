@@ -48,8 +48,16 @@ def _py_test_impl(ctx):
     maybe_add_test_execution_info(providers, ctx)
     return providers
 
-py_test = create_executable_rule(
-    implementation = _py_test_impl,
-    attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
-    test = True,
-)
+def create_test_rule(*, attrs = None, **kwargs):
+    kwargs.setdefault("implementation", _py_test_impl)
+    kwargs.setdefault("test", True)
+    return create_executable_rule(
+        attrs = dicts.add(
+            AGNOSTIC_TEST_ATTRS,
+            _BAZEL_PY_TEST_ATTRS,
+            attrs or {},
+        ),
+        **kwargs
+    )
+
+py_test = create_test_rule()

@@ -1747,6 +1747,20 @@ def _transition_executable_impl(input_settings, attr):
         settings[_PYTHON_VERSION_FLAG] = attr.python_version
     return settings
 
+def create_transition(extend_implementation = None, inputs = None, outputs = None, **kwargs):
+    if extend_implementation:
+        implementation = lambda *args: extend_implementation(base_impl = _transition_executable_impl, *args)
+    else:
+        implementation = _transition_executable_impl
+
+    # todo: dedupe inputs/outputs
+    return transition(
+        implementation = implementation,
+        inputs = [_PYTHON_VERSION_FLAG] + (inputs or []),
+        outputs = [_PYTHON_VERSION_FLAG] + (outputs or []),
+        **kwargs
+    )
+
 _transition_executable = transition(
     implementation = _transition_executable_impl,
     inputs = [
@@ -1756,6 +1770,8 @@ _transition_executable = transition(
         _PYTHON_VERSION_FLAG,
     ],
 )
+
+transition_executable_impl = _transition_executable_impl
 
 def create_executable_rule(*, attrs, **kwargs):
     return create_base_executable_rule(
