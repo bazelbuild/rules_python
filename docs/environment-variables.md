@@ -69,13 +69,22 @@ When `1`, debug information about coverage behavior is printed to stderr.
 When `1`, debug information from gazelle is printed to stderr.
 :::
 
-:::{envvar} RULES_PYTHON_VENVS_ROOT
+:::{envvar} RULES_PYTHON_EXTRACT_ROOT
 
-Directory to use as the root for creating venvs for binaries. Only applicable
-when {obj}`--relative_venvs_symlinks=no` is used. A binary will attempt to
-find a unique, reusable, location for itself within this directory. When set,
-the created venv is not deleted upon program exit; it is the responsibility of
-the caller to manage cleanup.
+Directory to use as the root for creating files necessary for bootstrapping so
+that a binary can run.
+
+Only applicable when {obj}`--venvs_use_declare_symlink=no` is used.
+
+When set, a binary will attempt to find a unique, reusable, location within this
+directory for the files it needs to create to aid startup. The files may not be
+deleted upon program exit; it is the responsibility of the caller to ensure
+cleanup.
+
+Manually specifying the directory is useful to lower the overhead of
+extracting/creating files on every program execution. By using a location
+outside /tmp, longer lived programs don't have to worry about files in /tmp
+being cleaned up by the OS.
 
 If not set, then a temporary directory will be created and deleted upon program
 exit.

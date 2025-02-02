@@ -227,7 +227,7 @@ Values:
   runtime.
 
 :::{seealso}
-{envvar}`RULES_PYTHON_VENVS_ROOT` for customizing where the runtime venv
+{envvar}`RULES_PYTHON_EXTRACT_ROOT` for customizing where the runtime venv
 is created.
 :::
 

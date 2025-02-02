@@ -49,7 +49,7 @@ expect_match "sys.executable:.*tmp.*python3" "$actual"
 
 venvs_root=$(mkdir -d)
 
-actual=$(RULES_PYTHON_VENVS_ROOT=$venvs_root $bin)
+actual=$(RULES_PYTHON_EXTRACT_ROOT=$venvs_root $bin)
 expect_match "sys.executable:.*$venvs_root" "$actual"
 
 # Exit if any of the expects failed
