@@ -128,7 +128,9 @@ _py_reconfig_test = _make_reconfig_rule(test = True)
 
 def _py_reconfig_executable(*, name, py_reconfig_rule, py_inner_rule, **kwargs):
     reconfig_only_kwarg_names = [
+        # keep sorted
         "bootstrap_impl",
+        "build_python_zip",
         "extra_toolchains",
         "python_version",
         "relative_venv_symlinks",
