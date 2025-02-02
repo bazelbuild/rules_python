@@ -18,13 +18,10 @@ without the overhead of a bazel-in-bazel integration test.
 """
 
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//python:py_binary.bzl", "py_binary")
-load("//python:py_test.bzl", "py_test")
-load("//python/private:py_binary_macro.bzl", "py_binary_macro")
-load("//python/private:py_binary_rule.bzl", "create_binary_rule")
-load("//python/private:py_executable.bzl", create_executable_transition = "create_transition")
-load("//python/private:py_test_macro.bzl", "py_test_macro")
-load("//python/private:py_test_rule.bzl", "create_test_rule")
+load("//python/private:py_binary_macro.bzl", "py_binary_macro")  # buildifier: disable=bzl-visibility
+load("//python/private:py_binary_rule.bzl", "create_binary_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_macro.bzl", "py_test_macro")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_rule.bzl", "create_test_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
@@ -40,21 +37,15 @@ def _perform_transition_impl(input_settings, attr, base_impl):
         settings["//python/config_settings:venvs_use_declare_symlink"] = attr.venvs_use_declare_symlink
     return settings
 
-_perform_transition = create_executable_transition(
-    extend_implementation = _perform_transition_impl,
-    inputs = [
-        "//python/config_settings:bootstrap_impl",
-        "//command_line_option:extra_toolchains",
-        "//python/config_settings:venvs_use_declare_symlink",
-    ],
-    outputs = [
-        "//command_line_option:build_python_zip",
-        "//command_line_option:extra_toolchains",
-        "//python/config_settings:bootstrap_impl",
-        "//python/config_settings:venvs_use_declare_symlink",
-        VISIBLE_FOR_TESTING,
-    ],
-)
+_RECONFIG_INPUTS = [
+    "//python/config_settings:bootstrap_impl",
+    "//command_line_option:extra_toolchains",
+    "//python/config_settings:venvs_use_declare_symlink",
+]
+_RECONFIG_OUTPUTS = _RECONFIG_INPUTS + [
+    "//command_line_option:build_python_zip",
+    VISIBLE_FOR_TESTING,
+]
 
 _RECONFIG_ATTRS = {
     "bootstrap_impl": attr.string(),
@@ -71,21 +62,23 @@ toolchain.
     "venvs_use_declare_symlink": attr.string(),
 }
 
-_py_reconfig_binary = create_binary_rule(
-    attrs = _RECONFIG_ATTRS,
-    cfg = _perform_transition,
-)
+def _create_reconfig_rule(builder):
+    builder.attrs.update(_RECONFIG_ATTRS)
 
-_py_reconfig_test = create_test_rule(
-    attrs = _RECONFIG_ATTRS,
-    cfg = _perform_transition,
-)
+    base_cfg_impl = builder.cfg.implementation.get()
+    builder.cfg.implementation.set(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
+    builder.cfg.inputs.extend(_RECONFIG_INPUTS)
+    builder.cfg.outputs.extend(_RECONFIG_OUTPUTS)
+    return builder.build()
+
+_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())
+
+_py_reconfig_test = _create_reconfig_rule(create_test_rule_builder())
 
 def py_reconfig_test(**kwargs):
     """Create a py_test with customized build settings for testing.
 
     Args:
-        name: str, name of test target.
         **kwargs: kwargs to pass along to _py_reconfig_test.
     """
     py_test_macro(_py_reconfig_test, **kwargs)

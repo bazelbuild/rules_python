@@ -1747,32 +1747,6 @@ def _transition_executable_impl(input_settings, attr):
         settings[_PYTHON_VERSION_FLAG] = attr.python_version
     return settings
 
-def create_transition(extend_implementation = None, inputs = None, outputs = None, **kwargs):
-    if extend_implementation:
-        implementation = lambda *args: extend_implementation(base_impl = _transition_executable_impl, *args)
-    else:
-        implementation = _transition_executable_impl
-
-    # todo: dedupe inputs/outputs
-    return transition(
-        implementation = implementation,
-        inputs = [_PYTHON_VERSION_FLAG] + (inputs or []),
-        outputs = [_PYTHON_VERSION_FLAG] + (outputs or []),
-        **kwargs
-    )
-
-_transition_executable = transition(
-    implementation = _transition_executable_impl,
-    inputs = [
-        _PYTHON_VERSION_FLAG,
-    ],
-    outputs = [
-        _PYTHON_VERSION_FLAG,
-    ],
-)
-
-transition_executable_impl = _transition_executable_impl
-
 def create_executable_rule(*, attrs, **kwargs):
     return create_base_executable_rule(
         attrs = attrs,
@@ -1780,33 +1754,37 @@ def create_executable_rule(*, attrs, **kwargs):
         **kwargs
     )
 
-def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
+def create_base_executable_rule():
     """Create a function for defining for Python binary/test targets.
-
-    Args:
-        attrs: Rule attributes
-        fragments: List of str; extra config fragments that are required.
-        **kwargs: Additional args to pass onto `rule()`
 
     Returns:
         A rule function
     """
-    if "py" not in fragments:
-        # The list might be frozen, so use concatentation
-        fragments = fragments + ["py"]
-    kwargs.setdefault("provides", []).append(PyExecutableInfo)
-    kwargs["exec_groups"] = REQUIRED_EXEC_GROUPS | (kwargs.get("exec_groups") or {})
-    kwargs.setdefault("cfg", _transition_executable)
-    return rule(
-        # TODO: add ability to remove attrs, i.e. for imports attr
-        attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
+    return create_executable_rule_builder().build()
+
+def create_executable_rule_builder(implementation, **kwargs):
+    builder = builders.RuleBuilder(
+        implementation = implementation,
+        attrs = EXECUTABLE_ATTRS,
+        exec_groups = REQUIRED_EXEC_GROUPS,
+        fragments = ["py", "bazel_py"],
+        provides = [PyExecutableInfo],
         toolchains = [
             TOOLCHAIN_TYPE,
             config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ] + _CC_TOOLCHAINS,
-        fragments = fragments,
+        cfg = builders.TransitionBuilder(
+            implementation = _transition_executable_impl,
+            inputs = [
+                _PYTHON_VERSION_FLAG,
+            ],
+            outputs = [
+                _PYTHON_VERSION_FLAG,
+            ],
+        ),
         **kwargs
     )
+    return builder
 
 def cc_configure_features(
         ctx,

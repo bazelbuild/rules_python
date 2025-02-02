@@ -184,7 +184,131 @@ def _is_file(value):
 def _is_runfiles(value):
     return type(value) == "runfiles"
 
+def _Optional(*initial):
+    if len(initial) > 1:
+        fail("only one positional arg allowed")
+
+    # buildifier: disable=uninitialized
+    self = struct(
+        _value = list(initial),
+        present = lambda *a, **k: _Optional_present(self, *a, **k),
+        set = lambda *a, **k: _Optional_set(self, *a, **k),
+        get = lambda *a, **k: _Optional_get(self, *a, **k),
+    )
+    return self
+
+def _Optional_set(self, v):
+    if len(self._value) == 0:
+        self._value.append(v)
+    else:
+        self._value[0] = v
+
+def _Optional_get(self):
+    if not len(self._value):
+        fail("Value not present")
+    return self._value[0]
+
+def _Optional_present(self):
+    return len(self._value) > 0
+
+def _TransitionBuilder(implementation = None, inputs = None, outputs = None, **kwargs):
+    # buildifier: disable=uninitialized
+    self = struct(
+        implementation = _Optional(implementation),
+        inputs = _SetBuilder(inputs),
+        outputs = _SetBuilder(outputs),
+        kwargs = kwargs,
+        build = lambda *a, **k: _TransitionBuilder_build(self, *a, **k),
+    )
+    return self
+
+def _TransitionBuilder_build(self):
+    return transition(
+        implementation = self.implementation.get(),
+        inputs = self.inputs.build(),
+        outputs = self.outputs.build(),
+        **self.kwargs
+    )
+
+def _SetBuilder(initial = None):
+    initial = {} if not initial else {v: None for v in initial}
+
+    # buildifier: disable=uninitialized
+    self = struct(
+        _values = initial,
+        extend = lambda *a, **k: _SetBuilder_extend(self, *a, **k),
+        build = lambda *a, **k: _SetBuilder_build(self, *a, **k),
+    )
+    return self
+
+def _SetBuilder_build(self):
+    return self._values.keys()
+
+def _SetBuilder_extend(self, values):
+    for v in values:
+        if v not in self._values:
+            self._values[v] = None
+
+def _RuleBuilder(implementation = None, **kwargs):
+    # buildifier: disable=uninitialized
+    self = struct(
+        attrs = dict(kwargs.pop("attrs", None) or {}),
+        cfg = kwargs.pop("cfg", None) or _TransitionBuilder(),
+        exec_groups = dict(kwargs.pop("exec_groups", None) or {}),
+        executable = _Optional(),
+        fragments = list(kwargs.pop("fragments", None) or []),
+        implementation = _Optional(implementation),
+        extra_kwargs = kwargs,
+        provides = list(kwargs.pop("provides", None) or []),
+        test = _Optional(),
+        toolchains = list(kwargs.pop("toolchains", None) or []),
+        build = lambda *a, **k: _RuleBuilder_build(self, *a, **k),
+        to_kwargs = lambda *a, **k: _RuleBuilder_to_kwargs(self, *a, **k),
+    )
+    if "test" in kwargs:
+        self.test.set(kwargs.pop("test"))
+    if "executable" in kwargs:
+        self.executable.set(kwargs.pop("executable"))
+    return self
+
+def _RuleBuilder_build(self, debug = ""):
+    kwargs = self.to_kwargs()
+    if debug:
+        lines = ["=" * 80, "rule kwargs: {}:".format(debug)]
+        for k, v in sorted(kwargs.items()):
+            lines.append("  {}={}".format(k, v))
+
+        # buildifier: disable=print
+        print("\n".join(lines))
+    return rule(**kwargs)
+
+def _RuleBuilder_to_kwargs(self):
+    kwargs = {}
+    if self.executable.present():
+        kwargs["executable"] = self.executable.get()
+    if self.test.present():
+        kwargs["test"] = self.test.get()
+
+    kwargs.update(
+        implementation = self.implementation.get(),
+        cfg = self.cfg.build(),
+        attrs = {
+            k: (v.build() if hasattr(v, "build") else v)
+            for k, v in self.attrs.items()
+        },
+        exec_groups = self.exec_groups,
+        fragments = self.fragments,
+        provides = self.provides,
+        toolchains = self.toolchains,
+    )
+    kwargs.update(self.extra_kwargs)
+    return kwargs
+
 builders = struct(
     DepsetBuilder = _DepsetBuilder,
     RunfilesBuilder = _RunfilesBuilder,
+    RuleBuilder = _RuleBuilder,
+    TransitionBuilder = _TransitionBuilder,
+    SetBuilder = _SetBuilder,
+    Optional = _Optional,
 )
