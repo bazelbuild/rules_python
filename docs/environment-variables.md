@@ -79,5 +79,4 @@ the caller to manage cleanup.
 
 If not set, then a temporary directory will be created and deleted upon program
 exit.
-
 :::

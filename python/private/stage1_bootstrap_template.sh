@@ -132,7 +132,6 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   mkdir -p "$(dirname $python_exe)"
   ln -s "$symlink_to" "$python_exe"
 elif [[ "$RECREATE_VENV_AT_RUNTIME" == "1" ]]; then
-  runfiles_venv="$RUNFILES_DIR/$(dirname $(dirname $PYTHON_BINARY))"
   if [[ -n "$RULES_PYTHON_VENVS_ROOT" ]]; then
     use_exec=1
     # Use our runfiles path as a unique, reusable, location for the
@@ -170,6 +169,7 @@ elif [[ "$RECREATE_VENV_AT_RUNTIME" == "1" ]]; then
   if [[ ! -e "$python_exe" ]]; then
     ln -s "$symlink_to" "$python_exe"
   fi
+  runfiles_venv="$RUNFILES_DIR/$(dirname $(dirname $PYTHON_BINARY))"
   if [[ ! -e "$venv/pyvenv.cfg" ]]; then
     ln -s "$runfiles_venv/pyvenv.cfg" "$venv/pyvenv.cfg"
   fi
