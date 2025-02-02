@@ -77,6 +77,8 @@ Unreleased changes template.
   The related issue is [#908](https://github.com/bazelbuild/rules_python/issue/908).
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
+* (coverage) Prevent coveragepy report issues when packages execute files in tmp dir.
+  Fixes ([#2575](https://github.com/bazelbuild/rules_python/issues/2575)).
 
 {#v0-0-0-added}
 ### Added
