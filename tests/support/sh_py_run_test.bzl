@@ -90,6 +90,7 @@ def _py_reconfig_impl(ctx):
                 default_info.default_runfiles,
             ),
         ),
+        ctx.attr.target[OutputGroupInfo],
         # Inherit the expanded environment from the inner target.
         ctx.attr.target[RunEnvironmentInfo],
     ]
@@ -125,13 +126,7 @@ _py_reconfig_binary = _make_reconfig_rule(executable = True)
 
 _py_reconfig_test = _make_reconfig_rule(test = True)
 
-def py_reconfig_test(*, name, **kwargs):
-    """Create a py_test with customized build settings for testing.
-
-    Args:
-        name: str, name of teset target.
-        **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
-    """
+def _py_reconfig_executable(*, name, py_reconfig_rule, py_inner_rule, **kwargs):
     reconfig_only_kwarg_names = [
         "bootstrap_impl",
         "extra_toolchains",
@@ -145,15 +140,36 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
     inner_name = "_{}_inner".format(name)
-    _py_reconfig_test(
+    py_reconfig_rule(
         name = name,
         target = inner_name,
         **reconfig_kwargs
     )
-
-    py_test(
+    py_inner_rule(
         name = inner_name,
         tags = ["manual"],
+        **kwargs
+    )
+
+def py_reconfig_test(*, name, **kwargs):
+    """Create a py_test with customized build settings for testing.
+
+    Args:
+        name: str, name of teset target.
+        **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
+    """
+    _py_reconfig_executable(
+        name = name,
+        py_reconfig_rule = _py_reconfig_test,
+        py_inner_rule = py_test,
+        **kwargs
+    )
+
+def py_reconfig_binary(*, name, **kwargs):
+    _py_reconfig_executable(
+        name = name,
+        py_reconfig_rule = _py_reconfig_binary,
+        py_inner_rule = py_binary,
         **kwargs
     )
 
