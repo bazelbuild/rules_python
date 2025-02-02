@@ -62,6 +62,8 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
+* (rules) `python_zip_file` output with `--bootstrap_impl=script` works again
+  ([#2596](https://github.com/bazelbuild/rules_python/issues/2596)).
 * (docs) Using `python_version` attribute for specifying python versions introduced in `v1.1.0`
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
