@@ -51,7 +51,7 @@ load(
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(":flags.bzl", "BootstrapImplFlag", "RelativeVenvSymlinksFlag")
+load(":flags.bzl", "BootstrapImplFlag", "VenvsUseDeclareSymlinkFlag")
 load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_executable_info.bzl", "PyExecutableInfo")
@@ -195,8 +195,8 @@ accepting arbitrary Python versions.
         "_python_version_flag": attr.label(
             default = "//python/config_settings:python_version",
         ),
-        "_relative_venv_symlinks_flag": attr.label(
-            default = "//python/config_settings:relative_venv_symlinks",
+        "_venvs_use_declare_symlink_flag": attr.label(
+            default = "//python/config_settings:venvs_use_declare_symlink",
             providers = [BuildSettingInfo],
         ),
         "_windows_constraints": attr.label_list(
@@ -516,11 +516,11 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
     ctx.actions.write(pyvenv_cfg, "")
 
     runtime = runtime_details.effective_runtime
-    relative_venv_symlinks_enabled = (
-        RelativeVenvSymlinksFlag.get_value(ctx) == RelativeVenvSymlinksFlag.YES
+    venvs_use_declare_symlink_enabled = (
+        VenvsUseDeclareSymlinkFlag.get_value(ctx) == VenvsUseDeclareSymlinkFlag.YES
     )
 
-    if not relative_venv_symlinks_enabled:
+    if not venvs_use_declare_symlink_enabled:
         if runtime.interpreter:
             interpreter_actual_path = _runfiles_root_path(ctx, runtime.interpreter.short_path)
         else:
@@ -593,7 +593,7 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
 
     return struct(
         interpreter = interpreter,
-        recreate_venv_at_runtime = not relative_venv_symlinks_enabled,
+        recreate_venv_at_runtime = not venvs_use_declare_symlink_enabled,
         # Runfiles root relative path or absolute path
         interpreter_actual_path = interpreter_actual_path,
         files_without_interpreter = [pyvenv_cfg, pth, site_init],

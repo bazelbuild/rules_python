@@ -212,7 +212,7 @@ Values:
 :::
 ::::
 
-::::{bzl:flag} relative_venv_symlinks
+::::{bzl:flag} venvs_use_declare_symlink
 
 Determines if relative symlinks are created using `declare_symlink()` at build
 time.

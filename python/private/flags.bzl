@@ -123,19 +123,19 @@ PrecompileSourceRetentionFlag = enum(
     get_effective_value = _precompile_source_retention_flag_get_effective_value,
 )
 
-def _relative_venv_symlinks_flag_get_value(ctx):
-    return ctx.attr._relative_venv_symlinks_flag[BuildSettingInfo].value
+def _venvs_use_declare_symlink_flag_get_value(ctx):
+    return ctx.attr._venvs_use_declare_symlink_flag[BuildSettingInfo].value
 
 # Decides if the venv created by bootstrap=script uses declare_file() to
 # create relative symlinks. Workaround for #2489 (packaging rules not supporting
 # declare_link() files).
 # buildifier: disable=name-conventions
-RelativeVenvSymlinksFlag = FlagEnum(
+VenvsUseDeclareSymlinkFlag = FlagEnum(
     # Use declare_file() and relative symlinks in the venv
     YES = "yes",
     # Do not use declare_file() and relative symlinks in the venv
     NO = "no",
-    get_value = _relative_venv_symlinks_flag_get_value,
+    get_value = _venvs_use_declare_symlink_flag_get_value,
 )
 
 # Used for matching freethreaded toolchains and would have to be used in wheels

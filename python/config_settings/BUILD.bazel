@@ -9,7 +9,7 @@ load(
     "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
-    "RelativeVenvSymlinksFlag",
+    "VenvsUseDeclareSymlinkFlag",
 )
 load(
     "//python/private/pypi:flags.bzl",
@@ -123,9 +123,9 @@ config_setting(
 )
 
 string_flag(
-    name = "relative_venv_symlinks",
-    build_setting_default = RelativeVenvSymlinksFlag.YES,
-    values = RelativeVenvSymlinksFlag.flag_values(),
+    name = "venvs_use_declare_symlink",
+    build_setting_default = VenvsUseDeclareSymlinkFlag.YES,
+    values = VenvsUseDeclareSymlinkFlag.flag_values(),
     visibility = ["//visibility:public"],
 )
 

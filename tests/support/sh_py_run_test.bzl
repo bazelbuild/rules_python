@@ -33,8 +33,8 @@ def _perform_transition_impl(input_settings, attr):
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
     if attr.python_version:
         settings["//python/config_settings:python_version"] = attr.python_version
-    if attr.relative_venv_symlinks:
-        settings["//python/config_settings:relative_venv_symlinks"] = attr.relative_venv_symlinks
+    if attr.venvs_use_declare_symlink:
+        settings["//python/config_settings:venvs_use_declare_symlink"] = attr.venvs_use_declare_symlink
     return settings
 
 _perform_transition = transition(
@@ -43,14 +43,14 @@ _perform_transition = transition(
         "//python/config_settings:bootstrap_impl",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:python_version",
-        "//python/config_settings:relative_venv_symlinks",
+        "//python/config_settings:venvs_use_declare_symlink",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
         "//python/config_settings:python_version",
-        "//python/config_settings:relative_venv_symlinks",
+        "//python/config_settings:venvs_use_declare_symlink",
         VISIBLE_FOR_TESTING,
     ],
 )
@@ -109,8 +109,8 @@ toolchain.
 """,
         ),
         "python_version": attr.string(),
-        "relative_venv_symlinks": attr.string(),
         "target": attr.label(executable = True, cfg = "target"),
+        "venvs_use_declare_symlink": attr.string(),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
@@ -133,7 +133,7 @@ def _py_reconfig_executable(*, name, py_reconfig_rule, py_inner_rule, **kwargs):
         "build_python_zip",
         "extra_toolchains",
         "python_version",
-        "relative_venv_symlinks",
+        "venvs_use_declare_symlink",
     ]
     reconfig_kwargs = {
         key: kwargs.pop(key, None)
