@@ -461,7 +461,8 @@ relative_files = True
     kparams['stdout'] = sys.stderr
     kparams['stderr'] = sys.stderr
 
-  # Workaround for coveragepy having weird errors.
+  # Ignore errors finding source files during coverage.py reporting
+  # See https://coverage.readthedocs.io/en/7.6.10/cmd.html#reporting
   # See: https://github.com/bazelbuild/rules_python/issues/2575
   if os.getenv("COVERAGEPY_IGNORE_ERRORS"):
     params.append("--ignore-errors")
