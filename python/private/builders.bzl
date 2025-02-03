@@ -96,6 +96,145 @@ def _DepsetBuilder_build(self):
             kwargs["order"] = self._order[0]
         return depset(direct = self.direct, transitive = self.transitive, **kwargs)
 
+def _Optional(*initial):
+    """A wrapper for a re-assignable value that may or may not be set.
+
+    This allows structs to have attributes that aren't inherently mutable
+    and must be re-assigned to have their value updated.
+
+    Args:
+        *initial: A single vararg to be the initial value, or no args
+            to leave it unset.
+
+    Returns:
+        {type}`Optional`
+    """
+    if len(initial) > 1:
+        fail("Only zero or one positional arg allowed")
+
+    # buildifier: disable=uninitialized
+    self = struct(
+        _value = list(initial),
+        present = lambda *a, **k: _Optional_present(self, *a, **k),
+        set = lambda *a, **k: _Optional_set(self, *a, **k),
+        get = lambda *a, **k: _Optional_get(self, *a, **k),
+    )
+    return self
+
+def _Optional_set(self, value):
+    """Sets the value of the optional.
+
+    Args:
+        self: implicitly added
+        value: the value to set.
+    """
+    if len(self._value) == 0:
+        self._value.append(value)
+    else:
+        self._value[0] = value
+
+def _Optional_get(self):
+    """Gets the value of the optional, or error.
+
+    Args:
+        self: implicitly added
+
+    Returns:
+        The stored value, or error if not set.
+    """
+    if not len(self._value):
+        fail("Value not present")
+    return self._value[0]
+
+def _Optional_present(self):
+    """Tells if a value is present.
+
+    Args:
+        self: implicitly added
+
+    Returns:
+        {type}`bool` True if the value is set, False if not.
+    """
+    return len(self._value) > 0
+
+def _RuleBuilder(implementation = None, **kwargs):
+    """Builder for creating rules.
+
+    Args:
+        implementation: {type}`callable` The rule implementation function.
+        **kwargs: The same as the `rule()` function, but using builders
+            for the non-mutable Bazel objects.
+    """
+
+    # buildifier: disable=uninitialized
+    self = struct(
+        attrs = dict(kwargs.pop("attrs", None) or {}),
+        cfg = kwargs.pop("cfg", None) or _TransitionBuilder(),
+        exec_groups = dict(kwargs.pop("exec_groups", None) or {}),
+        executable = _Optional(),
+        fragments = list(kwargs.pop("fragments", None) or []),
+        implementation = _Optional(implementation),
+        extra_kwargs = kwargs,
+        provides = list(kwargs.pop("provides", None) or []),
+        test = _Optional(),
+        toolchains = list(kwargs.pop("toolchains", None) or []),
+        build = lambda *a, **k: _RuleBuilder_build(self, *a, **k),
+        to_kwargs = lambda *a, **k: _RuleBuilder_to_kwargs(self, *a, **k),
+    )
+    if "test" in kwargs:
+        self.test.set(kwargs.pop("test"))
+    if "executable" in kwargs:
+        self.executable.set(kwargs.pop("executable"))
+    return self
+
+def _RuleBuilder_build(self, debug = ""):
+    """Builds a `rule` object
+
+    Args:
+        self: implicitly added
+        debug: {type}`str` If set, prints the args used to create the rule.
+
+    Returns:
+        {type}`rule`
+    """
+    kwargs = self.to_kwargs()
+    if debug:
+        lines = ["=" * 80, "rule kwargs: {}:".format(debug)]
+        for k, v in sorted(kwargs.items()):
+            lines.append("  {}={}".format(k, v))
+        print("\n".join(lines))  # buildifier: disable=print
+    return rule(**kwargs)
+
+def _RuleBuilder_to_kwargs(self):
+    """Builds the arguments for calling `rule()`.
+
+    Args:
+        self: implicitly added
+
+    Returns:
+        {type}`dict`
+    """
+    kwargs = {}
+    if self.executable.present():
+        kwargs["executable"] = self.executable.get()
+    if self.test.present():
+        kwargs["test"] = self.test.get()
+
+    kwargs.update(
+        implementation = self.implementation.get(),
+        cfg = self.cfg.build() if self.cfg.implementation.present() else None,
+        attrs = {
+            k: (v.build() if hasattr(v, "build") else v)
+            for k, v in self.attrs.items()
+        },
+        exec_groups = self.exec_groups,
+        fragments = self.fragments,
+        provides = self.provides,
+        toolchains = self.toolchains,
+    )
+    kwargs.update(self.extra_kwargs)
+    return kwargs
+
 def _RunfilesBuilder():
     """Creates a `RunfilesBuilder`.
 
@@ -177,41 +316,60 @@ def _RunfilesBuilder_build(self, ctx, **kwargs):
         **kwargs
     ).merge_all(self.runfiles)
 
-# Skylib's types module doesn't have is_file, so roll our own
-def _is_file(value):
-    return type(value) == "File"
+def _SetBuilder(initial = None):
+    """Builder for list of unique values.
 
-def _is_runfiles(value):
-    return type(value) == "runfiles"
+    Args:
+        initial: {type}`list | None` The initial values.
 
-def _Optional(*initial):
-    if len(initial) > 1:
-        fail("only one positional arg allowed")
+    Returns:
+        {type}`SetBuilder`
+    """
+    initial = {} if not initial else {v: None for v in initial}
 
     # buildifier: disable=uninitialized
     self = struct(
-        _value = list(initial),
-        present = lambda *a, **k: _Optional_present(self, *a, **k),
-        set = lambda *a, **k: _Optional_set(self, *a, **k),
-        get = lambda *a, **k: _Optional_get(self, *a, **k),
+        # TODO - Switch this to use set() builtin when available
+        # https://bazel.build/rules/lib/core/set
+        _values = initial,
+        update = lambda *a, **k: _SetBuilder_update(self, *a, **k),
+        build = lambda *a, **k: _SetBuilder_build(self, *a, **k),
     )
     return self
 
-def _Optional_set(self, v):
-    if len(self._value) == 0:
-        self._value.append(v)
-    else:
-        self._value[0] = v
+def _SetBuilder_build(self):
+    """Builds the values into a list
 
-def _Optional_get(self):
-    if not len(self._value):
-        fail("Value not present")
-    return self._value[0]
+    Returns:
+        {type}`list`
+    """
+    return self._values.keys()
 
-def _Optional_present(self):
-    return len(self._value) > 0
+def _SetBuilder_update(self, *others):
+    """Adds values to the builder.
+
+    Args:
+        self: implicitly added
+        *others: {type}`list` values to add to the set.
+    """
+    for other in others:
+        for value in other:
+            if value not in self._values:
+                self._values[value] = None
 
 def _TransitionBuilder(implementation = None, inputs = None, outputs = None, **kwargs):
+    """Builder for transition objects.
+
+    Args:
+        implementation: {type}`callable` the transition implementation function.
+        inputs: {type}`list[str]` the inputs for the transition.
+        outputs: {type}`list[str]` the outputs of the transition.
+        **kwargs: Extra keyword args to use when building.
+
+    Returns:
+        {type}`TransitionBuilder`
+    """
+
     # buildifier: disable=uninitialized
     self = struct(
         implementation = _Optional(implementation),
@@ -231,6 +389,11 @@ def _TransitionBuilder(implementation = None, inputs = None, outputs = None, **k
     return self
 
 def _TransitionBuilder_build(self):
+    """Creates a transition from the builder.
+
+    Returns:
+        {type}`transition`
+    """
     return transition(
         implementation = self.implementation.get(),
         inputs = self.inputs.build(),
@@ -238,80 +401,12 @@ def _TransitionBuilder_build(self):
         **self.extra_kwargs
     )
 
-def _SetBuilder(initial = None):
-    initial = {} if not initial else {v: None for v in initial}
+# Skylib's types module doesn't have is_file, so roll our own
+def _is_file(value):
+    return type(value) == "File"
 
-    # buildifier: disable=uninitialized
-    self = struct(
-        # TODO - Switch this to use set() builtin when available
-        # https://bazel.build/rules/lib/core/set
-        _values = initial,
-        update = lambda *a, **k: _SetBuilder_update(self, *a, **k),
-        build = lambda *a, **k: _SetBuilder_build(self, *a, **k),
-    )
-    return self
-
-def _SetBuilder_build(self):
-    return self._values.keys()
-
-def _SetBuilder_update(self, *others):
-    for other in others:
-        for value in other:
-            if value not in self._values:
-                self._values[value] = None
-
-def _RuleBuilder(implementation = None, **kwargs):
-    # buildifier: disable=uninitialized
-    self = struct(
-        attrs = dict(kwargs.pop("attrs", None) or {}),
-        cfg = kwargs.pop("cfg", None) or _TransitionBuilder(),
-        exec_groups = dict(kwargs.pop("exec_groups", None) or {}),
-        executable = _Optional(),
-        fragments = list(kwargs.pop("fragments", None) or []),
-        implementation = _Optional(implementation),
-        extra_kwargs = kwargs,
-        provides = list(kwargs.pop("provides", None) or []),
-        test = _Optional(),
-        toolchains = list(kwargs.pop("toolchains", None) or []),
-        build = lambda *a, **k: _RuleBuilder_build(self, *a, **k),
-        to_kwargs = lambda *a, **k: _RuleBuilder_to_kwargs(self, *a, **k),
-    )
-    if "test" in kwargs:
-        self.test.set(kwargs.pop("test"))
-    if "executable" in kwargs:
-        self.executable.set(kwargs.pop("executable"))
-    return self
-
-def _RuleBuilder_build(self, debug = ""):
-    kwargs = self.to_kwargs()
-    if debug:
-        lines = ["=" * 80, "rule kwargs: {}:".format(debug)]
-        for k, v in sorted(kwargs.items()):
-            lines.append("  {}={}".format(k, v))
-        print("\n".join(lines))  # buildifier: disable=print
-    return rule(**kwargs)
-
-def _RuleBuilder_to_kwargs(self):
-    kwargs = {}
-    if self.executable.present():
-        kwargs["executable"] = self.executable.get()
-    if self.test.present():
-        kwargs["test"] = self.test.get()
-
-    kwargs.update(
-        implementation = self.implementation.get(),
-        cfg = self.cfg.build(),
-        attrs = {
-            k: (v.build() if hasattr(v, "build") else v)
-            for k, v in self.attrs.items()
-        },
-        exec_groups = self.exec_groups,
-        fragments = self.fragments,
-        provides = self.provides,
-        toolchains = self.toolchains,
-    )
-    kwargs.update(self.extra_kwargs)
-    return kwargs
+def _is_runfiles(value):
+    return type(value) == "runfiles"
 
 builders = struct(
     DepsetBuilder = _DepsetBuilder,

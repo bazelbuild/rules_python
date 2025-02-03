@@ -1,9 +1,9 @@
 import json
 import os
 import pathlib
+import pprint
 import sys
 import unittest
-import pprint
 
 from python.runfiles import runfiles
 
@@ -20,10 +20,10 @@ class PythonToolchainTest(unittest.TestCase):
 
         expected = "python_{}".format(expect_version.replace(".", "_"))
         msg = (
-            "Expected toolchain not found\n" +
-            f"Expected toolchain label to contain: {expected}\n" +
-            "Actual build settings:\n" +
-            pprint.pformat(settings)
+            "Expected toolchain not found\n"
+            + f"Expected toolchain label to contain: {expected}\n"
+            + "Actual build settings:\n"
+            + pprint.pformat(settings)
         )
         self.assertIn(expected, settings["toolchain_label"], msg)
 
