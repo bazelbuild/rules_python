@@ -462,7 +462,9 @@ relative_files = True
     kparams['stderr'] = sys.stderr
 
   # Prevent coveragepy report issues when packages execute files in tmp dir.
-  params.append('--omit="$TMPDIR/*"')
+  import tempfile
+  omit_pattern = os.path.join(tempfile.gettempdir(), "*")
+  params.append(f'--omit={omit_pattern}')
 
   ret_code = subprocess.call(
     params,
