@@ -59,6 +59,9 @@ Unreleased changes template.
   env var.
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
+* (toolchain) `coverage_tool` now accepts a special value of the `//python:none`
+  that acts as a label that means "no coverage tool".
+* (toolchain) The coverage deps are now registered as part of `py_repositories`.
 
 {#v0-0-0-fixed}
 ### Fixed

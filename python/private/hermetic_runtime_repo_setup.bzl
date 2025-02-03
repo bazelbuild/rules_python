@@ -23,6 +23,7 @@ load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load(":semver.bzl", "semver")
 
 _IS_FREETHREADED = Label("//python/config_settings:is_py_freethreaded")
+_NONE = Label("//python:none")
 
 def define_hermetic_runtime_toolchain_impl(
         *,
@@ -49,7 +50,7 @@ def define_hermetic_runtime_toolchain_impl(
             format.
         python_bin: {type}`str` The path to the Python binary within the
             repository.
-        coverage_tool: {type}`str` optional target to the coverage tool to
+        coverage_tool: {type}`Label` optional target to the coverage tool to
             use.
     """
     _ = name  # @unused
@@ -204,8 +205,8 @@ def define_hermetic_runtime_toolchain_impl(
         },
         coverage_tool = select({
             # Convert empty string to None
-            ":coverage_enabled": coverage_tool or None,
-            "//conditions:default": None,
+            ":coverage_enabled": coverage_tool,
+            "//conditions:default": _NONE,
         }),
         python_version = "PY3",
         implementation_name = "cpython",

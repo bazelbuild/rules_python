@@ -364,6 +364,10 @@ def _process_single_version_overrides(*, tag, _fail = fail, default):
             for platform in sha256
         }
 
+    if tag.coverage_tool:
+        for platform in sha256:
+            available_versions[tag.python_version].setdefault("coverage_tool", {})[platform] = tag.coverage_tool
+
     available_versions[tag.python_version] = {k: v for k, v in override.items() if v}
 
     if tag.distutils_content:
@@ -744,6 +748,19 @@ class.
 :::
 """,
     attrs = {
+        "coverage_tool": attr.label(
+            doc = """\
+The coverage tool to be used for a particular Python interpreter. This can override
+`rules_python` defaults.
+
+This usually is an alias pointing to the right target based on the target
+platform. For the restrictions on the underlying targets see
+{attr}`py_runtime.coverage_tool` for details.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+        ),
         # NOTE @aignas 2024-09-01: all of the attributes except for `version`
         # can be part of the `python.toolchain` call. That would make it more
         # ergonomic to define new toolchains and to override values for old
@@ -818,6 +835,8 @@ configuration, please use {obj}`single_version_override`.
             doc = """\
 The coverage tool to be used for a particular Python interpreter. This can override
 `rules_python` defaults.
+
+See {attr}`py_runtime.coverage_tool` for details.
 """,
         ),
         "patch_strip": attr.int(

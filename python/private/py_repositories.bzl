@@ -18,6 +18,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 load("//python/private/pypi:deps.bzl", "pypi_deps")
+load(":coverage_deps.bzl", "coverage_deps")
 load(":internal_config_repo.bzl", "internal_config_repo")
 load(":pythons_hub.bzl", "hub_repo")
 
@@ -33,6 +34,9 @@ def py_repositories():
     maybe(
         internal_config_repo,
         name = "rules_python_internal",
+    )
+    coverage_deps(
+        name = "pypi__coverage",
     )
     maybe(
         hub_repo,

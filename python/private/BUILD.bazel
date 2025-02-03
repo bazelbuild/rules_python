@@ -52,6 +52,12 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
+alias(
+    name = "coverage",
+    actual = "@pypi__coverage//coverage",
+    visibility = ["//visibility:public"],
+)
+
 bzl_library(
     name = "attributes_bzl",
     srcs = ["attributes.bzl"],
@@ -134,7 +140,8 @@ bzl_library(
     srcs = ["coverage_deps.bzl"],
     deps = [
         ":bazel_tools_bzl",
-        ":version_label_bzl",
+        "//python/private/pypi:hub_repository_bzl",
+        "//python/private/pypi:whl_config_setting_bzl",
     ],
 )
 

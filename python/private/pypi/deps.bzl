@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:coverage_deps.bzl", "coverage_deps")
 
 _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
@@ -145,3 +146,5 @@ def pypi_deps():
             type = "zip",
             build_file_content = _GENERIC_WHEEL,
         )
+
+    coverage_deps(name = "pypi__coverage")

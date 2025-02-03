@@ -123,6 +123,7 @@ def pkg_aliases(
         actual,
         group_name = None,
         extra_aliases = None,
+        target_names = None,
         **kwargs):
     """Create aliases for an actual package.
 
@@ -135,6 +136,9 @@ def pkg_aliases(
             the aliases to point to mapping to repositories. The keys are passed
             to bazel skylib's `selects.with_or`, so they can be tuples as well.
         group_name: {type}`str` The group name that the pkg belongs to.
+        target_names: {type}`dict[str, str]` the dictionary of aliases that will be
+            made by default. Defaults to `pkg`, `whl`, `data` and `dist_info` labels.
+            This will be altered slightly if the {attr}`group_name` is set.
         extra_aliases: {type}`list[str]` The extra aliases to be created.
         **kwargs: extra kwargs to pass to {bzl:obj}`get_filename_config_settings`.
     """
@@ -146,12 +150,14 @@ def pkg_aliases(
         actual = ":" + PY_LIBRARY_PUBLIC_LABEL,
     )
 
-    target_names = {
-        PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
-        WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-        DATA_LABEL: DATA_LABEL,
-        DIST_INFO_LABEL: DIST_INFO_LABEL,
-    } | {
+    if target_names == None:
+        target_names = {
+            PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
+            WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
+            DATA_LABEL: DATA_LABEL,
+            DIST_INFO_LABEL: DIST_INFO_LABEL,
+        }
+    target_names = target_names | {
         x: x
         for x in extra_aliases or []
     }
@@ -190,7 +196,7 @@ def pkg_aliases(
                     v: "@{repo}//:{target_name}".format(
                         repo = repo,
                         target_name = name,
-                    ) if repo != _INCOMPATIBLE else repo
+                    ) if repo not in [_INCOMPATIBLE, str(_LABEL_NONE)] else repo
                     for v, repo in actual.items()
                 },
             )
