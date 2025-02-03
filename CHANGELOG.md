@@ -78,8 +78,8 @@ Unreleased changes template.
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
 * (binaries/tests) Fix packaging when using `--bootstrap_impl=script`: set
-  {obj}`--venvs_use_declare_symlink=no` to have it avoid creating symlinks at
-  build time.
+  {obj}`--venvs_use_declare_symlink=no` to have it not create symlinks at
+  build time (they will be created at runtime instead).
   Fixes ([#2489](https://github.com/bazelbuild/rules_python/issues/2489)
 
 {#v0-0-0-added}

@@ -24,7 +24,7 @@ When `1`, the rules_python Starlark implementation of the core rules is used
 instead of the Bazel-builtin rules. Note this requires Bazel 7+.
 :::
 
-:::{envvar} RULES_PYTHON_EXTRACT_ROOT
+::::{envvar} RULES_PYTHON_EXTRACT_ROOT
 
 Directory to use as the root for creating files necessary for bootstrapping so
 that a binary can run.
@@ -43,7 +43,10 @@ being cleaned up by the OS.
 
 If not set, then a temporary directory will be created and deleted upon program
 exit.
+
+:::{versionadded} VERSION_NEXT_PATCH
 :::
+::::
 
 :::{envvar} RULES_PYTHON_GAZELLE_VERBOSE
 
