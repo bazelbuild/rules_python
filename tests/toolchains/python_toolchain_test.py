@@ -3,6 +3,7 @@ import os
 import pathlib
 import sys
 import unittest
+import pprint
 
 from python.runfiles import runfiles
 
@@ -18,7 +19,13 @@ class PythonToolchainTest(unittest.TestCase):
         settings = json.loads(pathlib.Path(settings_path).read_text())
 
         expected = "python_{}".format(expect_version.replace(".", "_"))
-        self.assertIn(expected, settings["toolchain_label"], str(settings))
+        msg = (
+            "Expected toolchain not found\n" +
+            f"Expected toolchain label to contain: {expected}\n" +
+            "Actual build settings:\n" +
+            pprint.pformat(settings)
+        )
+        self.assertIn(expected, settings["toolchain_label"], msg)
 
         actual = "{v.major}.{v.minor}.{v.micro}".format(v=sys.version_info)
         self.assertEqual(actual, expect_version)

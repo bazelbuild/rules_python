@@ -217,7 +217,7 @@ def _TransitionBuilder(implementation = None, inputs = None, outputs = None, **k
         implementation = _Optional(implementation),
         inputs = _SetBuilder(inputs),
         outputs = _SetBuilder(outputs),
-        kwargs = kwargs,
+        extra_kwargs = kwargs,
         build = lambda *a, **k: _TransitionBuilder_build(self, *a, **k),
     )
     return self
@@ -227,7 +227,7 @@ def _TransitionBuilder_build(self):
         implementation = self.implementation.get(),
         inputs = self.inputs.build(),
         outputs = self.outputs.build(),
-        **self.kwargs
+        **self.extra_kwargs
     )
 
 def _SetBuilder(initial = None):

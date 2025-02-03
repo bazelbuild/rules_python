@@ -1775,12 +1775,8 @@ def create_executable_rule_builder(implementation, **kwargs):
         ] + _CC_TOOLCHAINS,
         cfg = builders.TransitionBuilder(
             implementation = _transition_executable_impl,
-            inputs = [
-                _PYTHON_VERSION_FLAG,
-            ],
-            outputs = [
-                _PYTHON_VERSION_FLAG,
-            ],
+            inputs = [_PYTHON_VERSION_FLAG],
+            outputs = [_PYTHON_VERSION_FLAG],
         ),
         **kwargs
     )

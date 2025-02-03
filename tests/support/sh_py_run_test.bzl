@@ -26,7 +26,9 @@ load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildif
 load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
 def _perform_transition_impl(input_settings, attr, base_impl):
-    settings = base_impl(input_settings, attr) | dict(input_settings)
+    settings = {k: input_settings[k] for k in _RECONFIG_INHERITED_OUTPUTS if k in input_settings}
+    settings.update(base_impl(input_settings, attr))
+
     settings[VISIBLE_FOR_TESTING] = True
     settings["//command_line_option:build_python_zip"] = attr.build_python_zip
     if attr.bootstrap_impl:
@@ -46,6 +48,7 @@ _RECONFIG_OUTPUTS = _RECONFIG_INPUTS + [
     "//command_line_option:build_python_zip",
     VISIBLE_FOR_TESTING,
 ]
+_RECONFIG_INHERITED_OUTPUTS = [v for v in _RECONFIG_OUTPUTS if v in _RECONFIG_INPUTS]
 
 _RECONFIG_ATTRS = {
     "bootstrap_impl": attr.string(),
