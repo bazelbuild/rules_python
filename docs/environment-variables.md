@@ -29,7 +29,7 @@ instead of the Bazel-builtin rules. Note this requires Bazel 7+.
 Directory to use as the root for creating files necessary for bootstrapping so
 that a binary can run.
 
-Only applicable when {obj}`--venvs_use_declare_symlink=no` is used.
+Only applicable when {bzl:flag}`--venvs_use_declare_symlink=no` is used.
 
 When set, a binary will attempt to find a unique, reusable, location within this
 directory for the files it needs to create to aid startup. The files may not be
