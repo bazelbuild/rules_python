@@ -70,8 +70,9 @@ def _create_reconfig_rule(builder):
 
     base_cfg_impl = builder.cfg.implementation.get()
     builder.cfg.implementation.set(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
-    builder.cfg.inputs.extend(_RECONFIG_INPUTS)
-    builder.cfg.outputs.extend(_RECONFIG_OUTPUTS)
+    builder.cfg.inputs.update(_RECONFIG_INPUTS)
+    builder.cfg.outputs.update(_RECONFIG_OUTPUTS)
+
     return builder.build()
 
 _py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())

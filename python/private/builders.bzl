@@ -215,7 +215,15 @@ def _TransitionBuilder(implementation = None, inputs = None, outputs = None, **k
     # buildifier: disable=uninitialized
     self = struct(
         implementation = _Optional(implementation),
+        # Bazel requires transition.inputs to have unique values, so use set
+        # semantics so extenders of a transition can easily add/remove values.
+        # TODO - Use set builtin instead of custom builder, when available.
+        # https://bazel.build/rules/lib/core/set
         inputs = _SetBuilder(inputs),
+        # Bazel requires transition.inputs to have unique values, so use set
+        # semantics so extenders of a transition can easily add/remove values.
+        # TODO - Use set builtin instead of custom builder, when available.
+        # https://bazel.build/rules/lib/core/set
         outputs = _SetBuilder(outputs),
         extra_kwargs = kwargs,
         build = lambda *a, **k: _TransitionBuilder_build(self, *a, **k),
@@ -235,8 +243,10 @@ def _SetBuilder(initial = None):
 
     # buildifier: disable=uninitialized
     self = struct(
+        # TODO - Switch this to use set() builtin when available
+        # https://bazel.build/rules/lib/core/set
         _values = initial,
-        extend = lambda *a, **k: _SetBuilder_extend(self, *a, **k),
+        update = lambda *a, **k: _SetBuilder_update(self, *a, **k),
         build = lambda *a, **k: _SetBuilder_build(self, *a, **k),
     )
     return self
@@ -244,10 +254,11 @@ def _SetBuilder(initial = None):
 def _SetBuilder_build(self):
     return self._values.keys()
 
-def _SetBuilder_extend(self, values):
-    for v in values:
-        if v not in self._values:
-            self._values[v] = None
+def _SetBuilder_update(self, *others):
+    for other in others:
+        for value in other:
+            if value not in self._values:
+                self._values[value] = None
 
 def _RuleBuilder(implementation = None, **kwargs):
     # buildifier: disable=uninitialized
@@ -277,9 +288,7 @@ def _RuleBuilder_build(self, debug = ""):
         lines = ["=" * 80, "rule kwargs: {}:".format(debug)]
         for k, v in sorted(kwargs.items()):
             lines.append("  {}={}".format(k, v))
-
-        # buildifier: disable=print
-        print("\n".join(lines))
+        print("\n".join(lines))  # buildifier: disable=print
     return rule(**kwargs)
 
 def _RuleBuilder_to_kwargs(self):
