@@ -33,6 +33,8 @@ def _perform_transition_impl(input_settings, attr):
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
     if attr.python_version:
         settings["//python/config_settings:python_version"] = attr.python_version
+    if attr.venvs_use_declare_symlink:
+        settings["//python/config_settings:venvs_use_declare_symlink"] = attr.venvs_use_declare_symlink
     return settings
 
 _perform_transition = transition(
@@ -41,12 +43,14 @@ _perform_transition = transition(
         "//python/config_settings:bootstrap_impl",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:python_version",
+        "//python/config_settings:venvs_use_declare_symlink",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
         "//python/config_settings:python_version",
+        "//python/config_settings:venvs_use_declare_symlink",
         VISIBLE_FOR_TESTING,
     ],
 )
@@ -106,6 +110,7 @@ toolchain.
         ),
         "python_version": attr.string(),
         "target": attr.label(executable = True, cfg = "target"),
+        "venvs_use_declare_symlink": attr.string(),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
@@ -122,12 +127,19 @@ _py_reconfig_binary = _make_reconfig_rule(executable = True)
 _py_reconfig_test = _make_reconfig_rule(test = True)
 
 def _py_reconfig_executable(*, name, py_reconfig_rule, py_inner_rule, **kwargs):
-    reconfig_kwargs = {}
-    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
-    reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
-    reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
+    reconfig_only_kwarg_names = [
+        # keep sorted
+        "bootstrap_impl",
+        "build_python_zip",
+        "extra_toolchains",
+        "python_version",
+        "venvs_use_declare_symlink",
+    ]
+    reconfig_kwargs = {
+        key: kwargs.pop(key, None)
+        for key in reconfig_only_kwarg_names
+    }
     reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
-    reconfig_kwargs["build_python_zip"] = kwargs.pop("build_python_zip", None)
 
     inner_name = "_{}_inner".format(name)
     py_reconfig_rule(
