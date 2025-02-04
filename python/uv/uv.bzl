@@ -1,4 +1,4 @@
-# Copyright 2024 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
+""" EXPERIMENTAL: This is experimental and may be removed without notice.
 
-print("Hello")
-print(
-    "RULES_PYTHON_ZIP_DIR:{}".format(sys._xoptions.get("RULES_PYTHON_ZIP_DIR", "UNSET"))
-)
-print("PYTHONSAFEPATH:", os.environ.get("PYTHONSAFEPATH", "UNSET") or "EMPTY")
-print("sys.flags.safe_path:", sys.flags.safe_path)
-print("file:", __file__)
-print("sys.executable:", sys.executable)
+The uv toolchain extension.
+"""
+
+load("//python/uv/private:uv.bzl", _uv = "uv")
+
+uv = _uv

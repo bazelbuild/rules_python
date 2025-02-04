@@ -18,7 +18,7 @@ EXPERIMENTAL: This is experimental and may be removed without notice
 This module implements the uv toolchain rule
 """
 
-load("//python/uv/private:providers.bzl", "UvToolchainInfo")
+load(":uv_toolchain_info.bzl", "UvToolchainInfo")
 
 def _uv_toolchain_impl(ctx):
     uv = ctx.attr.uv
