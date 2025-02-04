@@ -32,31 +32,43 @@ class InterpreterTest(unittest.TestCase):
         """Validates that we can successfully execute arbitrary code from the CLI."""
         expected_version = os.environ["EXPECTED_INTERPRETER_VERSION"]
 
-        result = subprocess.check_output(
-            [self.interpreter],
-            text=True,
-            input="\r".join(
-                [
-                    "import sys",
-                    "v = sys.version_info",
-                    "print(f'version: {v.major}.{v.minor}')",
-                ]
-            ),
-        ).strip()
+        try:
+            result = subprocess.check_output(
+                [self.interpreter],
+                text=True,
+                stderr=subprocess.STDOUT,
+                input="\r".join(
+                    [
+                        "import sys",
+                        "v = sys.version_info",
+                        "print(f'version: {v.major}.{v.minor}')",
+                    ]
+                ),
+            ).strip()
+        except subprocess.CalledProcessError as error:
+            print("OUTPUT:", error.stdout)
+            raise
+
         self.assertEqual(result, f"version: {expected_version}")
 
     def test_json_tool(self):
         """Validates that we can successfully invoke a module from the CLI."""
         # Pass unformatted JSON to the json.tool module.
-        result = subprocess.check_output(
-            [
-                self.interpreter,
-                "-m",
-                "json.tool",
-            ],
-            text=True,
-            input='{"json":"obj"}',
-        ).strip()
+        try:
+            result = subprocess.check_output(
+                [
+                    self.interpreter,
+                    "-m",
+                    "json.tool",
+                ],
+                text=True,
+                stderr=subprocess.STDOUT,
+                input='{"json":"obj"}',
+            ).strip()
+        except subprocess.CalledProcessError as error:
+            print("OUTPUT:", error.stdout)
+            raise
+
         # Validate that we get formatted JSON back.
         self.assertEqual(result, '{\n    "json": "obj"\n}')
 

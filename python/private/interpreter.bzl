@@ -31,7 +31,14 @@ def _interpreter_impl(ctx):
     # re-exec. If it's not a recognized name, then they fail.
     if runtime.interpreter:
         executable = ctx.actions.declare_file(runtime.interpreter.basename)
-        ctx.actions.symlink(output = executable, target_file = runtime.interpreter, is_executable = True)
+        ctx.actions.expand_template(
+            template = ctx.file._template,
+            output = executable,
+            substitutions = {
+                "%target_file%": runtime.interpreter.short_path,
+            },
+            is_executable = True,
+        )
     else:
         executable = ctx.actions.declare_symlink(paths.basename(runtime.interpreter_path))
         ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)
@@ -39,7 +46,9 @@ def _interpreter_impl(ctx):
     return [
         DefaultInfo(
             executable = executable,
-            runfiles = ctx.runfiles([executable], transitive_files = runtime.files),
+            runfiles = ctx.runfiles([executable], transitive_files = runtime.files).merge_all([
+                ctx.attr._bash_runfiles[DefaultInfo].default_runfiles,
+            ]),
         ),
     ]
 
@@ -50,6 +59,13 @@ interpreter = rule(
     attrs = {
         "binary": attr.label(
             mandatory = True,
+        ),
+        "_template": attr.label(
+            default = "//python/private:interpreter_tmpl.sh",
+            allow_single_file = True,
+        ),
+        "_bash_runfiles": attr.label(
+            default = "@bazel_tools//tools/bash/runfiles",
         ),
     },
 )
