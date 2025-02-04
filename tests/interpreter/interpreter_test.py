@@ -20,6 +20,7 @@ import unittest
 
 class InterpreterTest(unittest.TestCase):
     def setUp(self):
+        super().setUp()
         self.interpreter = os.environ["PYTHON_BIN"]
 
     def test_self_version(self):

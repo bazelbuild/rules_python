@@ -19,7 +19,7 @@ load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 
-def _interpreter_impl(ctx):
+def _interpreter_binary_impl(ctx):
     if SentinelInfo in ctx.attr.binary:
         toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
         runtime = toolchain.py3_runtime
@@ -52,8 +52,8 @@ def _interpreter_impl(ctx):
         ),
     ]
 
-interpreter = rule(
-    implementation = _interpreter_impl,
+interpreter_binary = rule(
+    implementation = _interpreter_binary_impl,
     toolchains = [TARGET_TOOLCHAIN_TYPE],
     executable = True,
     attrs = {

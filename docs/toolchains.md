@@ -562,7 +562,7 @@ Currently the following flags are used to influence toolchain selection:
 
 To run the interpreter that Bazel will use, you can use the
 `@rules_python//python/bin:python` target. This is a binary target with
-the executable pointing at the `python3` binary plus the relevent runfiles.
+the executable pointing at the `python3` binary plus its relevent runfiles.
 
 ```console
 $ bazel run @rules_python//python/bin:python
@@ -596,5 +596,5 @@ a fixed version.
 
 :::{note}
 The `python` target does not provide access to any modules from `py_*`
-targets on its own. Work is ongoing to support that.
+targets on its own. Please file a feature request if this is desired.
 :::

@@ -1,16 +1,15 @@
-load(":interpreter.bzl", "interpreter")
-
-package(default_visibility = ["//visibility:public"])
+load("//python/private:interpreter.bzl", _interpreter_binary="interpreter_binary")
 
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//python:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
-interpreter(
+_interpreter_binary(
     name = "python",
     binary = ":python_src",
+    visibility = ["//visibility:public"],
 )
 
 # The user can modify this flag to source different interpreters for the
