@@ -18,162 +18,77 @@ without the overhead of a bazel-in-bazel integration test.
 """
 
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//python:py_binary.bzl", "py_binary")
-load("//python:py_test.bzl", "py_test")
+load("//python/private:py_binary_macro.bzl", "py_binary_macro")  # buildifier: disable=bzl-visibility
+load("//python/private:py_binary_rule.bzl", "create_binary_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_macro.bzl", "py_test_macro")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_rule.bzl", "create_test_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
-def _perform_transition_impl(input_settings, attr):
-    settings = dict(input_settings)
+def _perform_transition_impl(input_settings, attr, base_impl):
+    settings = {k: input_settings[k] for k in _RECONFIG_INHERITED_OUTPUTS if k in input_settings}
+    settings.update(base_impl(input_settings, attr))
+
     settings[VISIBLE_FOR_TESTING] = True
     settings["//command_line_option:build_python_zip"] = attr.build_python_zip
     if attr.bootstrap_impl:
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
     if attr.extra_toolchains:
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
-    if attr.python_version:
-        settings["//python/config_settings:python_version"] = attr.python_version
     if attr.venvs_use_declare_symlink:
         settings["//python/config_settings:venvs_use_declare_symlink"] = attr.venvs_use_declare_symlink
     return settings
 
-_perform_transition = transition(
-    implementation = _perform_transition_impl,
-    inputs = [
-        "//python/config_settings:bootstrap_impl",
-        "//command_line_option:extra_toolchains",
-        "//python/config_settings:python_version",
-        "//python/config_settings:venvs_use_declare_symlink",
-    ],
-    outputs = [
-        "//command_line_option:build_python_zip",
-        "//command_line_option:extra_toolchains",
-        "//python/config_settings:bootstrap_impl",
-        "//python/config_settings:python_version",
-        "//python/config_settings:venvs_use_declare_symlink",
-        VISIBLE_FOR_TESTING,
-    ],
-)
+_RECONFIG_INPUTS = [
+    "//python/config_settings:bootstrap_impl",
+    "//command_line_option:extra_toolchains",
+    "//python/config_settings:venvs_use_declare_symlink",
+]
+_RECONFIG_OUTPUTS = _RECONFIG_INPUTS + [
+    "//command_line_option:build_python_zip",
+    VISIBLE_FOR_TESTING,
+]
+_RECONFIG_INHERITED_OUTPUTS = [v for v in _RECONFIG_OUTPUTS if v in _RECONFIG_INPUTS]
 
-def _py_reconfig_impl(ctx):
-    default_info = ctx.attr.target[DefaultInfo]
-    exe_ext = default_info.files_to_run.executable.extension
-    if exe_ext:
-        exe_ext = "." + exe_ext
-    exe_name = ctx.label.name + exe_ext
-
-    executable = ctx.actions.declare_file(exe_name)
-    ctx.actions.symlink(output = executable, target_file = default_info.files_to_run.executable)
-
-    default_outputs = [executable]
-
-    # todo: could probably check target.owner vs src.owner to check if it should
-    # be symlinked or included as-is
-    # For simplicity of implementation, we're assuming the target being run is
-    # py_binary-like. In order for Windows to work, we need to make sure the
-    # file that the .exe launcher runs (the .zip or underlying non-exe
-    # executable) is a sibling of the .exe file with the same base name.
-    for src in default_info.files.to_list():
-        if src.extension in ("", "zip"):
-            ext = ("." if src.extension else "") + src.extension
-            output = ctx.actions.declare_file(ctx.label.name + ext)
-            ctx.actions.symlink(output = output, target_file = src)
-            default_outputs.append(output)
-
-    return [
-        DefaultInfo(
-            executable = executable,
-            files = depset(default_outputs),
-            # On windows, the other default outputs must also be included
-            # in runfiles so the exe launcher can find the backing file.
-            runfiles = ctx.runfiles(default_outputs).merge(
-                default_info.default_runfiles,
-            ),
-        ),
-        ctx.attr.target[OutputGroupInfo],
-        # Inherit the expanded environment from the inner target.
-        ctx.attr.target[RunEnvironmentInfo],
-    ]
-
-def _make_reconfig_rule(**kwargs):
-    attrs = {
-        "bootstrap_impl": attr.string(),
-        "build_python_zip": attr.string(default = "auto"),
-        "extra_toolchains": attr.string_list(
-            doc = """
+_RECONFIG_ATTRS = {
+    "bootstrap_impl": attr.string(),
+    "build_python_zip": attr.string(default = "auto"),
+    "extra_toolchains": attr.string_list(
+        doc = """
 Value for the --extra_toolchains flag.
 
 NOTE: You'll likely have to also specify //tests/support/cc_toolchains:all (or some CC toolchain)
 to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,
-        ),
-        "python_version": attr.string(),
-        "target": attr.label(executable = True, cfg = "target"),
-        "venvs_use_declare_symlink": attr.string(),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
-    }
-    return rule(
-        implementation = _py_reconfig_impl,
-        attrs = attrs,
-        cfg = _perform_transition,
-        **kwargs
-    )
+    ),
+    "venvs_use_declare_symlink": attr.string(),
+}
 
-_py_reconfig_binary = _make_reconfig_rule(executable = True)
+def _create_reconfig_rule(builder):
+    builder.attrs.update(_RECONFIG_ATTRS)
 
-_py_reconfig_test = _make_reconfig_rule(test = True)
+    base_cfg_impl = builder.cfg.implementation.get()
+    builder.cfg.implementation.set(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
+    builder.cfg.inputs.update(_RECONFIG_INPUTS)
+    builder.cfg.outputs.update(_RECONFIG_OUTPUTS)
 
-def _py_reconfig_executable(*, name, py_reconfig_rule, py_inner_rule, **kwargs):
-    reconfig_only_kwarg_names = [
-        # keep sorted
-        "bootstrap_impl",
-        "build_python_zip",
-        "extra_toolchains",
-        "python_version",
-        "venvs_use_declare_symlink",
-    ]
-    reconfig_kwargs = {
-        key: kwargs.pop(key, None)
-        for key in reconfig_only_kwarg_names
-    }
-    reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
+    return builder.build()
 
-    inner_name = "_{}_inner".format(name)
-    py_reconfig_rule(
-        name = name,
-        target = inner_name,
-        **reconfig_kwargs
-    )
-    py_inner_rule(
-        name = inner_name,
-        tags = ["manual"],
-        **kwargs
-    )
+_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())
 
-def py_reconfig_test(*, name, **kwargs):
+_py_reconfig_test = _create_reconfig_rule(create_test_rule_builder())
+
+def py_reconfig_test(**kwargs):
     """Create a py_test with customized build settings for testing.
 
     Args:
-        name: str, name of teset target.
-        **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
+        **kwargs: kwargs to pass along to _py_reconfig_test.
     """
-    _py_reconfig_executable(
-        name = name,
-        py_reconfig_rule = _py_reconfig_test,
-        py_inner_rule = py_test,
-        **kwargs
-    )
+    py_test_macro(_py_reconfig_test, **kwargs)
 
-def py_reconfig_binary(*, name, **kwargs):
-    _py_reconfig_executable(
-        name = name,
-        py_reconfig_rule = _py_reconfig_binary,
-        py_inner_rule = py_binary,
-        **kwargs
-    )
+def py_reconfig_binary(**kwargs):
+    py_binary_macro(_py_reconfig_binary, **kwargs)
 
 def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
     """Run a py_binary within a sh_test.
@@ -196,26 +111,12 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
             "BIN_RLOCATION": "$(rlocationpaths {})".format(bin_name),
         },
     )
-
-    py_binary_kwargs = {
-        key: kwargs.pop(key)
-        for key in ("imports", "deps", "env")
-        if key in kwargs
-    }
-
-    _py_reconfig_binary(
+    py_reconfig_binary(
         name = bin_name,
-        tags = ["manual"],
-        target = "_{}_plain_bin".format(name),
-        **kwargs
-    )
-
-    py_binary(
-        name = "_{}_plain_bin".format(name),
         srcs = [py_src],
         main = py_src,
         tags = ["manual"],
-        **py_binary_kwargs
+        **kwargs
     )
 
 def _current_build_settings_impl(ctx):
