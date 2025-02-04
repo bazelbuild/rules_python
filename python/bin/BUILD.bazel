@@ -1,4 +1,4 @@
-load("//python/private:interpreter.bzl", _interpreter_binary="interpreter_binary")
+load("//python/private:interpreter.bzl", _interpreter_binary = "interpreter_binary")
 
 filegroup(
     name = "distribution",

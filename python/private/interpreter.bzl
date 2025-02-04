@@ -60,12 +60,12 @@ interpreter_binary = rule(
         "binary": attr.label(
             mandatory = True,
         ),
+        "_bash_runfiles": attr.label(
+            default = "@bazel_tools//tools/bash/runfiles",
+        ),
         "_template": attr.label(
             default = "//python/private:interpreter_tmpl.sh",
             allow_single_file = True,
-        ),
-        "_bash_runfiles": attr.label(
-            default = "@bazel_tools//tools/bash/runfiles",
         ),
     },
 )
