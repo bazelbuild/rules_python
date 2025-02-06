@@ -87,6 +87,7 @@ Unreleased changes template.
   env var.
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
+* (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
 
 {#v1-2-0-fixed}
 ### Fixed
