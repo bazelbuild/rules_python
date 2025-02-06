@@ -13,14 +13,17 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load(":builders.bzl", "builders")
 load(":common.bzl", "union_attrs")
 load(":enum.bzl", "enum")
 load(":flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
 load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(":reexports.bzl", "BuiltinPyInfo")
+load(":rule_builders.bzl", "rule_builders")
 load(
     ":semantics.bzl",
     "DEPS_ATTR_ALLOW_RULES",
@@ -141,7 +144,7 @@ PycCollectionAttr = enum(
 
 def create_stamp_attr(**kwargs):
     return {
-        "stamp": attr.int(
+        "stamp": lambda: rule_builders.IntAttrBuilder(
             values = _STAMP_VALUES,
             doc = """
 Whether to encode build information into the binary. Possible values:
@@ -164,26 +167,12 @@ be avoided if possible.
     }
 
 def create_srcs_attr(*, mandatory):
-    return {
-        "srcs": attr.label_list(
-            # Google builds change the set of allowed files.
-            allow_files = SRCS_ATTR_ALLOW_FILES,
-            mandatory = mandatory,
-            # Necessary for --compile_one_dependency to work.
-            flags = ["DIRECT_COMPILE_TIME_INPUT"],
-            doc = """
-The list of Python source files that are processed to create the target. This
-includes all your checked-in code and may include generated source files.  The
-`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
-files that may be needed at run time belong in `data`.
-""",
-        ),
-    }
+    fail("hit")
 
-SRCS_VERSION_ALL_VALUES = ["PY2", "PY2ONLY", "PY2AND3", "PY3", "PY3ONLY"]
-SRCS_VERSION_NON_CONVERSION_VALUES = ["PY2AND3", "PY2ONLY", "PY3ONLY"]
+SRCS_VERSION_ALL_VALUES = []  ##["PY2", "PY2ONLY", "PY2AND3", "PY3", "PY3ONLY"]
 
 def create_srcs_version_attr(values):
+    fail("hit")
     return {
         "srcs_version": attr.string(
             default = "PY2AND3",
@@ -216,7 +205,7 @@ CC_TOOLCHAIN = {
 DATA_ATTRS = {
     # NOTE: The "flags" attribute is deprecated, but there isn't an alternative
     # way to specify that constraints should be ignored.
-    "data": attr.label_list(
+    "data": lambda: rule_builders.LabelListAttrBuilder(
         allow_files = True,
         flags = ["SKIP_CONSTRAINTS_OVERRIDE"],
         doc = """
@@ -244,7 +233,7 @@ def _create_native_rules_allowlist_attrs():
         providers = []
 
     return {
-        "_native_rules_allowlist": attr.label(
+        "_native_rules_allowlist": lambda: rule_builders.LabelAttrBuilder(
             default = default,
             providers = providers,
         ),
@@ -253,25 +242,24 @@ def _create_native_rules_allowlist_attrs():
 NATIVE_RULES_ALLOWLIST_ATTRS = _create_native_rules_allowlist_attrs()
 
 # Attributes common to all rules.
-COMMON_ATTRS = union_attrs(
+COMMON_ATTRS = dicts.add(
     DATA_ATTRS,
     NATIVE_RULES_ALLOWLIST_ATTRS,
     # buildifier: disable=attr-licenses
     {
         # NOTE: This attribute is deprecated and slated for removal.
-        "distribs": attr.string_list(),
+        ##"distribs": attr.string_list(),
         # TODO(b/148103851): This attribute is deprecated and slated for
         # removal.
         # NOTE: The license attribute is missing in some Java integration tests,
         # so fallback to a regular string_list for that case.
         # buildifier: disable=attr-license
-        "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
+        ##"licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
     },
-    allow_none = True,
 )
 
 IMPORTS_ATTRS = {
-    "imports": attr.string_list(
+    "imports": lambda: rule_builders.StringListAttrBuilder(
         doc = """
 List of import directories to be added to the PYTHONPATH.
 
@@ -289,9 +277,9 @@ above the execution root are not allowed and will result in an error.
 _MaybeBuiltinPyInfo = [[BuiltinPyInfo]] if BuiltinPyInfo != None else []
 
 # Attributes common to rules accepting Python sources and deps.
-PY_SRCS_ATTRS = union_attrs(
+PY_SRCS_ATTRS = dicts.add(
     {
-        "deps": attr.label_list(
+        "deps": lambda: rule_builders.LabelListAttrBuilder(
             providers = [
                 [PyInfo],
                 [CcInfo],
@@ -310,7 +298,7 @@ Targets that only provide data files used at runtime belong in the `data`
 attribute.
 """,
         ),
-        "precompile": attr.string(
+        "precompile": lambda: rule_builders.StringAttrBuilder(
             doc = """
 Whether py source files **for this target** should be precompiled.
 
@@ -332,7 +320,7 @@ Values:
             default = PrecompileAttr.INHERIT,
             values = sorted(PrecompileAttr.__members__.values()),
         ),
-        "precompile_invalidation_mode": attr.string(
+        "precompile_invalidation_mode": lambda: rule_builders.StringAttrBuilder(
             doc = """
 How precompiled files should be verified to be up-to-date with their associated
 source files. Possible values are:
@@ -350,7 +338,7 @@ https://docs.python.org/3/library/py_compile.html#py_compile.PycInvalidationMode
             default = PrecompileInvalidationModeAttr.AUTO,
             values = sorted(PrecompileInvalidationModeAttr.__members__.values()),
         ),
-        "precompile_optimize_level": attr.int(
+        "precompile_optimize_level": lambda: rule_builders.IntAttrBuilder(
             doc = """
 The optimization level for precompiled files.
 
@@ -363,7 +351,7 @@ runtime when the code actually runs.
 """,
             default = 0,
         ),
-        "precompile_source_retention": attr.string(
+        "precompile_source_retention": lambda: rule_builders.StringAttrBuilder(
             default = PrecompileSourceRetentionAttr.INHERIT,
             values = sorted(PrecompileSourceRetentionAttr.__members__.values()),
             doc = """
@@ -375,7 +363,7 @@ in the resulting output or not. Valid values are:
 * `omit_source`: Don't include the original py source.
 """,
         ),
-        "pyi_deps": attr.label_list(
+        "pyi_deps": lambda: rule_builders.LabelListAttrBuilder(
             doc = """
 Dependencies providing type definitions the library needs.
 
@@ -391,7 +379,7 @@ program (packaging rules may include them, however).
                 [CcInfo],
             ] + _MaybeBuiltinPyInfo,
         ),
-        "pyi_srcs": attr.label_list(
+        "pyi_srcs": lambda: rule_builders.LabelListAttrBuilder(
             doc = """
 Type definition files for the library.
 
@@ -406,35 +394,65 @@ as part of a runnable program (packaging rules may include them, however).
         ),
         # Required attribute, but details vary by rule.
         # Use create_srcs_attr to create one.
-        "srcs": None,
+        "srcs": lambda: rule_builders.LabelListAttrBuilder(
+            # Google builds change the set of allowed files.
+            allow_files = SRCS_ATTR_ALLOW_FILES,
+            # Necessary for --compile_one_dependency to work.
+            flags = ["DIRECT_COMPILE_TIME_INPUT"],
+            doc = """
+The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`.
+""",
+        ),
         # NOTE: In Google, this attribute is deprecated, and can only
         # effectively be PY3 or PY3ONLY. Externally, with Bazel, this attribute
         # has a separate story.
-        # Required attribute, but the details vary by rule.
-        # Use create_srcs_version_attr to create one.
-        "srcs_version": None,
-        "_precompile_flag": attr.label(
+        ##"srcs_version": None,
+        "srcs_version": lambda: rule_builders.StringAttrBuilder(
+            doc = "Defunct, unused, does nothing.",
+        ),
+        "_precompile_flag": lambda: rule_builders.LabelAttrBuilder(
             default = "//python/config_settings:precompile",
             providers = [BuildSettingInfo],
         ),
-        "_precompile_source_retention_flag": attr.label(
+        "_precompile_source_retention_flag": lambda: rule_builders.LabelAttrBuilder(
             default = "//python/config_settings:precompile_source_retention",
             providers = [BuildSettingInfo],
         ),
         # Force enabling auto exec groups, see
         # https://bazel.build/extending/auto-exec-groups#how-enable-particular-rule
-        "_use_auto_exec_groups": attr.bool(default = True),
+        "_use_auto_exec_groups": lambda: rule_builders.BoolAttrBuilder(
+            default = True,
+        ),
     },
-    allow_none = True,
 )
+
+COVERAGE_ATTRS = {
+    # Magic attribute to help C++ coverage work. There's no
+    # docs about this; see TestActionBuilder.java
+    "_collect_cc_coverage": lambda: rule_builders.LabelAttrBuilder(
+        default = "@bazel_tools//tools/test:collect_cc_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
+    # Magic attribute to make coverage work. There's no
+    # docs about this; see TestActionBuilder.java
+    "_lcov_merger": lambda: rule_builders.LabelAttrBuilder(
+        default = configuration_field(fragment = "coverage", name = "output_generator"),
+        executable = True,
+        cfg = "exec",
+    ),
+}
 
 # Attributes specific to Python executable-equivalent rules. Such rules may not
 # accept Python sources (e.g. some packaged-version of a py_test/py_binary), but
 # still accept Python source-agnostic settings.
-AGNOSTIC_EXECUTABLE_ATTRS = union_attrs(
+AGNOSTIC_EXECUTABLE_ATTRS = dicts.add(
     DATA_ATTRS,
     {
-        "env": attr.string_dict(
+        "env": lambda: rule_builders.StringDictAttrBuilder(
             doc = """\
 Dictionary of strings; optional; values are subject to `$(location)` and "Make
 variable" substitution.
@@ -445,20 +463,19 @@ Specifies additional environment variables to set when the target is executed by
         ),
         # The value is required, but varies by rule and/or rule type. Use
         # create_stamp_attr to create one.
-        "stamp": None,
+        ##"stamp": None,
     },
-    allow_none = True,
 )
 
 # Attributes specific to Python test-equivalent executable rules. Such rules may
 # not accept Python sources (e.g. some packaged-version of a py_test/py_binary),
 # but still accept Python source-agnostic settings.
-AGNOSTIC_TEST_ATTRS = union_attrs(
+AGNOSTIC_TEST_ATTRS = dicts.add(
     AGNOSTIC_EXECUTABLE_ATTRS,
     # Tests have stamping disabled by default.
     create_stamp_attr(default = 0),
     {
-        "env_inherit": attr.string_list(
+        "env_inherit": lambda: rule_builders.StringListAttrBuilder(
             doc = """\
 List of strings; optional
 
@@ -467,7 +484,7 @@ environment when the test is executed by bazel test.
 """,
         ),
         # TODO(b/176993122): Remove when Bazel automatically knows to run on darwin.
-        "_apple_constraints": attr.label_list(
+        "_apple_constraints": lambda: rule_builders.LabelListAttrBuilder(
             default = [
                 "@platforms//os:ios",
                 "@platforms//os:macos",
@@ -482,7 +499,7 @@ environment when the test is executed by bazel test.
 # Attributes specific to Python binary-equivalent executable rules. Such rules may
 # not accept Python sources (e.g. some packaged-version of a py_test/py_binary),
 # but still accept Python source-agnostic settings.
-AGNOSTIC_BINARY_ATTRS = union_attrs(
+AGNOSTIC_BINARY_ATTRS = dicts.add(
     AGNOSTIC_EXECUTABLE_ATTRS,
     create_stamp_attr(default = -1),
 )
