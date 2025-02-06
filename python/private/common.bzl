@@ -227,7 +227,12 @@ def union_attrs(*attr_dicts, allow_none = False):
     Returns:
         dict of attributes.
     """
+
+    # todo: probably remove this entirely? is kind of annoying logic to have.
     result = {}
+    for other in attr_dicts:
+        result.update(other)
+    return result
     missing = {}
     for attr_dict in attr_dicts:
         for attr_name, value in attr_dict.items():

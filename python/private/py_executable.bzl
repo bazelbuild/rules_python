@@ -22,6 +22,7 @@ load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
     "COMMON_ATTRS",
+    "COVERAGE_ATTRS",
     "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
@@ -60,6 +61,7 @@ load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(":py_runtime_info.bzl", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
+load(":rule_builders.bzl", "rule_builders")
 load(
     ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
@@ -87,13 +89,14 @@ _CC_TOOLCHAINS = [config_common.toolchain_type(
 
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
-EXECUTABLE_ATTRS = union_attrs(
+EXECUTABLE_ATTRS = dicts.add(
     COMMON_ATTRS,
     AGNOSTIC_EXECUTABLE_ATTRS,
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
+    COVERAGE_ATTRS,
     {
-        "legacy_create_init": attr.int(
+        "legacy_create_init": lambda: rule_builders.IntAttrBuilder(
             default = -1,
             values = [-1, 0, 1],
             doc = """\
@@ -110,7 +113,7 @@ the `srcs` of Python targets as required.
         # label, it is more treated as a string, and doesn't have to refer to
         # anything that exists because it gets treated as suffix-search string
         # over `srcs`.
-        "main": attr.label(
+        "main": lambda: rule_builders.LabelAttrBuilder(
             allow_single_file = True,
             doc = """\
 Optional; the name of the source file that is the main entry point of the
@@ -119,7 +122,7 @@ application. This file must also be listed in `srcs`. If left unspecified,
 filename in `srcs`, `main` must be specified.
 """,
         ),
-        "pyc_collection": attr.string(
+        "pyc_collection": lambda: rule_builders.StringAttrBuilder(
             default = PycCollectionAttr.INHERIT,
             values = sorted(PycCollectionAttr.__members__.values()),
             doc = """
@@ -134,7 +137,7 @@ Valid values are:
   target level.
 """,
         ),
-        "python_version": attr.string(
+        "python_version": lambda: rule_builders.StringAttrBuilder(
             # TODO(b/203567235): In the Java impl, the default comes from
             # --python_version. Not clear what the Starlark equivalent is.
             doc = """
@@ -160,25 +163,25 @@ accepting arbitrary Python versions.
 """,
         ),
         # Required to opt-in to the transition feature.
-        "_allowlist_function_transition": attr.label(
+        "_allowlist_function_transition": lambda: rule_builders.LabelAttrBuilder(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
-        "_bootstrap_impl_flag": attr.label(
+        "_bootstrap_impl_flag": lambda: rule_builders.LabelAttrBuilder(
             default = "//python/config_settings:bootstrap_impl",
             providers = [BuildSettingInfo],
         ),
-        "_bootstrap_template": attr.label(
+        "_bootstrap_template": lambda: rule_builders.LabelAttrBuilder(
             allow_single_file = True,
             default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
         ),
-        "_launcher": attr.label(
+        "_launcher": lambda: rule_builders.LabelAttrBuilder(
             cfg = "target",
             # NOTE: This is an executable, but is only used for Windows. It
             # can't have executable=True because the backing target is an
             # empty target for other platforms.
             default = "//tools/launcher:launcher",
         ),
-        "_py_interpreter": attr.label(
+        "_py_interpreter": lambda: rule_builders.LabelAttrBuilder(
             # The configuration_field args are validated when called;
             # we use the precense of py_internal to indicate this Bazel
             # build has that fragment and name.
@@ -190,35 +193,35 @@ accepting arbitrary Python versions.
         # TODO: This appears to be vestigial. It's only added because
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
-        "_py_toolchain_type": attr.label(
-            default = TARGET_TOOLCHAIN_TYPE,
-        ),
-        "_python_version_flag": attr.label(
+        ##"_py_toolchain_type": attr.label(
+        ##    default = TARGET_TOOLCHAIN_TYPE,
+        ##),
+        "_python_version_flag": lambda: rule_builders.LabelAttrBuilder(
             default = "//python/config_settings:python_version",
         ),
-        "_venvs_use_declare_symlink_flag": attr.label(
+        "_venvs_use_declare_symlink_flag": lambda: rule_builders.LabelAttrBuilder(
             default = "//python/config_settings:venvs_use_declare_symlink",
             providers = [BuildSettingInfo],
         ),
-        "_windows_constraints": attr.label_list(
+        "_windows_constraints": lambda: rule_builders.LabelListAttrBuilder(
             default = [
                 "@platforms//os:windows",
             ],
         ),
-        "_windows_launcher_maker": attr.label(
+        "_windows_launcher_maker": lambda: rule_builders.LabelAttrBuilder(
             default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
             executable = True,
         ),
-        "_zipper": attr.label(
+        "_zipper": lambda: rule_builders.LabelAttrBuilder(
             cfg = "exec",
             executable = True,
             default = "@bazel_tools//tools/zip:zipper",
         ),
     },
-    create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    create_srcs_attr(mandatory = True),
-    allow_none = True,
+    ##create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
+    ##create_srcs_attr(mandatory = True),
+    ##allow_none = True,
 )
 
 def convert_legacy_create_init_to_int(kwargs):
@@ -1747,7 +1750,7 @@ def create_base_executable_rule():
     return create_executable_rule_builder().build()
 
 def create_executable_rule_builder(implementation, **kwargs):
-    builder = builders.RuleBuilder(
+    builder = rule_builders.RuleBuilder(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,
         exec_groups = REQUIRED_EXEC_GROUPS,
@@ -1757,13 +1760,14 @@ def create_executable_rule_builder(implementation, **kwargs):
             TOOLCHAIN_TYPE,
             config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ] + _CC_TOOLCHAINS,
-        cfg = builders.TransitionBuilder(
+        cfg = rule_builders.RuleCfgBuilder(
             implementation = _transition_executable_impl,
             inputs = [_PYTHON_VERSION_FLAG],
             outputs = [_PYTHON_VERSION_FLAG],
         ),
         **kwargs
     )
+    builder.attrs.get("srcs").mandatory.set(True)
     return builder
 
 def cc_configure_features(
