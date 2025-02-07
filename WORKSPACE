@@ -167,8 +167,3 @@ http_file(
     ],
 )
 
-# rules_proto expects //external:python_headers to point at the python headers.
-bind(
-    name = "python_headers",
-    actual = "//python/cc:current_py_cc_headers",
-)
