@@ -282,6 +282,12 @@ that depend on this rule. The strings are repo-runfiles-root relative,
 
 Absolute paths (paths that start with `/`) and paths that references a path
 above the execution root are not allowed and will result in an error.
+
+:::{attention}
+Setting both this and the {attr}`site_packages_root` attribute may result in
+undefined behavior. Both will result in the code being importable, but from
+different sys.path (and thus `__file__`) entries.
+:::
 """,
     ),
 }

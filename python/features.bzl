@@ -23,4 +23,5 @@ features = struct(
     version = _VERSION_PRIVATE if "$Format" not in _VERSION_PRIVATE else "",
     precompile = True,
     uses_builtin_rules = not config.enable_pystar,
+    site_packages_root_attr = True,
 )

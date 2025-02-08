@@ -591,14 +591,77 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
         },
         computed_substitutions = computed_subs,
     )
+    site_packages_symlinks = _create_site_packages_symlinks(ctx, site_packages)
 
     return struct(
         interpreter = interpreter,
         recreate_venv_at_runtime = not venvs_use_declare_symlink_enabled,
         # Runfiles root relative path or absolute path
         interpreter_actual_path = interpreter_actual_path,
-        files_without_interpreter = [pyvenv_cfg, pth, site_init],
+        files_without_interpreter = [pyvenv_cfg, pth, site_init] + site_packages_symlinks,
     )
+
+def _create_site_packages_symlinks(ctx, site_packages):
+    """Creates symlinks within site-packages.
+
+    Args:
+        ctx: current rule ctx
+        site_packages: runfiles-root-relative path to the site-packages directory
+
+    Returns:
+        {type}`list[File]` list of the File symlink objects created.
+    """
+
+    # maps site-package symlink to the runfiles path it should point to
+    entries = depset(
+        # NOTE: Topological ordering is used so that dependencies closer to the
+        # binary have precedence in creating their symlinks. This allows the
+        # binary a modicum of control over the result.
+        order = "topological",
+        transitive = [
+            dep[PyInfo].site_packages_symlinks
+            for dep in ctx.attr.deps
+            if PyInfo in dep
+        ],
+    ).to_list()
+    link_map = {}
+    for link_to_runfiles_path, site_packages_path in entries:
+        if site_packages_path in link_map:
+            # We ignore duplicates by design. The dependency closer to the
+            # binary gets precedence due to the topological ordering.
+            continue
+        else:
+            link_map[site_packages_path] = link_to_runfiles_path
+
+    # An empty link_to value means to not create the site package symlink.
+    # Because of the topological ordering, this allows binaries to remove
+    # entries by having an earlier dependency produce empty link_to values
+    for sp_dir_path, link_to in link_map.items():
+        if not link_to:
+            link_map.pop(sp_dir_path)
+
+    # This is N^2; we can certainly do better by sorting and exploiting the
+    # order.
+    # A trailing slash is appended / to prevent /X matching /XY
+    sp_dirs = [x + "/" for x in link_map.keys()]
+    for search_for in sp_dirs:
+        for prefix in sp_dirs:
+            if search_for != prefix and search_for.startswith(prefix):
+                fail("sub-link: {} under {}", search_for, prefix)
+
+    sp_files = []
+    for sp_dir_path, link_to in link_map.items():
+        sp_link = ctx.actions.declare_symlink(paths.join(site_packages, sp_dir_path))
+        sp_link_rf_path = runfiles_root_path(ctx, sp_link.short_path)
+        rel_path = relative_path(
+            # dirname is necessary because a relative symlink is relative to
+            # the directory the symlink resides within.
+            from_ = paths.dirname(sp_link_rf_path),
+            to = link_to,
+        )
+        ctx.actions.symlink(output = sp_link, target_path = rel_path)
+        sp_files.append(sp_link)
+    return sp_files
 
 def _map_each_identity(v):
     return v

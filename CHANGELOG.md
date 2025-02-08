@@ -60,7 +60,14 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (providers) {obj}`PyInfo.site_packages_symlinks` field added to allow
+  specifying links to create within the venv site packages
+  (only applicable with {obj}`--bootstrap_impl=script`)
+  ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
+* (rules) {obj}`py_library.site_packages_root` attribute added to allow
+  specifying a library's sources follow a site-packages file layout.
+  (only applicable with {obj}`--bootstrap_impl=script`)
+  ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
 
 {#v0-0-0-removed}
 ### Removed

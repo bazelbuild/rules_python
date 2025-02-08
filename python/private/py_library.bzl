@@ -14,6 +14,7 @@
 """Common code for implementing py_library rules."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     ":attributes.bzl",
@@ -29,12 +30,14 @@ load(
 load(":builders.bzl", "builders")
 load(
     ":common.bzl",
+    "PYTHON_FILE_EXTENSIONS",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
     "create_output_group_info",
     "create_py_info",
     "filter_to_py_srcs",
+    "runfiles_root_path",
     "union_attrs",
 )
 load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
@@ -55,6 +58,32 @@ LIBRARY_ATTRS = union_attrs(
     create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
     create_srcs_attr(mandatory = False),
     {
+        "site_packages_root": attr.string(
+            doc = """
+Package relative prefix to remove from `srcs` for site-packages layouts.
+
+When set, `srcs` are interpreted to have a file layout as if they were installed
+in site-packages. This attribute specifies the directory within `srcs` to treat
+as the site-packages root so the correct site-packages relative paths for
+the files can be computed.
+
+For example, given `srcs=["site-packages/foo/bar.py"]`, specifying
+`site_packages_root="site-packages/" means `foo/bar.py` is the file path
+under the binary's venv site-packages directory that should be made availble.
+
+:::{note}
+This string is relative to the target's *Bazel package*. e.g. Relative to the
+directory with the BUILD file that defines the target (the same as how e.g.
+`srcs`).
+:::
+
+:::{attention}
+Setting both this an the {attr}`imports` attribute may result in undefined
+behavior. Both will result in the code being importable, but from different
+sys.path (and thus `__file__`) entries.
+:::
+""",
+        ),
         "_add_srcs_to_runfiles_flag": attr.label(
             default = "//python/config_settings:add_srcs_to_runfiles",
         ),
@@ -99,6 +128,8 @@ def py_library_impl(ctx, *, semantics):
     runfiles.add(collect_runfiles(ctx))
     runfiles = runfiles.build(ctx)
 
+    site_packages_symlinks = _get_site_packages_symlinks(ctx)
+
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
         ctx,
@@ -108,6 +139,7 @@ def py_library_impl(ctx, *, semantics):
         implicit_pyc_files = implicit_pyc_files,
         implicit_pyc_source_files = implicit_pyc_source_files,
         imports = collect_imports(ctx, semantics),
+        site_packages_symlinks = site_packages_symlinks,
     )
 
     # TODO(b/253059598): Remove support for extra actions; https://github.com/bazelbuild/bazel/issues/16455
@@ -171,3 +203,70 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
         fragments = fragments + ["py"],
         **kwargs
     )
+
+def _get_site_packages_symlinks(ctx):
+    if not ctx.attr.site_packages_root:
+        return []
+
+    # We have to build a list of (runfiles path, site-packages path) pairs of
+    # the files to create in the consuming binary's venv site-packages directory.
+    # To minimize the number of files to create, we just return the paths
+    # to the directories containing the code of interest.
+    #
+    # However, namespace packages complicate matters: multiple
+    # distributions install in the same directory in site-packages. This
+    # works out because they don't overlap in their files. Typically, they
+    # install to different directories within the namespace package
+    # directory. Namespace package directories are simply directories
+    # within site-packages that *don't* have an `__init__.py` file, which
+    # can be arbitrarily deep. Thus, we simply have to look for the
+    # directories that _do_ have an `__init__.py` file and treat those as
+    # the path to symlink to.
+
+    site_packages_root = paths.join(ctx.label.package, ctx.attr.site_packages_root)
+    repo_runfiles_dirname = None
+    dirs_with_init = {}  # dirname -> runfile path
+    for src in ctx.files.srcs:
+        if src.extension not in PYTHON_FILE_EXTENSIONS:
+            continue
+        path = _repo_relative_short_path(src.short_path)
+        if not path.startswith(site_packages_root):
+            continue
+        path = path.removeprefix(site_packages_root)
+        dir_name, _, filename = path.rpartition("/")
+        if not dir_name:
+            # This would be e.g. `site-packages/__init__.py`, which isn't valid.
+            # Apparently, the pypi integration adds such a file?
+            continue
+
+        if filename.startswith("__init__."):
+            dirs_with_init[dir_name] = None
+            repo_runfiles_dirname = runfiles_root_path(ctx, src.short_path).partition("/")[0]
+
+    # Sort so that we encounter `foo` before `foo/bar`. This ensures we
+    # see the top-most explicit package first.
+    dirnames = sorted(dirs_with_init.keys())
+    first_level_explicit_packages = []
+    for d in dirnames:
+        is_sub_package = False
+        for existing in first_level_explicit_packages:
+            # Suffix with / to prevent foo matching foobar
+            if d.startswith(existing + "/"):
+                is_sub_package = True
+                break
+        if not is_sub_package:
+            first_level_explicit_packages.append(d)
+
+    site_packages_symlinks = []
+    for dirname in first_level_explicit_packages:
+        site_packages_symlinks.append((
+            paths.join(repo_runfiles_dirname, site_packages_root, dirname),
+            dirname,
+        ))
+    return site_packages_symlinks
+
+def _repo_relative_short_path(short_path):
+    if short_path.startswith("../"):
+        return short_path[3:].partition("/")[2]
+    else:
+        return short_path
