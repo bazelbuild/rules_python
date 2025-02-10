@@ -18,6 +18,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
+load(":py_executable.bzl", "relative_path", "runfiles_root_path")
 
 def _interpreter_binary_impl(ctx):
     if SentinelInfo in ctx.attr.binary:
@@ -30,6 +31,13 @@ def _interpreter_binary_impl(ctx):
     # because of things like pyenv: they use $0 to determine what to
     # re-exec. If it's not a recognized name, then they fail.
     if runtime.interpreter:
+        # Option 1:
+        # Works locally, but not remotely.
+        #executable = ctx.actions.declare_file(runtime.interpreter.basename)
+        #ctx.actions.symlink(output = executable, target_file = runtime.interpreter)
+
+        # Option 2:
+        # Works locally, and remotely, but not on Windows.
         executable = ctx.actions.declare_file(runtime.interpreter.basename)
         ctx.actions.expand_template(
             template = ctx.file._template,
@@ -39,6 +47,14 @@ def _interpreter_binary_impl(ctx):
             },
             is_executable = True,
         )
+
+        # Option 3:
+        # Works locally and remotely, but only in runfiles, doesn't work via "bazel run".
+        #executable = ctx.actions.declare_symlink(runtime.interpreter.basename)
+        #ctx.actions.symlink(output = executable, target_path = relative_path(
+        #    from_ = paths.dirname(runfiles_root_path(ctx, executable.short_path)),
+        #    to = runfiles_root_path(ctx, runtime.interpreter.short_path),
+        #))
     else:
         executable = ctx.actions.declare_symlink(paths.basename(runtime.interpreter_path))
         ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)

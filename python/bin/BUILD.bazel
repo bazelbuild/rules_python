@@ -10,6 +10,10 @@ _interpreter_binary(
     name = "python",
     binary = ":python_src",
     visibility = ["//visibility:public"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 # The user can modify this flag to source different interpreters for the
