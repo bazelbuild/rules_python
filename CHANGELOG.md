@@ -52,6 +52,9 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
   fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
 * (rules) deprecation warnings for deprecated symbols have been turned off by
