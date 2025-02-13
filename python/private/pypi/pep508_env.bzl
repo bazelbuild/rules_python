@@ -15,6 +15,8 @@
 """This module is for implementing PEP508 environment definition.
 """
 
+load("//python/private:normalize_name.bzl", "normalize_name")
+
 _platform_machine_values = {
     "aarch64": "arm64",
     "ppc": "ppc64le",
@@ -73,3 +75,21 @@ def env(target_platform):
         "python_full_version": "3.{}.{}".format(minor, micro),
         "python_version": "3.{}".format(minor),
     }
+
+def deps(name, *, requires_dist, target_platforms = []):
+    """Parse the RequiresDist from wheel METADATA
+
+    Args:
+        name: {type}`str` the name of the wheel.
+        requires_dist: {type}`list[str]` the list of RequiresDist lines from the
+            METADATA file.
+
+    Returns a struct with attributes:
+        deps: {type}`list[str]` dependencies to include unconditionally.
+        deps_select: {type}`dict[str, str]` dependencies to include on particular
+            subset of target platforms.
+    """
+    return struct(
+        deps = [normalize_name(d) for d in requires_dist],
+        deps_select = {},
+    )

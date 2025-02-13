@@ -63,6 +63,7 @@ class Deps:
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
         self._target_versions = {p.minor_version for p in platforms or {}}
+
         self._default_minor_version = None
         if platforms and len(self._target_versions) > 2:
             # TODO @aignas 2024-06-23: enable this to be set via a CLI arg
