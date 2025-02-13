@@ -28,6 +28,32 @@ def test_simple_deps(env):
 
 _tests.append(test_simple_deps)
 
+def test_can_add_os_specific_deps(env):
+    got = deps(
+        "foo",
+        requires_dist = [
+            "bar",
+            "an_osx_dep; sys_platform=='darwin'",
+            "posix_dep; os_name=='posix'",
+            "win_dep; os_name=='nt'",
+        ],
+        platforms = [
+            "cp33_linux_x86_64",
+            "cp33_osx_x86_64",
+            "cp33_osx_aarch64",
+            "cp33_windows_x86_64",
+        ],
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar"])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "@platforms//os:linux": ["posix_dep"],
+        "@platforms//os:osx": ["an_osx_dep", "posix_dep"],
+        "@platforms//os:windows": ["win_dep"],
+    })
+
+_tests.append(test_can_add_os_specific_deps)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -35,44 +61,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     def test_simple(self):
-#         deps = wheel.Deps("foo", requires_dist=["bar"])
-#
-#         got = deps.build()
-#
-#         self.assertIsInstance(got, wheel.FrozenDeps)
-#         self.assertEqual(["bar"], got.deps)
-#         self.assertEqual({}, got.deps_select)
-#
-#     def test_can_add_os_specific_deps(self):
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=[
-#                 "bar",
-#                 "an_osx_dep; sys_platform=='darwin'",
-#                 "posix_dep; os_name=='posix'",
-#                 "win_dep; os_name=='nt'",
-#             ],
-#             platforms={
-#                 Platform(os=OS.linux, arch=Arch.x86_64),
-#                 Platform(os=OS.osx, arch=Arch.x86_64),
-#                 Platform(os=OS.osx, arch=Arch.aarch64),
-#                 Platform(os=OS.windows, arch=Arch.x86_64),
-#             },
-#         )
-#
-#         got = deps.build()
-#
-#         self.assertEqual(["bar"], got.deps)
-#         self.assertEqual(
-#             {
-#                 "@platforms//os:linux": ["posix_dep"],
-#                 "@platforms//os:osx": ["an_osx_dep", "posix_dep"],
-#                 "@platforms//os:windows": ["win_dep"],
-#             },
-#             got.deps_select,
-#         )
-#
 #     def test_can_add_os_specific_deps_with_specific_python_version(self):
 #         deps = wheel.Deps(
 #             "foo",
