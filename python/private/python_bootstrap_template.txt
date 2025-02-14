@@ -433,6 +433,14 @@ def _RunForCoverage(python_program, main_filename, args, env,
 relative_files = True
 ''')
   PrintVerboseCoverage('Coverage entrypoint:', coverage_entrypoint)
+
+  instrumented_files = [abs_path for abs_path, _ in InstrumentedFilePaths()]
+  unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+  source = ",".join(unique_dirs)
+
+  PrintVerboseCoverage("[coveragepy] Instrumented Files:\n" + "\n".join(instrumented_files))
+  PrintVerboseCoverage("[coveragepy] Sources:\n" + "\n".join(unique_dirs))
+
   # First run the target Python file via coveragepy to create a .coverage
   # database file, from which we can later export lcov.
   ret_code = subprocess.call(
@@ -443,6 +451,7 @@ relative_files = True
       "--rcfile=" + rcfile_name,
       "--append",
       "--branch",
+      "--source=" + source,
       main_filename
     ] + args,
     env=env,
