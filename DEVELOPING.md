@@ -36,12 +36,13 @@ also test-drive the commit in an existing Bazel workspace to sanity check functi
 
 #### Determining Semantic Version
 
-**rules_python** is currently using [Zero-based versioning](https://0ver.org/) and thus backwards-incompatible API
-changes still come under the minor-version digit. So releases with API changes and new features bump the minor, and
-those with only bug fixes and other minor changes bump the patch digit.
+**rules_python** uses [semantic version](https://semver.org), so releases with
+API changes and new features bump the minor, and those with only bug fixes and
+other minor changes bump the patch digit.
 
 To find if there were any features added or incompatible changes made, review
-the commit history. This can be done using github by going to the url:
+[CHANGELOG.md](CHANGELOG.md) and the commit history. This can be done using
+github by going to the url:
 `https://github.com/bazelbuild/rules_python/compare/<VERSION>...main`.
 
 ### Patch release with cherry picks
