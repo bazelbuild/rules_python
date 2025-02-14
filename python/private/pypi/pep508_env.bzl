@@ -77,7 +77,7 @@ def env(target_platform):
         "python_version": "3.{}".format(minor),
     }
 
-def deps(name, *, requires_dist, platforms = []):
+def deps(name, *, requires_dist, platforms = [], python_version = None):
     """Parse the RequiresDist from wheel METADATA
 
     Args:
@@ -85,14 +85,14 @@ def deps(name, *, requires_dist, platforms = []):
         requires_dist: {type}`list[str]` the list of RequiresDist lines from the
             METADATA file.
         platforms: {type}`list[str]` the list of target platform strings.
+        python_version: {type}`str` the host python version.
 
-    Returns a struct with attributes:
-        deps: {type}`list[str]` dependencies to include unconditionally.
-        deps_select: {type}`dict[str, list[str]]` dependencies to include on particular
-            subset of target platforms.
+    Returns:
+        A struct with attributes:
+        * deps: {type}`list[str]` dependencies to include unconditionally.
+        * deps_select: {type}`dict[str, list[str]]` dependencies to include on particular
+              subset of target platforms.
     """
-    envs = [env(p) for p in platforms]
-
     reqs = sorted(
         [_req(r) for r in requires_dist],
         key = lambda x: x.name,
@@ -100,6 +100,10 @@ def deps(name, *, requires_dist, platforms = []):
     deps = []
     deps_select = {}
 
+    platforms = [
+        _versioned_platform(p, python_version)
+        for p in platforms
+    ]
     for req in reqs:
         _add_req(deps, deps_select, req, platforms)
 
@@ -107,6 +111,15 @@ def deps(name, *, requires_dist, platforms = []):
         deps = deps,
         deps_select = deps_select,
     )
+
+def _versioned_platform(os_arch, python_version):
+    if not python_version or os_arch.startswith("cp"):
+        # This also has ABI
+        return os_arch
+
+    major, _, tail = python_version.partition(".")
+    minor, _, _ = tail.partition(".")
+    return "cp{}{}_{}".format(major, minor, os_arch)
 
 def _req(requires_dist):
     requires, _, marker = requires_dist.partition(";")
