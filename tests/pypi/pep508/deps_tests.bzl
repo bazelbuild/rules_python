@@ -81,6 +81,28 @@ def test_can_add_os_specific_deps_with_python_version(env):
 
 _tests.append(test_can_add_os_specific_deps_with_python_version)
 
+def test_deps_are_added_to_more_specialized_platforms(env):
+    got = deps(
+        "foo",
+        requires_dist = [
+            "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+            "mac_dep; sys_platform=='darwin'",
+        ],
+        platforms = [
+            "osx_x86_64",
+            "osx_aarch64",
+        ],
+        python_version = "3.8",
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly([])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "@platforms//os:osx": ["mac_dep"],
+        "osx_aarch64": ["m1_dep", "mac_dep"],
+    })
+
+_tests.append(test_deps_are_added_to_more_specialized_platforms)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -88,30 +110,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     def test_deps_are_added_to_more_specialized_platforms(self):
-#         got = wheel.Deps(
-#             "foo",
-#             requires_dist=[
-#                 "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
-#                 "mac_dep; sys_platform=='darwin'",
-#             ],
-#             platforms={
-#                 Platform(os=OS.osx, arch=Arch.x86_64),
-#                 Platform(os=OS.osx, arch=Arch.aarch64),
-#             },
-#         ).build()
-#
-#         self.assertEqual(
-#             wheel.FrozenDeps(
-#                 deps=[],
-#                 deps_select={
-#                     "osx_aarch64": ["m1_dep", "mac_dep"],
-#                     "@platforms//os:osx": ["mac_dep"],
-#                 },
-#             ),
-#             got,
-#         )
-#
 #     def test_deps_from_more_specialized_platforms_are_propagated(self):
 #         got = wheel.Deps(
 #             "foo",

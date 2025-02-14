@@ -147,12 +147,15 @@ def _add_req(deps, deps_select, req, platforms):
         ]
         if tag in req.marker
     ]) > 0
+    match_arch = "platform_machine" in req.marker
 
     for plat in platforms:
         if not evaluate(req.marker, env = env(plat)):
             continue
 
-        if match_os:
+        if match_arch:
+            _add(deps, deps_select, req.name, _platform_os_arch(plat))
+        elif match_os:
             _add(deps, deps_select, req.name, _platform_os(plat))
         else:
             fail("TODO")
@@ -162,16 +165,36 @@ def _platform_os(p):
     os, _, _ = p.partition("_")
     return "@platforms//os:" + os
 
+def _platform_os_arch(p):
+    _, _, p = p.partition("_")
+    os, _, arch = p.partition("_")
+    return "{}_{}".format(os, arch)
+
+def _platform_specializations(p):
+    return []
+
 def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
+    add_to = []
 
     if platform:
         # Add the platform-specific dep
         deps = deps_select.setdefault(platform, [])
+        add_to.append(deps)
 
-    if dep not in deps:
-        deps.append(dep)
-        return
+        for p in _platform_specializations(platform):
+            if p not in deps_select:
+                continue
+
+            deps = deps_select.get(p)
+            if deps:
+                add_to.append(deps)
+    else:
+        add_to.append(deps)
+
+    for deps in add_to:
+        if dep not in deps:
+            deps.append(dep)
 
 #       if not self._platforms:
 #           if any(req.marker.evaluate({"extra": extra}) for extra in extras):
