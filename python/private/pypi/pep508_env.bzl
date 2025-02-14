@@ -51,19 +51,19 @@ def env(target_platform):
     Returns:
         A dict that can be used as `env` in the marker evaluation.
     """
-    abi, _, tail = target_platform.partition("_")
 
     # TODO @aignas 2024-12-26: wire up the usage of the micro version
-    minor, _, micro = abi[3:].partition(".")
+    minor, _, micro = target_platform.abi[3:].partition(".")
     micro = micro or "0"
-    os, _, cpu = tail.partition("_")
+    os = target_platform.os
+    arch = target_platform.arch
 
     # TODO @aignas 2025-02-13: consider moving this into config settings.
 
     # This is split by topic
     return {
         "os_name": _os_name_values.get(os, ""),
-        "platform_machine": "aarch64" if (os, cpu) == ("linux", "aarch64") else _platform_machine_values.get(cpu, ""),
+        "platform_machine": "aarch64" if (os, arch) == ("linux", "aarch64") else _platform_machine_values.get(arch, ""),
         "platform_system": _platform_system_values.get(os, ""),
         "sys_platform": _sys_platform_values.get(os, ""),
     } | {
@@ -101,7 +101,7 @@ def deps(name, *, requires_dist, platforms = [], python_version = None):
     deps_select = {}
 
     platforms = [
-        _versioned_platform(p, python_version)
+        _platform_from_str(_versioned_platform(p, python_version))
         for p in platforms
     ]
     for req in reqs:
@@ -154,23 +154,44 @@ def _add_req(deps, deps_select, req, platforms):
             continue
 
         if match_arch:
-            _add(deps, deps_select, req.name, _platform_os_arch(plat))
+            _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
         elif match_os:
-            _add(deps, deps_select, req.name, _platform_os(plat))
+            _add(deps, deps_select, req.name, _platform(os = plat.os))
         else:
             fail("TODO")
 
-def _platform_os(p):
-    _, _, p = p.partition("_")
-    os, _, _ = p.partition("_")
-    return "@platforms//os:" + os
+def _platform(*, abi = None, os = None, arch = None):
+    return struct(
+        abi = abi,
+        os = os,
+        arch = arch,
+    )
 
-def _platform_os_arch(p):
-    _, _, p = p.partition("_")
+def _platform_from_str(p):
+    abi, _, p = p.partition("_")
     os, _, arch = p.partition("_")
-    return "{}_{}".format(os, arch)
+    return _platform(abi = abi, os = os, arch = arch)
 
-def _platform_specializations(p):
+def _platform_str(self):
+    if self.abi == None:
+        if not self.os and not self.arch:
+            return "//conditions:default"
+        elif not self.arch:
+            return "@platforms//os:{}".format(self.os)
+        else:
+            return "{}_{}".format(self.os, self.arch)
+
+    minor_version = self.abi[3:]
+    if self.arch == None and self.os == None:
+        return "@//python/config_settings:is_python_3.{}".format(minor_version)
+
+    return "cp3{}_{}_{}".format(
+        minor_version,
+        self.os or "anyos",
+        self.arch or "anyarch",
+    )
+
+def _platform_specializations(self):
     return []
 
 def _add(deps, deps_select, dep, platform):
@@ -179,7 +200,7 @@ def _add(deps, deps_select, dep, platform):
 
     if platform:
         # Add the platform-specific dep
-        deps = deps_select.setdefault(platform, [])
+        deps = deps_select.setdefault(_platform_str(platform), [])
         add_to.append(deps)
 
         for p in _platform_specializations(platform):
