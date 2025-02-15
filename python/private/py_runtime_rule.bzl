@@ -25,6 +25,9 @@ load(":util.bzl", "IS_BAZEL_7_OR_HIGHER")
 
 _py_builtins = py_internal
 
+# We need to use the resolved alias value to the sentinel
+_NONE = Label("//python/private:sentinel")
+
 def _py_runtime_impl(ctx):
     interpreter_path = ctx.attr.interpreter_path or None  # Convert empty string to None
     interpreter = ctx.attr.interpreter
@@ -61,7 +64,7 @@ def _py_runtime_impl(ctx):
         else:
             fail("interpreter must be an executable target or must produce exactly one file.")
 
-    if ctx.attr.coverage_tool:
+    if ctx.attr.coverage_tool and ctx.attr.coverage_tool.label != _NONE:
         coverage_di = ctx.attr.coverage_tool[DefaultInfo]
 
         if _is_singleton_depset(coverage_di.files):
@@ -69,7 +72,7 @@ def _py_runtime_impl(ctx):
         elif coverage_di.files_to_run and coverage_di.files_to_run.executable:
             coverage_tool = coverage_di.files_to_run.executable
         else:
-            fail("coverage_tool must be an executable target or must produce exactly one file.")
+            fail("coverage_tool must be an executable target or must produce exactly one file, got: {}".format(ctx.attr.coverage_tool.label))
 
         coverage_files = depset(transitive = [
             coverage_di.files,
@@ -234,6 +237,11 @@ The entry point for the tool must be loadable by a Python interpreter (e.g. a
 `.py` or `.pyc` file).  It must accept the command line arguments
 of [`coverage.py`](https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
+
+:::{versionchanged} VERSION_NEXT_PATCH
+If set to {obj}`//python:none`, then it will be treated the same as if the attribute
+is unset.
+:::
 """,
         ),
         "files": attr.label_list(

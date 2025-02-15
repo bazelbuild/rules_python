@@ -84,7 +84,7 @@ def _create_whl_repos(
             used during the `repository_rule` and must be always compatible with the host.
 
     Returns a {type}`struct` with the following attributes:
-        whl_map: {type}`dict[str, list[struct]]` the output is keyed by the
+        whl_map: {type}`dict[str, dict[struct, str]]` the output is keyed by the
             normalized package name and the values are the instances of the
             {bzl:obj}`whl_config_setting` return values.
         exposed_packages: {type}`dict[str, Any]` this is just a way to

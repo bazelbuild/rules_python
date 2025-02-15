@@ -23,7 +23,6 @@ load(
     "TOOL_VERSIONS",
     "get_release_info",
 )
-load(":coverage_deps.bzl", "coverage_dep")
 load(":full_version.bzl", "full_version")
 load(":python_repository.bzl", "python_repository")
 load(
@@ -32,6 +31,8 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
+
+_NONE = Label("//python:none")
 
 # Wrapper macro around everything above, this is the primary API.
 def python_register_toolchains(
@@ -89,21 +90,6 @@ def python_register_toolchains(
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
-    # When using unreleased Bazel versions, the version is an empty string
-    if native.bazel_version:
-        bazel_major = int(native.bazel_version.split(".")[0])
-        if bazel_major < 6:
-            if register_coverage_tool:
-                # buildifier: disable=print
-                print((
-                    "WARNING: ignoring register_coverage_tool=True when " +
-                    "registering @{name}: Bazel 6+ required, got {version}"
-                ).format(
-                    name = name,
-                    version = native.bazel_version,
-                ))
-            register_coverage_tool = False
-
     loaded_platforms = []
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
@@ -117,18 +103,7 @@ def python_register_toolchains(
         coverage_tool = None
         coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
         if register_coverage_tool and coverage_tool == None:
-            coverage_tool = coverage_dep(
-                name = "{name}_{platform}_coverage".format(
-                    name = name,
-                    platform = platform,
-                ),
-                python_version = python_version,
-                platform = platform,
-                visibility = ["@{name}_{platform}//:__subpackages__".format(
-                    name = name,
-                    platform = platform,
-                )],
-            )
+            coverage_tool = "@pypi__coverage//coverage"
 
         python_repository(
             name = "{name}_{platform}".format(
@@ -143,7 +118,7 @@ def python_register_toolchains(
             release_filename = release_filename,
             urls = urls,
             strip_prefix = strip_prefix,
-            coverage_tool = coverage_tool,
+            coverage_tool = coverage_tool or _NONE,
             **kwargs
         )
         if register_toolchains:

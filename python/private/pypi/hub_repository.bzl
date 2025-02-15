@@ -26,7 +26,6 @@ exports_files(["requirements.bzl"])
 """
 
 def _impl(rctx):
-    bzl_packages = rctx.attr.packages or rctx.attr.whl_map.keys()
     aliases = render_multiplatform_pkg_aliases(
         aliases = {
             key: _whl_config_settings_from_json(values)
@@ -37,6 +36,12 @@ def _impl(rctx):
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
+
+    if not rctx.attr.add_requirements_bzl:
+        rctx.file("BUILD.bazel", "")
+        return
+
+    bzl_packages = rctx.attr.packages or rctx.attr.whl_map.keys()
 
     # NOTE: we are using the canonical name with the double '@' in order to
     # always uniquely identify a repository, as the labels are being passed as
@@ -63,6 +68,10 @@ def _impl(rctx):
 
 hub_repository = repository_rule(
     attrs = {
+        "add_requirements_bzl": attr.bool(
+            mandatory = False,
+            default = True,
+        ),
         "extra_hub_aliases": attr.string_list_dict(
             doc = "Extra aliases to make for specific wheels in the hub repo.",
             mandatory = True,

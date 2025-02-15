@@ -17,7 +17,8 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python/private:version_label.bzl", "version_label")
+load("//python/private/pypi:hub_repository.bzl", "hub_repository", "whl_config_settings_to_json")
+load("//python/private/pypi:whl_config_setting.bzl", "whl_config_setting")
 
 # START: maintained by 'bazel run //tools/private/update_deps:update_coverage_deps <version>'
 _coverage_deps = {
@@ -142,49 +143,63 @@ _coverage_deps = {
 
 _coverage_patch = Label("//python/private:coverage.patch")
 
-def coverage_dep(name, python_version, platform, visibility):
-    """Register a single coverage dependency based on the python version and platform.
+def coverage_deps(name):
+    """Register all coverage dependencies.
+
+    This exposes them through a hub repository.
 
     Args:
-        name: The name of the registered repository.
-        python_version: The full python version.
-        platform: The platform, which can be found in //python:versions.bzl PLATFORMS dict.
-        visibility: The visibility of the coverage tool.
-
-    Returns:
-        The label of the coverage tool if the platform is supported, otherwise - None.
+        name: The name of the hub repository.
     """
-    if "windows" in platform:
-        # NOTE @aignas 2023-01-19: currently we do not support windows as the
-        # upstream coverage wrapper is written in shell. Do not log any warning
-        # for now as it is not actionable.
-        return None
 
-    abi = "cp" + version_label(python_version)
-    url, sha256 = _coverage_deps.get(abi, {}).get(platform, (None, ""))
+    whl_map = {
+        str(Label("//python:none")): [
+            whl_config_setting(config_setting = "//conditions:default"),
+        ],
+    }
+    for abi, values in _coverage_deps.items():
+        for platform, (url, sha256) in values.items():
+            spoke_name = "{}_{}_{}".format(name, abi, platform).replace("-", "_")
+            _, _, filename = url.rpartition("/")
 
-    if url == None:
-        # Some wheels are not present for some builds, so let's silently ignore those.
-        return None
+            config_setting = whl_config_setting(
+                version = "3.{}".format(abi[3:]),
+                filename = filename,
+            )
 
-    maybe(
-        http_archive,
-        name = name,
-        build_file_content = """
+            whl_map[spoke_name] = [config_setting]
+
+            # NOTE @aignas 2025-02-04: under `bzlmod` the `maybe` function is noop.
+            # This is only kept for `WORKSPACE` compatibility.
+            maybe(
+                http_archive,
+                name = spoke_name,
+                build_file_content = """
 filegroup(
-    name = "coverage",
+    name = "pkg",
     srcs = ["coverage/__main__.py"],
     data = glob(["coverage/*.py", "coverage/**/*.py", "coverage/*.so"]),
-    visibility = {visibility},
+    visibility = ["{visibility}"],
 )
-    """.format(
-            visibility = visibility,
-        ),
-        patch_args = ["-p1"],
-        patches = [_coverage_patch],
-        sha256 = sha256,
-        type = "zip",
-        urls = [url],
-    )
+            """.format(
+                    visibility = "@{}//:__subpackages__".format(name),
+                ),
+                patch_args = ["-p1"],
+                patches = [_coverage_patch],
+                sha256 = sha256,
+                type = "zip",
+                urls = [url],
+            )
 
-    return "@{name}//:coverage".format(name = name)
+    maybe(
+        hub_repository,
+        name = name,
+        repo_name = name,
+        whl_map = {
+            "coverage": whl_config_settings_to_json(whl_map),
+        },
+        add_requirements_bzl = False,
+        extra_hub_aliases = {},
+        packages = [],
+        groups = {},
+    )
