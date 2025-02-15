@@ -35,6 +35,7 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
         "//python/api:distribution",
+        "//python/bin:distribution",
         "//python/cc:distribution",
         "//python/config_settings:distribution",
         "//python/constraints:distribution",

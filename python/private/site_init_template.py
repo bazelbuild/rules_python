@@ -163,7 +163,9 @@ def _setup_sys_path():
         if cov_tool:
             _print_verbose_coverage(f"Using toolchain coverage_tool {cov_tool}")
         elif cov_tool := os.environ.get("PYTHON_COVERAGE"):
-            _print_verbose_coverage(f"Using env var coverage: PYTHON_COVERAGE={cov_tool}")
+            _print_verbose_coverage(
+                f"Using env var coverage: PYTHON_COVERAGE={cov_tool}"
+            )
 
         if cov_tool:
             if os.path.isabs(cov_tool):
