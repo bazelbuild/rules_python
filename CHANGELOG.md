@@ -108,7 +108,8 @@ Unreleased changes template.
 
 {#v1-2-0-added}
 ### Added
-* Nothing added.
+* (coverage) New COVERAGEPY_IGNORE_ERRORS environment var that adds the `--ignore-errors`
+  flag to coverage.py when producing the lcov output file.
 
 {#v1-2-0-removed}
 ### Removed
