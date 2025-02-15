@@ -27,12 +27,20 @@ also test-drive the commit in an existing Bazel workspace to sanity check functi
 ### Releasing from HEAD
 
 #### Steps
-1. [Determine the next semantic version number](#determining-semantic-version)
-1. Create a tag and push, e.g. `git tag 0.5.0 upstream/main && git push upstream --tags`
-   NOTE: Pushing the tag will trigger release automation.
-1. Watch the release automation run on https://github.com/bazelbuild/rules_python/actions
-1. Add missing information to the release notes. The automatic release note
-   generation only includes commits associated with issues.
+1. [Determine the next semantic version number](#determining-semantic-version).
+1. Update CHANGELOG.md: replace the `v0-0-0` and `0.0.0` with `X.Y.0`.
+1. Replace `VERSION_NEXT_*` strings with `X.Y.0`.
+1. Send these changes for review and get them merged.
+1. Create a branch for the new release, named `release/X.Y`
+   ```
+   git branch --no-track release/X.Y upstream/main && git push upstream release/X.Y
+   ```
+1. Create a tag and push:
+   ```
+   git tag X.Y.0 upstream/release/X.Y && git push upstream --tags
+   ```
+   **NOTE:** Pushing the tag will trigger release automation.
+1. Release automation will create a GitHub release and BCR pull request.
 
 #### Determining Semantic Version
 
@@ -54,8 +62,7 @@ release tag and the patch changes cherry-picked into it.
 In this example, release `0.37.0` is being patched to create release `0.37.1`.
 The fix being included is commit `deadbeef`.
 
-1. `git checkout -b release/0.37 0.37.0`
-1. `git push upstream release/0.37`
+1. `git checkout release/0.37`
 1. `git cherry-pick -x deadbeef`
 1. Fix merge conflicts, if any.
 1. `git cherry-pick --continue` (if applicable)
