@@ -32,7 +32,7 @@ def _test_simple(env):
             struct(os = "linux", cpu = "x86_32", abi = None, target_platform = "linux_x86_32", version = (2, 17)),
         ],
         "musllinux_1_1_ppc64le": [
-            struct(os = "linux", cpu = "ppc", abi = None, target_platform = "linux_ppc", version = (1, 1)),
+            struct(os = "linux", cpu = "ppc64le", abi = None, target_platform = "linux_ppc64le", version = (1, 1)),
         ],
         "win_amd64": [
             struct(os = "windows", cpu = "x86_64", abi = None, target_platform = "windows_x86_64", version = (0, 0)),
@@ -60,8 +60,11 @@ def _test_with_abi(env):
         "manylinux1_i686.manylinux_2_17_i686": [
             struct(os = "linux", cpu = "x86_32", abi = "cp38", target_platform = "cp38_linux_x86_32", version = (0, 0)),
         ],
-        "musllinux_1_1_ppc64le": [
+        "musllinux_1_1_ppc64": [
             struct(os = "linux", cpu = "ppc", abi = "cp311", target_platform = "cp311_linux_ppc", version = (1, 1)),
+        ],
+        "musllinux_1_1_ppc64le": [
+            struct(os = "linux", cpu = "ppc64le", abi = "cp311", target_platform = "cp311_linux_ppc64le", version = (1, 1)),
         ],
         "win_amd64": [
             struct(os = "windows", cpu = "x86_64", abi = "cp311", target_platform = "cp311_windows_x86_64", version = (0, 0)),

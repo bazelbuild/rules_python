@@ -42,14 +42,14 @@ class Arch(Enum):
     x86_32 = 2
     aarch64 = 3
     ppc = 4
-    s390x = 5
-    arm = 6
+    ppc64le = 5
+    s390x = 6
+    arm = 7
     amd64 = x86_64
     arm64 = aarch64
     i386 = x86_32
     i686 = x86_32
     x86 = x86_32
-    ppc64le = ppc
 
     @classmethod
     def interpreter(cls) -> "Arch":
@@ -271,6 +271,8 @@ class Platform:
             return "arm64"
         elif self.os != OS.linux:
             return ""
+        elif self.arch == Arch.ppc:
+            return "ppc"
         elif self.arch == Arch.ppc64le:
             return "ppc64le"
         elif self.arch == Arch.s390x:

@@ -34,17 +34,17 @@ class PlatformTest(unittest.TestCase):
 
     def test_can_get_all_for_py_version(self):
         cp39 = Platform.all(minor_version=9)
-        self.assertEqual(18, len(cp39), f"Got {cp39}")
+        self.assertEqual(21, len(cp39), f"Got {cp39}")
         self.assertEqual(cp39, Platform.from_string("cp39_*"))
 
     def test_can_get_all_for_os(self):
         linuxes = Platform.all(OS.linux, minor_version=9)
-        self.assertEqual(6, len(linuxes))
+        self.assertEqual(7, len(linuxes))
         self.assertEqual(linuxes, Platform.from_string("cp39_linux_*"))
 
     def test_can_get_all_for_os_for_host_python(self):
         linuxes = Platform.all(OS.linux)
-        self.assertEqual(6, len(linuxes))
+        self.assertEqual(7, len(linuxes))
         self.assertEqual(linuxes, Platform.from_string("linux_*"))
 
     def test_specific_version_specializations(self):
@@ -84,6 +84,7 @@ class PlatformTest(unittest.TestCase):
             Platform(os=OS.linux, arch=Arch.x86_32),
             Platform(os=OS.linux, arch=Arch.aarch64),
             Platform(os=OS.linux, arch=Arch.ppc),
+            Platform(os=OS.linux, arch=Arch.ppc64le),
             Platform(os=OS.linux, arch=Arch.s390x),
             Platform(os=OS.linux, arch=Arch.arm),
         ]
@@ -101,6 +102,7 @@ class PlatformTest(unittest.TestCase):
             Platform(os=OS.osx, arch=Arch.x86_32),
             Platform(os=OS.osx, arch=Arch.aarch64),
             Platform(os=OS.osx, arch=Arch.ppc),
+            Platform(os=OS.osx, arch=Arch.ppc64le),
             Platform(os=OS.osx, arch=Arch.s390x),
             Platform(os=OS.osx, arch=Arch.arm),
         ]

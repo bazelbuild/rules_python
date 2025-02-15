@@ -391,8 +391,10 @@ def _get_platforms_cpu_name(mrctx):
         return "x86_32"
     if arch in ["amd64", "x86_64", "x64"]:
         return "x86_64"
-    if arch in ["ppc", "ppc64", "ppc64le"]:
+    if arch in ["ppc", "ppc64"]:
         return "ppc"
+    if arch in ["ppc64le"]:
+        return "ppc64le"
     if arch in ["arm", "armv7l"]:
         return "arm"
     if arch in ["aarch64"]:
