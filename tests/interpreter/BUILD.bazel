@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":interpreter_tests.bzl", "py_reconfig_interpreter_tests", "PYTHON_VERSIONS_TO_TEST")
+load(":interpreter_tests.bzl", "PYTHON_VERSIONS_TO_TEST", "py_reconfig_interpreter_tests")
 
 py_reconfig_interpreter_tests(
     name = "interpreter_version_test",
-    python_versions = PYTHON_VERSIONS_TO_TEST,
-    # Both the interpreter and the test itself are expected to run under
-    # the same version.
-    expected_interpreter_version = None,
     srcs = ["interpreter_test.py"],
     data = [
         "//python/bin:python",
@@ -27,7 +23,11 @@ py_reconfig_interpreter_tests(
     env = {
         "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
+    # Both the interpreter and the test itself are expected to run under
+    # the same version.
+    expected_interpreter_version = None,
     main = "interpreter_test.py",
+    python_versions = PYTHON_VERSIONS_TO_TEST,
 )
 
 py_reconfig_interpreter_tests(
@@ -39,11 +39,11 @@ py_reconfig_interpreter_tests(
     env = {
         "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
-    python_versions = PYTHON_VERSIONS_TO_TEST,
     # Since we're grabbing the interpreter from a binary with a fixed
     # version, we expect to always see that version. It doesn't matter what
     # Python version the test itself is running with.
     expected_interpreter_version = "3.11",
     main = "interpreter_test.py",
     python_src = "//tools/publish:twine",
+    python_versions = PYTHON_VERSIONS_TO_TEST,
 )

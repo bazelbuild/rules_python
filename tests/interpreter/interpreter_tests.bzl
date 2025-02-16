@@ -20,7 +20,7 @@ PYTHON_VERSIONS_TO_TEST = (
     "3.12",
 )
 
-def py_reconfig_interpreter_tests(name, python_versions, expected_interpreter_version=None, env={}, **kwargs):
+def py_reconfig_interpreter_tests(name, python_versions, expected_interpreter_version = None, env = {}, **kwargs):
     for python_version in python_versions:
         py_reconfig_test(
             name = "{}_{}".format(name, python_version),
