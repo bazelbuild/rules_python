@@ -12,10 +12,12 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
   { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
 # --- end runfiles.bash initialization v3 ---
 
+set +e # allow us to check for errors more easily
 readonly TARGET_FILE="%target_file%"
+MAIN_BIN=$(rlocation "$TARGET_FILE")
 
-# Strip the leading "../" from "../<repo>/<path within repo>" so that we can do
-# a runfiles lookup.
-MAIN_BIN="$(rlocation "${TARGET_FILE#*/}")"
-
+if [[ -z "$MAIN_BIN" || ! -e "$MAIN_BIN" ]]; then
+  echo "ERROR: interpreter executable not found: $MAIN_BIN (from $TARGET_FILE)"
+  exit 1
+fi
 exec "${MAIN_BIN}" "$@"

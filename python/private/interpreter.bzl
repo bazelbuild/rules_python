@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
+load(":common.bzl", "runfiles_root_path")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 
@@ -45,10 +46,7 @@ def _interpreter_binary_impl(ctx):
             template = ctx.file._template,
             output = executable,
             substitutions = {
-                # Since we never invoke this rule from within the interpreter's
-                # own repository, the short_path here should give us a
-                # predictable path of "../<repo>/<path within repo>".
-                "%target_file%": runtime.interpreter.short_path,
+                "%target_file%": runfiles_root_path(ctx, runtime.interpreter.short_path),
             },
             is_executable = True,
         )
