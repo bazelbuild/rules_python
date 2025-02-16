@@ -44,7 +44,7 @@ being cleaned up by the OS.
 If not set, then a temporary directory will be created and deleted upon program
 exit.
 
-:::{versionadded} VERSION_NEXT_PATCH
+:::{versionadded} 1.2.0
 :::
 ::::
 

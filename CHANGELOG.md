@@ -52,6 +52,30 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-2-0}
+## Unreleased
+
+[1.2.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.2.0
+
+{#v1-2-0-changed}
+### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
   fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
 * (rules) deprecation warnings for deprecated symbols have been turned off by
@@ -60,7 +84,7 @@ Unreleased changes template.
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
 
-{#v0-0-0-fixed}
+{#v1-2-0-fixed}
 ### Fixed
 * (rules) `python_zip_file` output with `--bootstrap_impl=script` works again
   ([#2596](https://github.com/bazelbuild/rules_python/issues/2596)).
@@ -82,11 +106,11 @@ Unreleased changes template.
   build time (they will be created at runtime instead).
   (Fixes [#2489](https://github.com/bazelbuild/rules_python/issues/2489))
 
-{#v0-0-0-added}
+{#v1-2-0-added}
 ### Added
 * Nothing added.
 
-{#v0-0-0-removed}
+{#v1-2-0-removed}
 ### Removed
 * Nothing removed.
 

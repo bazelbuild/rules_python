@@ -279,6 +279,6 @@ Values:
 is created.
 :::
 
-:::{versionadded} VERSION_NEXT_PATCH
+:::{versionadded} 1.2.0
 :::
 ::::
