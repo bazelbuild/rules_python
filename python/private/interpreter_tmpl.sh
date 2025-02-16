@@ -14,6 +14,8 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 
 readonly TARGET_FILE="%target_file%"
 
+# Strip the leading "../" from "../<repo>/<path within repo>" so that we can do
+# a runfiles lookup.
 MAIN_BIN="$(rlocation "${TARGET_FILE#*/}")"
 
 exec "${MAIN_BIN}" "$@"

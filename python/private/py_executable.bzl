@@ -447,7 +447,7 @@ def _create_executable(
     )
 
 def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details, venv):
-    python_binary = runfiles_root_path(ctx, venv.interpreter.short_path)
+    python_binary = _runfiles_root_path(ctx, venv.interpreter.short_path)
     python_binary_actual = venv.interpreter_actual_path
 
     # The location of this file doesn't really matter. It's added to
@@ -522,7 +522,7 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
 
     if not venvs_use_declare_symlink_enabled:
         if runtime.interpreter:
-            interpreter_actual_path = runfiles_root_path(ctx, runtime.interpreter.short_path)
+            interpreter_actual_path = _runfiles_root_path(ctx, runtime.interpreter.short_path)
         else:
             interpreter_actual_path = runtime.interpreter_path
 
@@ -543,11 +543,11 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
         # may choose to write what symlink() points to instead.
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
 
-        interpreter_actual_path = runfiles_root_path(ctx, runtime.interpreter.short_path)
+        interpreter_actual_path = _runfiles_root_path(ctx, runtime.interpreter.short_path)
         rel_path = relative_path(
             # dirname is necessary because a relative symlink is relative to
             # the directory the symlink resides within.
-            from_ = paths.dirname(runfiles_root_path(ctx, interpreter.short_path)),
+            from_ = paths.dirname(_runfiles_root_path(ctx, interpreter.short_path)),
             to = interpreter_actual_path,
         )
 
@@ -646,7 +646,7 @@ def _create_stage2_bootstrap(
     )
     return output
 
-def runfiles_root_path(ctx, short_path):
+def _runfiles_root_path(ctx, short_path):
     """Compute a runfiles-root relative path from `File.short_path`
 
     Args:
@@ -676,7 +676,7 @@ def _create_stage1_bootstrap(
     runtime = runtime_details.effective_runtime
 
     if venv:
-        python_binary_path = runfiles_root_path(ctx, venv.interpreter.short_path)
+        python_binary_path = _runfiles_root_path(ctx, venv.interpreter.short_path)
     else:
         python_binary_path = runtime_details.executable_interpreter_path
 

@@ -18,7 +18,6 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
-load(":py_executable.bzl", "relative_path", "runfiles_root_path")
 
 def _interpreter_binary_impl(ctx):
     if SentinelInfo in ctx.attr.binary:
@@ -31,30 +30,28 @@ def _interpreter_binary_impl(ctx):
     # because of things like pyenv: they use $0 to determine what to
     # re-exec. If it's not a recognized name, then they fail.
     if runtime.interpreter:
-        # Option 1:
-        # Works locally, but not remotely.
-        #executable = ctx.actions.declare_file(runtime.interpreter.basename)
-        #ctx.actions.symlink(output = executable, target_file = runtime.interpreter)
-
-        # Option 2:
-        # Works locally, and remotely, but not on Windows.
+        # In order for this to work both locally and remotely, we create a
+        # shell script here that re-exec's into the real interpreter. Ideally,
+        # we'd just use a symlink, but that breaks under certain conditions. If
+        # we use a ctx.actions.symlink(target=...) then it fails under remote
+        # execution. If we use ctx.actions.symlink(target_path=...) then it
+        # behaves differently inside the runfiles tree and outside the runfiles
+        # tree.
+        #
+        # This currently does not work on Windows. Need to find a way to enable
+        # that.
         executable = ctx.actions.declare_file(runtime.interpreter.basename)
         ctx.actions.expand_template(
             template = ctx.file._template,
             output = executable,
             substitutions = {
+                # Since we never invoke this rule from within the interpreter's
+                # own repository, the short_path here should give us a
+                # predictable path of "../<repo>/<path within repo>".
                 "%target_file%": runtime.interpreter.short_path,
             },
             is_executable = True,
         )
-
-        # Option 3:
-        # Works locally and remotely, but only in runfiles, doesn't work via "bazel run".
-        #executable = ctx.actions.declare_symlink(runtime.interpreter.basename)
-        #ctx.actions.symlink(output = executable, target_path = relative_path(
-        #    from_ = paths.dirname(runfiles_root_path(ctx, executable.short_path)),
-        #    to = runfiles_root_path(ctx, runtime.interpreter.short_path),
-        #))
     else:
         executable = ctx.actions.declare_symlink(paths.basename(runtime.interpreter_path))
         ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)
