@@ -396,7 +396,7 @@ provide `Python.h`.
 
 This is typically implemented using {obj}`py_cc_toolchain()`, which provides
 {obj}`ToolchainInfo` with the field `py_cc_toolchain` set, which is a
-{obj}`PyCcToolchainInfo` provider instance. 
+{obj}`PyCcToolchainInfo` provider instance.
 
 This toolchain type is intended to hold only _target configuration_ values
 relating to the C/C++ information for the Python runtime. As such, when defining
@@ -557,3 +557,44 @@ Currently the following flags are used to influence toolchain selection:
 * {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
 * {obj}`--@rules_python//python/config_settings:py_freethreaded` for selecting
   the freethreaded experimental Python builds available from `3.13.0` onwards.
+
+## Running the underlying interpreter
+
+To run the interpreter that Bazel will use, you can use the
+`@rules_python//python/bin:python` target. This is a binary target with
+the executable pointing at the `python3` binary plus its relevent runfiles.
+
+```console
+$ bazel run @rules_python//python/bin:python
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+$ bazel run @rules_python//python/bin:python --@rules_python//python/config_settings:python_version=3.12
+Python 3.12.0 (main, Oct  3 2023, 01:27:23) [Clang 17.0.1 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+You can also access a specific binary's interpreter this way by using the
+`@rules_python//python/bin:python_src` target. In the example below, it is
+assumed that the `@rules_python//tools/publish:twine` binary is fixed at Python
+3.11.
+
+```console
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine --@rules_python//python/config_settings:python_version=3.12
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+Despite setting the Python version explicitly to 3.12 in the example above, the
+interpreter comes from the `@rules_python//tools/publish:twine` binary. That is
+a fixed version.
+
+:::{note}
+The `python` target does not provide access to any modules from `py_*`
+targets on its own. Please file a feature request if this is desired.
+:::

@@ -35,12 +35,15 @@ def _perform_transition_impl(input_settings, attr, base_impl):
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
     if attr.extra_toolchains:
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
+    if attr.python_src:
+        settings["//python/bin:python_src"] = attr.python_src
     if attr.venvs_use_declare_symlink:
         settings["//python/config_settings:venvs_use_declare_symlink"] = attr.venvs_use_declare_symlink
     return settings
 
 _RECONFIG_INPUTS = [
     "//python/config_settings:bootstrap_impl",
+    "//python/bin:python_src",
     "//command_line_option:extra_toolchains",
     "//python/config_settings:venvs_use_declare_symlink",
 ]
@@ -62,6 +65,7 @@ to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,
     ),
+    "python_src": attr.label(),
     "venvs_use_declare_symlink": attr.string(),
 }
 
