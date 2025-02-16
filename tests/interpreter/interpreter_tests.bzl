@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""This file contains helpers for testing the interpreter rule."""
+
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
 PYTHON_VERSIONS_TO_TEST = (
