@@ -16,18 +16,32 @@
 
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
+# The versions of Python that we want to run the interpreter tests against.
 PYTHON_VERSIONS_TO_TEST = (
     "3.10",
     "3.11",
     "3.12",
 )
 
-def py_reconfig_interpreter_tests(name, python_versions, expected_interpreter_version = None, env = {}, **kwargs):
+def py_reconfig_interpreter_tests(name, python_versions, env = {}, **kwargs):
+    """Runs the specified test against each of the specified Python versions.
+
+    One test gets generated for each Python version. The following environment
+    variable gets set for the test:
+
+        EXPECTED_SELF_VERSION: Contains the Python version that the test itself
+            is running under.
+
+    Args:
+        name: Name of the test.
+        python_versions: A list of Python versions to test.
+        env: The environment to set on the test.
+        **kwargs: Passed to the underlying py_reconfig_test targets.
+    """
     for python_version in python_versions:
         py_reconfig_test(
             name = "{}_{}".format(name, python_version),
             env = env | {
-                "EXPECTED_INTERPRETER_VERSION": expected_interpreter_version or python_version,
                 "EXPECTED_SELF_VERSION": python_version,
             },
             python_version = python_version,

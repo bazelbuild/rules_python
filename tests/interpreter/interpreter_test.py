@@ -23,15 +23,17 @@ class InterpreterTest(unittest.TestCase):
         super().setUp()
         self.interpreter = os.environ["PYTHON_BIN"]
 
+        v = sys.version_info
+        self.version = f"{v.major}.{v.minor}"
+
     def test_self_version(self):
         """Performs a sanity check on the Python version used for this test."""
         expected_version = os.environ["EXPECTED_SELF_VERSION"]
-        v = sys.version_info
-        self.assertEqual(expected_version, f"{v.major}.{v.minor}")
+        self.assertEqual(expected_version, self.version)
 
     def test_interpreter_version(self):
         """Validates that we can successfully execute arbitrary code from the CLI."""
-        expected_version = os.environ["EXPECTED_INTERPRETER_VERSION"]
+        expected_version = os.environ.get("EXPECTED_INTERPRETER_VERSION", self.version)
 
         try:
             result = subprocess.check_output(

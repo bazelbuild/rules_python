@@ -14,6 +14,9 @@
 
 load(":interpreter_tests.bzl", "PYTHON_VERSIONS_TO_TEST", "py_reconfig_interpreter_tests")
 
+# For this test the interpreter is sourced from the current configuration. That
+# means both the interpreter and the test itself are expected to run under the
+# same Python version.
 py_reconfig_interpreter_tests(
     name = "interpreter_version_test",
     srcs = ["interpreter_test.py"],
@@ -23,13 +26,13 @@ py_reconfig_interpreter_tests(
     env = {
         "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
-    # Both the interpreter and the test itself are expected to run under
-    # the same version.
-    expected_interpreter_version = None,
     main = "interpreter_test.py",
     python_versions = PYTHON_VERSIONS_TO_TEST,
 )
 
+# For this test the interpreter is sourced from a binary pinned at a specific
+# Python version. That means the interpreter and the test itself can run
+# different Python versions.
 py_reconfig_interpreter_tests(
     name = "python_src_test",
     srcs = ["interpreter_test.py"],
@@ -37,12 +40,12 @@ py_reconfig_interpreter_tests(
         "//python/bin:python",
     ],
     env = {
+        # Since we're grabbing the interpreter from a binary with a fixed
+        # version, we expect to always see that version. It doesn't matter what
+        # Python version the test itself is running with.
+        "EXPECTED_INTERPRETER_VERSION": "3.11",
         "PYTHON_BIN": "$(rootpath //python/bin:python)",
     },
-    # Since we're grabbing the interpreter from a binary with a fixed
-    # version, we expect to always see that version. It doesn't matter what
-    # Python version the test itself is running with.
-    expected_interpreter_version = "3.11",
     main = "interpreter_test.py",
     python_src = "//tools/publish:twine",
     python_versions = PYTHON_VERSIONS_TO_TEST,
