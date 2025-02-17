@@ -26,7 +26,8 @@ def _features_typedef():
     :type: bool
 
     True if the precompile attributes are available.
-    :::{versionadded} TODO
+
+    :::{versionadded} 0.33.0
     :::
     ::::
 
@@ -44,7 +45,7 @@ def _features_typedef():
 
     True if the rules are using the Bazel-builtin implementation.
 
-    :::{versionadded} TODO
+    :::{versionadded} 1.1.0
     :::
     ::::
 
@@ -53,7 +54,7 @@ def _features_typedef():
 
     The rules_python version. This is a semver format, e.g. `X.Y.Z` with
     optional trailing `-rcN`. For unreleased versions, it is an empty string.
-    :::{versionadded} TODO
+    :::{versionadded} 0.38.0
     ::::
     """
 
