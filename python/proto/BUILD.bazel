@@ -15,4 +15,8 @@
 package(default_visibility = ["//visibility:public"])
 
 # Toolchain type provided by proto_lang_toolchain rule and used by py_proto_library
-toolchain_type(name = "toolchain_type")
+# Alias is here to provide backward-compatibility; see #2604
+alias(
+    name = "toolchain_type",
+    actual = "@com_google_protobuf//bazel/private:python_toolchain_type",
+)
