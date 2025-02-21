@@ -14,10 +14,9 @@
 
 package(default_visibility = ["//visibility:public"])
 
-# Toolchain type provided by proto_lang_toolchain rule and used by py_proto_library
-# Deprecated in favour of the implementation in https://github.com/protocolbuffers/protobuf.
-# It will be removed in a future release.
+# Deprecated; use @com_google_protobuf//bazel/private:python_toolchain_type instead.
 # Alias is here to provide backward-compatibility; see #2604
+# It will be removed in a future release.
 alias(
     name = "toolchain_type",
     actual = "@com_google_protobuf//bazel/private:python_toolchain_type",
