@@ -20,4 +20,5 @@ package(default_visibility = ["//visibility:public"])
 alias(
     name = "toolchain_type",
     actual = "@com_google_protobuf//bazel/private:python_toolchain_type",
+    deprecation = "Use @com_google_protobuf//bazel/private:python_toolchain_type instead",
 )
