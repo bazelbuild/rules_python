@@ -624,30 +624,7 @@ def _create_site_packages_symlinks(ctx, site_packages):
             if PyInfo in dep
         ],
     ).to_list()
-    link_map = {}
-    for link_to_runfiles_path, site_packages_path in entries:
-        if site_packages_path in link_map:
-            # We ignore duplicates by design. The dependency closer to the
-            # binary gets precedence due to the topological ordering.
-            continue
-        else:
-            link_map[site_packages_path] = link_to_runfiles_path
-
-    # An empty link_to value means to not create the site package symlink.
-    # Because of the topological ordering, this allows binaries to remove
-    # entries by having an earlier dependency produce empty link_to values
-    for sp_dir_path, link_to in link_map.items():
-        if not link_to:
-            link_map.pop(sp_dir_path)
-
-    # This is N^2; we can certainly do better by sorting and exploiting the
-    # order.
-    # A trailing slash is appended / to prevent /X matching /XY
-    sp_dirs = [x + "/" for x in link_map.keys()]
-    for search_for in sp_dirs:
-        for prefix in sp_dirs:
-            if search_for != prefix and search_for.startswith(prefix):
-                fail("sub-link: {} under {}", search_for, prefix)
+    link_map = _build_link_map(entries)
 
     sp_files = []
     for sp_dir_path, link_to in link_map.items():
@@ -662,6 +639,40 @@ def _create_site_packages_symlinks(ctx, site_packages):
         ctx.actions.symlink(output = sp_link, target_path = rel_path)
         sp_files.append(sp_link)
     return sp_files
+
+def _build_link_map(entries):
+    link_map = {}
+    for link_to_runfiles_path, site_packages_path in entries:
+        if site_packages_path in link_map:
+            # We ignore duplicates by design. The dependency closer to the
+            # binary gets precedence due to the topological ordering.
+            continue
+        else:
+            link_map[site_packages_path] = link_to_runfiles_path
+
+    # An empty link_to value means to not create the site package symlink.
+    # Because of the topological ordering, this allows binaries to remove
+    # entries by having an earlier dependency produce empty link_to values.
+    for sp_dir_path, link_to in link_map.items():
+        if not link_to:
+            link_map.pop(sp_dir_path)
+
+    # Remove entries that would be a child path of a created symlink.
+    # Earlier entries have precedence to match how exact matches are handled.
+    keep_link_map = {}
+    for _ in range(len(link_map)):
+        if not link_map:
+            break
+        dirname, value = link_map.popitem()
+        keep_link_map[dirname] = value
+
+        prefix = dirname + "/"  # Add slash to prevent /X matching /XY
+        for maybe_suffix in link_map.keys():
+            maybe_suffix += "/"  # Add slash to prevent /X matching /XY
+            if maybe_suffix.startswith(prefix) or prefix.startswith(maybe_suffix):
+                link_map.pop(maybe_suffix)
+
+    return keep_link_map
 
 def _map_each_identity(v):
     return v

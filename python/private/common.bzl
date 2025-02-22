@@ -30,13 +30,14 @@ PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None
 # Extensions without the dot
 _PYTHON_SOURCE_EXTENSIONS = ["py"]
 
-# Extensions that make a file considered importable
+# Extensions that mean a file is relevant to Python
 PYTHON_FILE_EXTENSIONS = [
-    "py",
-    "so",  # Python C modules, usually Linux
-    "dylib",  # Python C modules, Mac specific
-    "pyc",
     "dll",  # Python C modules, Windows specific
+    "dylib",  # Python C modules, Mac specific
+    "py",
+    "pyc",
+    "pyi",
+    "so",  # Python C modules, usually Linux
 ]
 
 def create_binary_semantics_struct(

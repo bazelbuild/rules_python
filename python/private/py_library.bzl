@@ -62,14 +62,12 @@ LIBRARY_ATTRS = union_attrs(
             doc = """
 Package relative prefix to remove from `srcs` for site-packages layouts.
 
+This attribute is mutually exclusive with the {attr}`imports` attribute.
+
 When set, `srcs` are interpreted to have a file layout as if they were installed
 in site-packages. This attribute specifies the directory within `srcs` to treat
 as the site-packages root so the correct site-packages relative paths for
 the files can be computed.
-
-For example, given `srcs=["site-packages/foo/bar.py"]`, specifying
-`site_packages_root="site-packages/" means `foo/bar.py` is the file path
-under the binary's venv site-packages directory that should be made availble.
 
 :::{note}
 This string is relative to the target's *Bazel package*. e.g. Relative to the
@@ -77,10 +75,27 @@ directory with the BUILD file that defines the target (the same as how e.g.
 `srcs`).
 :::
 
-:::{attention}
-Setting both this an the {attr}`imports` attribute may result in undefined
-behavior. Both will result in the code being importable, but from different
-sys.path (and thus `__file__`) entries.
+For example, given `srcs=["site-packages/foo/bar.py"]`, specifying
+`site_packages_root="site-packages/" means `foo/bar.py` is the file path
+under the binary's venv site-packages directory that should be made available.
+
+`__init__.py` files are treated specially to provide basic support for [implicit
+namespace packages](
+https://packaging.python.org/en/latest/guides/packaging-namespace-packages/#native-namespace-packages).
+However, the *content* of the files cannot be taken into account, merely their
+presence or absense. Stated another way: [pkgutil-style namespace packages](
+https://packaging.python.org/en/latest/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages)
+won't be understood as namespace packages; they'll be seen as regular packages. This will
+likely lead to conflicts with other targets that contribute to the namespace.
+
+:::{tip}
+This attributes populates {obj}`PyInfo.site_packages_symlinks`, which is
+a topologically ordered depset. This means dependencies closer and earlier
+to a consumer have precedence. See {obj}`PyInfo.site_packages_symlinks` for
+more information.
+:::
+
+:::{versionadded} VERSION_NEXT_FEATURE
 :::
 """,
         ),
@@ -128,7 +143,18 @@ def py_library_impl(ctx, *, semantics):
     runfiles.add(collect_runfiles(ctx))
     runfiles = runfiles.build(ctx)
 
-    site_packages_symlinks = _get_site_packages_symlinks(ctx)
+    imports = []
+    site_packages_symlinks = []
+    if ctx.attr.imports and ctx.attr.site_packages_root:
+        fail(("Only one of the `imports` or `site_packages_root` attributes " +
+              "can be set: site_packages_root={}, imports={}").format(
+            ctx.attr.site_packages_root,
+            ctx.attr.imports,
+        ))
+    elif ctx.attr.site_packages_root:
+        site_packages_symlinks = _get_site_packages_symlinks(ctx)
+    elif ctx.attr.imports:
+        imports = collect_imports(ctx, semantics)
 
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
@@ -138,7 +164,7 @@ def py_library_impl(ctx, *, semantics):
         required_pyc_files = required_pyc_files,
         implicit_pyc_files = implicit_pyc_files,
         implicit_pyc_source_files = implicit_pyc_source_files,
-        imports = collect_imports(ctx, semantics),
+        imports = imports,
         site_packages_symlinks = site_packages_symlinks,
     )
 
