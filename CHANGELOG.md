@@ -68,6 +68,9 @@ Unreleased changes template.
   specifying a library's sources follow a site-packages file layout.
   (only applicable with {obj}`--bootstrap_impl=script`)
   ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
+* {obj}`//python/bin:python`: convenience target for directly running an
+  interpreter. {obj}`--//python/bin:python_src` can be used to specify a
+  binary whose interpreter to use.
 
 {#v0-0-0-removed}
 ### Removed
