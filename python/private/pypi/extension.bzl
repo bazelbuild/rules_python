@@ -166,21 +166,10 @@ def _create_whl_repos(
         ),
         extra_pip_args = pip_attr.extra_pip_args,
         get_index_urls = get_index_urls,
-        # NOTE @aignas 2024-08-02: , we will execute any interpreter that we find either
-        # in the PATH or if specified as a label. We will configure the env
-        # markers when evaluating the requirement lines based on the output
-        # from the `requirements_files_by_platform` which should have something
-        # similar to:
-        # {
-        #    "//:requirements.txt": ["cp311_linux_x86_64", ...]
-        # }
-        #
-        # We know the target python versions that we need to evaluate the
-        # markers for and thus we don't need to use multiple python interpreter
-        # instances to perform this manipulation. This function should be executed
-        # only once by the underlying code to minimize the overhead needed to
-        # spin up a Python interpreter.
-        evaluate_markers = lambda r: evaluate_markers(r),
+        # NOTE @aignas 2025-02-24: we will use the "cp3xx_os_arch" platform labels
+        # for converting to the PEP508 environment and will evaluate them in starlark
+        # without involving the interpreter at all.
+        evaluate_markers = evaluate_markers,
         logger = logger,
     )
 

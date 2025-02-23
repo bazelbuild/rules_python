@@ -82,9 +82,7 @@ def _pip_repository_impl(rctx):
             extra_pip_args = rctx.attr.extra_pip_args,
         ),
         extra_pip_args = rctx.attr.extra_pip_args,
-        evaluate_markers = lambda requirements: evaluate_markers(
-            requirements = requirements,
-        ),
+        evaluate_markers = evaluate_markers,
     )
     selected_requirements = {}
     options = None
