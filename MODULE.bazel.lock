@@ -157,11 +157,14 @@
   "moduleExtensions": {
     "//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "wLC8ZJWm/oKERWSJ53dCg6RKNEOh6HUrDJ9CAzOwVYs=",
+        "bzlTransitiveDigest": "wD8fCODri59Zu7DiWPR4hDvyTO6z2gOwRENJFywXO0Q=",
         "usagesDigest": "YlSFe2ItKSPNZPX8lwGeHExgU3q/r1fVYnFieVD4qmQ=",
         "recordedFileInputs": {
+          "@@+internal_deps+pypi__packaging//packaging-24.0.dist-info/RECORD": "be1aea790359b4c2c9ea83d153c1a57c407742a35b95ee36d00723509f5ed5dd",
           "@@//docs/requirements.txt": "4b7f6f5e699049343db70f8bda0c2b97be9fd9b1b3c117a2b624dc633ba944a5",
           "@@//examples/wheel/requirements_server.txt": "981e09e454aa31d72f73f369436fce488e5a478717a8fac808412f4695e44823",
+          "@@//python/private/pypi/requirements_parser/resolve_target_platforms.py": "42bf51980528302373529bcdfddb8014e485182d6bc9d2f7d3bbe1f11d8d923d",
+          "@@//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
           "@@//tools/publish/requirements_darwin.txt": "095d4a4f3d639dce831cd493367631cd51b53665292ab20194bac2c0c6458fa8",
           "@@//tools/publish/requirements_linux.txt": "d576e0d8542df61396a9b38deeaa183c24135ed5e8e73bb9622f298f2671811e",
           "@@//tools/publish/requirements_windows.txt": "d18538a3982beab378fd5687f4db33162ee1ece69801f9a451661b1b64286b76",
