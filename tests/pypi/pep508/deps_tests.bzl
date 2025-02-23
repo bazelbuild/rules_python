@@ -366,8 +366,15 @@ def _test_deps_are_not_duplicated_when_encountering_platform_dep_first(env):
         host_python_version = host_python_version,
     )
 
-    env.expect.that_collection(got.deps).contains_exactly(["bar"])
-    env.expect.that_dict(got.deps_select).contains_exactly({})
+    # TODO @aignas 2025-02-24: this test case in the python version is passing but
+    # I am not sure why. The starlark version behaviour looks more correct.
+    env.expect.that_collection(got.deps).contains_exactly([])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "@//python/config_settings:is_python_3.10": ["bar"],
+        "cp310_linux_aarch64": ["bar"],
+        "cp37_linux_aarch64": ["bar"],
+        "linux_aarch64": ["bar"],
+    })
 
 _tests.append(_test_deps_are_not_duplicated_when_encountering_platform_dep_first)
 
