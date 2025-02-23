@@ -103,7 +103,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], host_python_versio
     """
     reqs = sorted(
         [_req(r) for r in requires_dist],
-        key = lambda x: x.name,
+        key = lambda x: "{}:{}".format(x.name, sorted(x.extras)),
     )
     deps = {}
     deps_select = {}
