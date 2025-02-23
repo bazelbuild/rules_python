@@ -23,6 +23,10 @@ python.toolchain(
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     download_only = True,
+    experimental_extra_index_urls = [
+        # Add an extra index to query packages
+        "https://download.pytorch.org/whl/cpu",
+    ],
     experimental_index_url = "https://pypi.org/simple",  # use Bazel downloader
     hub_name = "pip",
     python_version = "3.11",
