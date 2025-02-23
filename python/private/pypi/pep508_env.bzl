@@ -114,10 +114,10 @@ def deps(name, *, requires_dist, platforms = [], extras = [], host_python_versio
     reqs = [r for r in reqs if r.name != name]
 
     platforms = [
-        _platform_from_str(p, python_version = host_python_version)
+        platform_from_str(p, python_version = host_python_version)
         for p in platforms
     ] or [
-        _platform_from_str("", python_version = host_python_version),
+        platform_from_str("", python_version = host_python_version),
     ]
 
     abis = sorted({p.abi: True for p in platforms if p.abi})
@@ -157,7 +157,16 @@ def _platform(*, abi = None, os = None, arch = None):
         arch = arch,
     )
 
-def _platform_from_str(p, python_version):
+def platform_from_str(p, python_version):
+    """Return a platform from a string.
+
+    Args:
+        p: {type}`str` the actual string.
+        python_version: {type}`str` the python version to add to platform if needed.
+
+    Returns:
+        A struct that is returned by the `_platform` function.
+    """
     if p.startswith("cp"):
         abi, _, p = p.partition("_")
     elif python_version:

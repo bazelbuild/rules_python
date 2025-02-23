@@ -114,7 +114,7 @@ def tokenize(marker):
             elif char in _WSP:
                 state = _STATE.NONE
             else:
-                fail("BUG: Cannot parse '{}' in {}".format(char, state))
+                fail("BUG: Cannot parse '{}' in {} ({})".format(char, state, marker))
         else:
             token += char
 
