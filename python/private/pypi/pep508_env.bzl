@@ -215,11 +215,10 @@ def _add(deps, deps_select, dep, platform):
 
     if platform:
         # Add the platform-specific dep
-        deps = deps_select.setdefault(_platform_str(platform), [])
+        deps = deps_select.setdefault(platform, [])
         add_to.append(deps)
 
         for p in _platform_specializations(platform):
-            p = _platform_str(p)
             if p not in deps_select:
                 continue
 
