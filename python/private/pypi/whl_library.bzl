@@ -335,12 +335,16 @@ def _whl_library_impl(rctx):
         )
         entry_points[entry_point_without_py] = entry_point_script_name
 
+    # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in
+    # the analysis phase. This means that we need to get the target platform abi
+    # from the python version/versions we are setting the package up for. We can
+    # potentially get this from the python toolchain interpreter.
     package_deps = deps(
+        # TODO @aignas 2025-02-24:  get the data here by parsing the METADATA
+        # file manually without involving python interpreter at all.
         name = metadata["name"],
         requires_dist = metadata["requires_dist"],
         # target the host platform if the target platform is not specified in the rule.
-        # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in the
-        # analysis phase.
         platforms = target_platforms or [
             "{}_{}".format(metadata["abi"], host_platform(rctx)),
         ],
