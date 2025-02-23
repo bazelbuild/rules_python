@@ -347,33 +347,35 @@ def _test_deps_are_not_duplicated(env):
 
 _tests.append(_test_deps_are_not_duplicated)
 
+def _test_deps_are_not_duplicated_when_encountering_platform_dep_first(env):
+    host_python_version = "3.7.1"
+
+    # Note, that we are sorting the incoming `requires_dist` and we need to ensure that we are not getting any
+    # issues even if the platform-specific line comes first.
+    requires_dist = [
+        "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
+        "bar >=0.5.0 ; python_version >= '3.9'",
+    ]
+
+    got = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = [
+            "cp37_linux_aarch64",
+            "cp37_linux_x86_64",
+            "cp310_linux_aarch64",
+            "cp310_linux_x86_64",
+        ],
+        host_python_version = host_python_version,
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar"])
+    env.expect.that_dict(got.deps_select).contains_exactly({})
+
+_tests.append(_test_deps_are_not_duplicated_when_encountering_platform_dep_first)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
         basic_tests = _tests,
     )
-
-# class DepsTest(unittest.TestCase):
-#
-#     @mock.patch(_HOST_INTERPRETER_FN)
-#     def test_deps_are_not_duplicated_when_encountering_platform_dep_first(
-#         self, mock_host_version
-#     ):
-#         mock_host_version.return_value = 7
-#
-#         # Note, that we are sorting the incoming `requires_dist` and we need to ensure that we are not getting any
-#         # issues even if the platform-specific line comes first.
-#         requires_dist = [
-#             "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
-#             "bar >=0.5.0 ; python_version >= '3.9'",
-#         ]
-#
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=Platform.from_string(["cp37_*", "cp310_*"]),
-#         )
-#         got = deps.build()
-#
-#         self.assertEqual(["bar"], got.deps)
-#         self.assertEqual({}, got.deps_select)
