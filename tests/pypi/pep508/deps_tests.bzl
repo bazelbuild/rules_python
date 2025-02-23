@@ -242,6 +242,54 @@ def _test_no_version_select_when_single_version(env):
 
 _tests.append(_test_no_version_select_when_single_version)
 
+def _test_can_get_version_select(env):
+    requires_dist = [
+        "bar",
+        "baz; python_version < '3.8'",
+        "baz_new; python_version >= '3.8'",
+        "posix_dep; os_name=='posix'",
+        "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
+        "arch_dep; platform_machine=='x86_64' and python_version < '3.8'",
+    ]
+    python_version = "3.7"
+
+    got = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = [
+            "cp3{}_{}_x86_64".format(minor, os)
+            for minor in [7, 8, 9]
+            for os in ["linux", "windows"]
+        ],
+        python_version = python_version,
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar"])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "@//python/config_settings:is_python_3.7": ["baz"],
+        "@//python/config_settings:is_python_3.8": ["baz_new"],
+        "@//python/config_settings:is_python_3.9": ["baz_new"],
+        "@platforms//os:linux": ["baz", "posix_dep"],
+        "cp37_linux_anyarch": ["baz", "posix_dep"],
+        "cp37_linux_x86_64": ["arch_dep", "baz", "posix_dep"],
+        "cp37_windows_x86_64": ["arch_dep", "baz"],
+        "cp38_linux_anyarch": [
+            "baz_new",
+            "posix_dep",
+            "posix_dep_with_version",
+        ],
+        "cp39_linux_anyarch": [
+            "baz_new",
+            "posix_dep",
+            "posix_dep_with_version",
+        ],
+        "linux_x86_64": ["arch_dep", "baz", "posix_dep"],
+        "windows_x86_64": ["arch_dep", "baz"],
+        "//conditions:default": ["baz"],
+    })
+
+_tests.append(_test_can_get_version_select)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -250,56 +298,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
 
 # class DepsTest(unittest.TestCase):
 #     @mock.patch(_HOST_INTERPRETER_FN)
-#     def test_can_get_version_select(self, mock_host_interpreter_version):
-#         requires_dist = [
-#             "bar",
-#             "baz; python_version < '3.8'",
-#             "baz_new; python_version >= '3.8'",
-#             "posix_dep; os_name=='posix'",
-#             "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
-#             "arch_dep; platform_machine=='x86_64' and python_version < '3.8'",
-#         ]
-#         mock_host_interpreter_version.return_value = 7
-#
-#         self.maxDiff = None
-#
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=[
-#                 Platform(os=os, arch=Arch.x86_64, minor_version=minor)
-#                 for minor in [7, 8, 9]
-#                 for os in [OS.linux, OS.windows]
-#             ],
-#         )
-#         got = deps.build()
-#
-#         self.assertEqual(["bar"], got.deps)
-#         self.assertEqual(
-#             {
-#                 "//conditions:default": ["baz"],
-#                 "@//python/config_settings:is_python_3.7": ["baz"],
-#                 "@//python/config_settings:is_python_3.8": ["baz_new"],
-#                 "@//python/config_settings:is_python_3.9": ["baz_new"],
-#                 "@platforms//os:linux": ["baz", "posix_dep"],
-#                 "cp37_linux_x86_64": ["arch_dep", "baz", "posix_dep"],
-#                 "cp37_windows_x86_64": ["arch_dep", "baz"],
-#                 "cp37_linux_anyarch": ["baz", "posix_dep"],
-#                 "cp38_linux_anyarch": [
-#                     "baz_new",
-#                     "posix_dep",
-#                     "posix_dep_with_version",
-#                 ],
-#                 "cp39_linux_anyarch": [
-#                     "baz_new",
-#                     "posix_dep",
-#                     "posix_dep_with_version",
-#                 ],
-#                 "linux_x86_64": ["arch_dep", "baz", "posix_dep"],
-#                 "windows_x86_64": ["arch_dep", "baz"],
-#             },
-#             got.deps_select,
-#         )
 #
 #     @mock.patch(_HOST_INTERPRETER_FN)
 #     def test_deps_spanning_all_target_py_versions_are_added_to_common(

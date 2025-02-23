@@ -117,9 +117,31 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
     if not platforms and python_version:
         platforms.append(_platform(
             abi = "cp" + python_version.replace("3.", "cp3"),
+            # TODO @aignas 2025-02-23: what to do here? We could
+            # potentially extract this information from rctx.os
+            os = None,
+            arch = None,
         ))
+
+    abis = sorted({p.abi: True for p in platforms if p.abi})
+    if python_version and len(abis) > 1:
+        default_abi = "cp3" + python_version[2:]
+    elif len(abis) > 1:
+        fail(
+            "all python versions need to be specified explicitly, got: {}".format(platforms),
+        )
+    else:
+        default_abi = None
+
     for req in reqs:
-        _add_req(deps, deps_select, req, extras = want_extras, platforms = platforms)
+        _add_req(
+            deps,
+            deps_select,
+            req,
+            extras = want_extras,
+            platforms = platforms,
+            default_abi = default_abi,
+        )
 
     return struct(
         deps = deps,
@@ -192,9 +214,15 @@ def _platform_specializations(self):
             _platform(os = os, arch = self.arch, abi = self.abi)
             for os in _platform_system_values
         ])
+    if self.os == None and self.arch == None:
+        specializations.extend([
+            _platform(os = os, arch = arch, abi = self.abi)
+            for os in _platform_system_values
+            for arch in _platform_machine_values
+        ])
     return specializations
 
-def _add_req(deps, deps_select, req, *, extras, platforms):
+def _add_req(deps, deps_select, req, *, extras, platforms, default_abi = None):
     if not req.marker:
         _add(deps, deps_select, req.name, None)
         return
@@ -214,8 +242,9 @@ def _add_req(deps, deps_select, req, *, extras, platforms):
         if tag in req.marker
     ]) > 0
     match_arch = "platform_machine" in req.marker
+    match_version = "version" in req.marker
 
-    if not (match_os or match_arch):
+    if not (match_os or match_arch or match_version):
         if [
             True
             for extra in extras
@@ -235,10 +264,24 @@ def _add_req(deps, deps_select, req, *, extras, platforms):
         if not evaluate(req.marker, env = env(plat)):
             continue
 
-        if match_arch:
+        if match_arch and default_abi:
+            _add(deps, deps_select, req.name, plat)
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
+        elif match_arch:
             _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
+        elif match_os and default_abi:
+            _add(deps, deps_select, req.name, _platform(os = plat.os, abi = plat.abi))
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform(os = plat.os))
         elif match_os:
             _add(deps, deps_select, req.name, _platform(os = plat.os))
+        elif match_version and default_abi:
+            _add(deps, deps_select, req.name, _platform(abi = plat.abi))
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform())
+        elif match_version:
+            _add(deps, deps_select, req.name, None)
         else:
             fail("TODO: {}, {}".format(req.marker, plat))
 
