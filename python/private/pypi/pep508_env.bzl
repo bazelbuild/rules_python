@@ -109,7 +109,10 @@ def deps(name, *, requires_dist, platforms = [], python_version = None):
 
     return struct(
         deps = deps,
-        deps_select = deps_select,
+        deps_select = {
+            _platform_str(p): deps
+            for p, deps in deps_select.items()
+        },
     )
 
 def _versioned_platform(os_arch, python_version):
