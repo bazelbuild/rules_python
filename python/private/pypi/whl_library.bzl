@@ -21,8 +21,10 @@ load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names", "record_files")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
+load(":parse_requirements.bzl", "host_platform")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
+load(":pep508_env.bzl", "deps")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
@@ -298,7 +300,7 @@ def _whl_library_impl(rctx):
         arguments = args + [
             "--whl-file",
             whl_path,
-        ] + ["--platform={}".format(p) for p in target_platforms],
+        ],
         srcs = rctx.attr._python_srcs,
         environment = environment,
         quiet = rctx.attr.quiet,
@@ -333,11 +335,23 @@ def _whl_library_impl(rctx):
         )
         entry_points[entry_point_without_py] = entry_point_script_name
 
+    package_deps = deps(
+        name = metadata["name"],
+        requires_dist = metadata["requires_dist"],
+        # target the host platform if the target platform is not specified in the rule.
+        # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in the
+        # analysis phase.
+        platforms = target_platforms or [
+            "{}_{}".format(metadata["abi"], host_platform(rctx)),
+        ],
+        extras = metadata["extras"],
+    )
+
     build_file_contents = generate_whl_library_build_bazel(
         name = whl_path.basename,
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
-        dependencies = metadata["deps"],
-        dependencies_by_platform = metadata["deps_by_platform"],
+        dependencies = package_deps.deps,
+        dependencies_by_platform = package_deps.deps_select,
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,

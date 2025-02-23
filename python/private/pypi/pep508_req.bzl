@@ -17,6 +17,8 @@
 
 load("//python/private:normalize_name.bzl", "normalize_name")
 
+_STRIP = ["(", " ", ">", "=", "<", "~", "!"]
+
 def requirement(spec):
     """Parse a PEP508 requirement line
 
@@ -29,8 +31,8 @@ def requirement(spec):
     requires, _, maybe_hashes = spec.partition(";")
     marker, _, _ = maybe_hashes.partition("--hash")
     requires, _, extras_unparsed = requires.partition("[")
-    requires, _, _ = requires.partition("(")
-    requires, _, _ = requires.partition(" ")
+    for char in _STRIP:
+        requires, _, _ = requires.partition(char)
     extras = extras_unparsed.strip("]").split(",")
 
     return struct(
