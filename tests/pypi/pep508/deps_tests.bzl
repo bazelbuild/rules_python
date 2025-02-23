@@ -22,7 +22,6 @@ def test_simple_deps(env):
     got = deps(
         "foo",
         requires_dist = ["bar-Bar"],
-        platforms = ["cp38_linux_x86_64"],
     )
     env.expect.that_collection(got.deps).contains_exactly(["bar_bar"])
     env.expect.that_dict(got.deps_select).contains_exactly({})
@@ -162,7 +161,6 @@ def test_self_is_ignored(env):
             "ssl_lib; extra == 'ssl'",
         ],
         extras = ["ssl"],
-        platforms = ["cp38_linux_x86_64"],
     )
 
     env.expect.that_collection(got.deps).contains_exactly(["bar", "req_dep", "ssl_lib"])
@@ -181,7 +179,6 @@ def test_self_dependencies_can_come_in_any_order(env):
             "zdep; extra == 'all'",
         ],
         extras = ["all"],
-        platforms = ["cp38_linux_x86_64"],
     )
 
     env.expect.that_collection(got.deps).contains_exactly(["bar", "baz", "zdep"])
