@@ -217,6 +217,19 @@ def _add(deps, deps_select, dep, platform):
         # Add the platform-specific dep
         deps = deps_select.setdefault(platform, [])
         add_to.append(deps)
+        if not deps:
+            # We are adding a new item to the select and we need to ensure that
+            # existing dependencies from less specialized platforms are propagated
+            # to the newly added dependency set.
+            for p, existing_deps in deps_select.items():
+                # Check if the existing platform overlaps with the given platform
+                if p == platform or platform not in _platform_specializations(p):
+                    continue
+
+                # Copy existing elements from the existing specializations.
+                for d in existing_deps:
+                    if d not in deps:
+                        deps.append(d)
 
         for p in _platform_specializations(platform):
             if p not in deps_select:
@@ -224,7 +237,7 @@ def _add(deps, deps_select, dep, platform):
 
             more_specialized_deps = deps_select.get(p, [])
             if dep not in more_specialized_deps:
-                more_specialized_deps.append(dep)
+                add_to.append(more_specialized_deps)
     else:
         add_to.append(deps)
 
