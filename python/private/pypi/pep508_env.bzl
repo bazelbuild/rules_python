@@ -89,7 +89,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], host_python_versio
             METADATA file.
         extras: {type}`list[str]` the requested extras to generate targets for.
         platforms: {type}`list[str]` the list of target platform strings.
-        host_python_version: {type}`str` the host python version. Will be removed.
+        host_python_version: {type}`str` the host python version.
 
     Returns:
         A struct with attributes:
