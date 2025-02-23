@@ -158,7 +158,7 @@ def _add_req(deps, deps_select, req, platforms):
         elif match_os:
             _add(deps, deps_select, req.name, _platform(os = plat.os))
         else:
-            fail("TODO")
+            fail("TODO: {}".format(plat))
 
 def _platform(*, abi = None, os = None, arch = None):
     return struct(
@@ -192,7 +192,19 @@ def _platform_str(self):
     )
 
 def _platform_specializations(self):
-    return []
+    specializations = []
+    specializations.append(self)
+    if self.arch == None:
+        specializations.extend([
+            _platform(os = self.os, arch = arch, abi = self.abi)
+            for arch in _platform_machine_values
+        ])
+    if self.os == None:
+        specializations.extend([
+            _platform(os = os, arch = self.arch, abi = self.abi)
+            for os in _platform_system_values
+        ])
+    return specializations
 
 def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
@@ -204,12 +216,13 @@ def _add(deps, deps_select, dep, platform):
         add_to.append(deps)
 
         for p in _platform_specializations(platform):
+            p = _platform_str(p)
             if p not in deps_select:
                 continue
 
-            deps = deps_select.get(p)
-            if deps:
-                add_to.append(deps)
+            more_specialized_deps = deps_select.get(p, [])
+            if dep not in more_specialized_deps:
+                more_specialized_deps.append(dep)
     else:
         add_to.append(deps)
 
