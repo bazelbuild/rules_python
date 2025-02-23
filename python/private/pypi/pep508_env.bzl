@@ -114,8 +114,12 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
         _platform_from_str(_versioned_platform(p, python_version))
         for p in platforms
     ]
+    if not platforms and python_version:
+        platforms.append(_platform(
+            abi = "cp" + python_version.replace("3.", "cp3"),
+        ))
     for req in reqs:
-        _add_req(deps, deps_select, req, extras = want_extras, platforms = platforms, python_version = python_version)
+        _add_req(deps, deps_select, req, extras = want_extras, platforms = platforms)
 
     return struct(
         deps = deps,
@@ -190,7 +194,7 @@ def _platform_specializations(self):
         ])
     return specializations
 
-def _add_req(deps, deps_select, req, *, extras, platforms, python_version = None):
+def _add_req(deps, deps_select, req, *, extras, platforms):
     if not req.marker:
         _add(deps, deps_select, req.name, None)
         return
@@ -215,12 +219,11 @@ def _add_req(deps, deps_select, req, *, extras, platforms, python_version = None
         if [
             True
             for extra in extras
+            for p in platforms
             if evaluate(
                 req.marker,
                 env = env(
-                    target_platform = _platform(
-                        abi = "cp" + python_version.replace("3.", "cp3"),
-                    ),
+                    target_platform = p,
                     extra = extra,
                 ),
             )

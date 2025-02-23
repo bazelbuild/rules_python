@@ -169,6 +169,50 @@ def test_self_is_ignored(env):
 
 _tests.append(test_self_is_ignored)
 
+def test_self_dependencies_can_come_in_any_order(env):
+    got = deps(
+        "foo",
+        requires_dist = [
+            "bar",
+            "baz; extra == 'feat'",
+            "foo[feat2]; extra == 'all'",
+            "foo[feat]; extra == 'feat2'",
+            "zdep; extra == 'all'",
+        ],
+        extras = ["all"],
+        python_version = "3.8",
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar", "baz", "zdep"])
+    env.expect.that_dict(got.deps_select).contains_exactly({})
+
+_tests.append(test_self_dependencies_can_come_in_any_order)
+
+def _test_can_get_deps_based_on_specific_python_version(env):
+    requires_dist = [
+        "bar",
+        "baz; python_version < '3.8'",
+        "posix_dep; os_name=='posix' and python_version >= '3.8'",
+    ]
+
+    py38 = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = ["cp38_linux_x86_64"],
+    )
+    py37 = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = ["cp37_linux_x86_64"],
+    )
+
+    env.expect.that_collection(py37.deps).contains_exactly(["bar", "baz"])
+    env.expect.that_dict(py37.deps_select).contains_exactly({})
+    env.expect.that_collection(py38.deps).contains_exactly(["bar"])
+    env.expect.that_dict(py38.deps_select).contains_exactly({"@platforms//os:linux": ["posix_dep"]})
+
+_tests.append(_test_can_get_deps_based_on_specific_python_version)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -176,50 +220,7 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     def test_self_dependencies_can_come_in_any_order(self):
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=[
-#                 "bar",
-#                 "baz; extra == 'feat'",
-#                 "foo[feat2]; extra == 'all'",
-#                 "foo[feat]; extra == 'feat2'",
-#                 "zdep; extra == 'all'",
-#             ],
-#             extras={"all"},
-#         )
 #
-#         got = deps.build()
-#
-#         self.assertEqual(["bar", "baz", "zdep"], got.deps)
-#         self.assertEqual({}, got.deps_select)
-#
-#     def test_can_get_deps_based_on_specific_python_version(self):
-#         requires_dist = [
-#             "bar",
-#             "baz; python_version < '3.8'",
-#             "posix_dep; os_name=='posix' and python_version >= '3.8'",
-#         ]
-#
-#         py38_deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=[
-#                 Platform(os=OS.linux, arch=Arch.x86_64, minor_version=8),
-#             ],
-#         ).build()
-#         py37_deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=[
-#                 Platform(os=OS.linux, arch=Arch.x86_64, minor_version=7),
-#             ],
-#         ).build()
-#
-#         self.assertEqual(["bar", "baz"], py37_deps.deps)
-#         self.assertEqual({}, py37_deps.deps_select)
-#         self.assertEqual(["bar"], py38_deps.deps)
-#         self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
 #
 #     @mock.patch(_HOST_INTERPRETER_FN)
 #     def test_no_version_select_when_single_version(self, mock_host_interpreter_version):
