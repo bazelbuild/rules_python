@@ -80,7 +80,7 @@ def env(target_platform, *, extra = None):
         "python_version": "3.{}".format(minor),
     } | extras
 
-def deps(name, *, requires_dist, platforms = [], extras = [], python_version = None):
+def deps(name, *, requires_dist, platforms = [], extras = [], host_python_version = None):
     """Parse the RequiresDist from wheel METADATA
 
     Args:
@@ -89,7 +89,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
             METADATA file.
         extras: {type}`list[str]` the requested extras to generate targets for.
         platforms: {type}`list[str]` the list of target platform strings.
-        python_version: {type}`str` the host python version.
+        host_python_version: {type}`str` the host python version. Will be removed.
 
     Returns:
         A struct with attributes:
@@ -110,22 +110,16 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
     # drop self edges
     reqs = [r for r in reqs if r.name != name]
 
+    if not platforms:
+        fail("The platform needs to be specified")
     platforms = [
-        _platform_from_str(p, python_version)
+        _platform_from_str(p, python_version = host_python_version)
         for p in platforms
     ]
-    if not platforms and python_version:
-        platforms.append(_platform(
-            abi = "cp" + python_version.replace("3.", "cp3"),
-            # TODO @aignas 2025-02-23: what to do here? We could
-            # potentially extract this information from rctx.os
-            os = None,
-            arch = None,
-        ))
 
     abis = sorted({p.abi: True for p in platforms if p.abi})
-    if python_version and len(abis) > 1:
-        default_abi = "cp3" + python_version[2:]
+    if host_python_version and len(abis) > 1:
+        default_abi = "cp3" + host_python_version[2:].partition(".")[0]
     elif len(abis) > 1:
         fail(
             "all python versions need to be specified explicitly, got: {}".format(platforms),
@@ -287,7 +281,6 @@ def _add_req(deps, deps_select, req, *, extras, platforms, default_abi = None):
 
 def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
-    add_to = []
 
     if not platform:
         deps[dep] = True
@@ -306,32 +299,32 @@ def _add(deps, deps_select, dep, platform):
             deps_select.pop(p)
         return
 
-    if platform:
-        # Add the platform-specific dep
-        deps = deps_select.setdefault(platform, {})
-        add_to.append(deps)
-        if not deps:
-            # We are adding a new item to the select and we need to ensure that
-            # existing dependencies from less specialized platforms are propagated
-            # to the newly added dependency set.
-            for p, existing_deps in deps_select.items():
-                # Check if the existing platform overlaps with the given platform
-                if p == platform or platform not in _platform_specializations(p):
-                    continue
+    if dep in deps:
+        # If the dep is already in the main dependency list, no need to add it in the
+        # platform-specific dependency list.
+        return
 
-                # Copy existing elements from the existing specializations.
-                deps.update(existing_deps)
+    # Add the platform-specific dep
+    deps_select.setdefault(platform, {})[dep] = True
 
-        for p in _platform_specializations(platform):
-            if p not in deps_select:
+    # Add the dep to specializations of the given platform if they
+    # exist in the select statement.
+    for p in _platform_specializations(platform):
+        if p not in deps_select:
+            continue
+
+        deps_select[p][dep] = True
+
+    if len(deps_select[platform]) == 1:
+        # We are adding a new item to the select and we need to ensure that
+        # existing dependencies from less specialized platforms are propagated
+        # to the newly added dependency set.
+        for p, deps in deps_select.items():
+            # Check if the existing platform overlaps with the given platform
+            if p == platform or platform not in _platform_specializations(p):
                 continue
 
-            more_specialized_deps = deps_select.get(p, [])
-            if dep not in more_specialized_deps:
-                add_to.append(more_specialized_deps)
-
-    for deps in add_to:
-        deps[dep] = True
+            deps_select[platform].update(deps_select[p])
 
 def _resolve_extras(self_name, reqs, extras):
     """Resolve extras which are due to depending on self[some_other_extra].
