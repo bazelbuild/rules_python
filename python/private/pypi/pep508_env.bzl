@@ -187,6 +187,11 @@ def _platform_str(self):
     )
 
 def _platform_specializations(self):
+    """Return the platform itself and all its unambiguous specializations.
+
+    For more info about specializations see
+    https://bazel.build/docs/configurable-attributes
+    """
     specializations = []
     specializations.append(self)
     if self.arch == None:
