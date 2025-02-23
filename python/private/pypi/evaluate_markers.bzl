@@ -14,9 +14,19 @@
 
 """A simple function that evaluates markers using a python interpreter."""
 
+load(":deps.bzl", "record_files")
 load(":pep508_env.bzl", "env", _platform_from_str = "platform_from_str")
 load(":pep508_evaluate.bzl", "evaluate")
 load(":pep508_req.bzl", _req = "requirement")
+
+# Used as a default value in a rule to ensure we fetch the dependencies.
+SRCS = [
+    # When the version, or any of the files in `packaging` package changes,
+    # this file will change as well.
+    record_files["pypi__packaging"],
+    Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
+    Label("//python/private/pypi/whl_installer:platform.py"),
+]
 
 def evaluate_markers(requirements):
     """Return the list of supported platforms per requirements line.
