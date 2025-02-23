@@ -103,7 +103,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], host_python_versio
     """
     reqs = sorted(
         [_req(r) for r in requires_dist],
-        key = lambda x: "{}:{}".format(x.name, sorted(x.extras)),
+        key = lambda x: "{}:{}:".format(x.name, sorted(x.extras), x.marker),
     )
     deps = {}
     deps_select = {}
@@ -122,7 +122,9 @@ def deps(name, *, requires_dist, platforms = [], extras = [], host_python_versio
 
     abis = sorted({p.abi: True for p in platforms if p.abi})
     if host_python_version and len(abis) > 1:
-        default_abi = "cp3" + host_python_version[2:].partition(".")[0]
+        _, _, minor_version = host_python_version.partition(".")
+        minor_version, _, _ = minor_version.partition(".")
+        default_abi = "cp3" + minor_version
     elif len(abis) > 1:
         fail(
             "all python versions need to be specified explicitly, got: {}".format(platforms),
@@ -212,73 +214,10 @@ def _platform_specializations(self):
         ])
     return specializations
 
-def _add_req(deps, deps_select, req, *, extras, platforms, default_abi = None):
-    if not req.marker:
-        _add(deps, deps_select, req.name, None)
-        return
-
-    # NOTE @aignas 2023-12-08: in order to have reasonable select statements
-    # we do have to have some parsing of the markers, so it begs the question
-    # if packaging should be reimplemented in Starlark to have the best solution
-    # for now we will implement it in Python and see what the best parsing result
-    # can be before making this decision.
-    match_os = len([
-        tag
-        for tag in [
-            "os_name",
-            "sys_platform",
-            "platform_system",
-        ]
-        if tag in req.marker
-    ]) > 0
-    match_arch = "platform_machine" in req.marker
-    match_version = "version" in req.marker
-
-    if not (match_os or match_arch or match_version):
-        if [
-            True
-            for extra in extras
-            for p in platforms
-            if evaluate(
-                req.marker,
-                env = env(
-                    target_platform = p,
-                    extra = extra,
-                ),
-            )
-        ]:
-            _add(deps, deps_select, req.name, None)
-        return
-
-    for plat in platforms:
-        if not evaluate(req.marker, env = env(plat)):
-            continue
-
-        if match_arch and default_abi:
-            _add(deps, deps_select, req.name, plat)
-            if plat.abi == default_abi:
-                _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
-        elif match_arch:
-            _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
-        elif match_os and default_abi:
-            _add(deps, deps_select, req.name, _platform(os = plat.os, abi = plat.abi))
-            if plat.abi == default_abi:
-                _add(deps, deps_select, req.name, _platform(os = plat.os))
-        elif match_os:
-            _add(deps, deps_select, req.name, _platform(os = plat.os))
-        elif match_version and default_abi:
-            _add(deps, deps_select, req.name, _platform(abi = plat.abi))
-            if plat.abi == default_abi:
-                _add(deps, deps_select, req.name, _platform())
-        elif match_version:
-            _add(deps, deps_select, req.name, None)
-        else:
-            fail("BUG: {} support is not implemented".format(req.marker))
-
-    _maybe_add_common_dep(deps, deps_select, platforms, req.name)
-
 def _add(deps, deps_select, dep, platform):
-    if not platform:
+    dep = normalize_name(dep)
+
+    if platform == None:
         deps[dep] = True
 
         # If the dep is in the platform-specific list, remove it from the select.
@@ -300,8 +239,8 @@ def _add(deps, deps_select, dep, platform):
         # platform-specific dependency list.
         return
 
-    # Add the platform-specific dep
-    deps_select.setdefault(platform, {})[dep] = True
+    # Add the platform-specific branch
+    deps_select.setdefault(platform, {})
 
     # Add the dep to specializations of the given platform if they
     # exist in the select statement.
@@ -315,12 +254,39 @@ def _add(deps, deps_select, dep, platform):
         # We are adding a new item to the select and we need to ensure that
         # existing dependencies from less specialized platforms are propagated
         # to the newly added dependency set.
-        for p, deps in deps_select.items():
+        for p, _deps in deps_select.items():
             # Check if the existing platform overlaps with the given platform
             if p == platform or platform not in _platform_specializations(p):
                 continue
 
-            deps_select[platform].update(deps)
+            deps_select[platform].update(_deps)
+
+def _maybe_add_common_dep(deps, deps_select, platforms, dep):
+    abis = sorted({p.abi: True for p in platforms if p.abi})
+    if len(abis) < 2:
+        return
+
+    platforms = [_platform()] + [
+        _platform(abi = abi)
+        for abi in abis
+    ]
+
+    # If the dep is targeting all target python versions, lets add it to
+    # the common dependency list to simplify the select statements.
+    for p in platforms:
+        if p not in deps_select:
+            return
+
+        if dep not in deps_select[p]:
+            return
+
+    # All of the python version-specific branches have the dep, so lets add
+    # it to the common deps.
+    deps[dep] = True
+    for p in platforms:
+        deps_select[p].pop(dep)
+        if not deps_select[p]:
+            deps_select.pop(p)
 
 def _resolve_extras(self_name, reqs, extras):
     """Resolve extras which are due to depending on self[some_other_extra].
@@ -377,29 +343,77 @@ def _resolve_extras(self_name, reqs, extras):
     # Poor mans set
     return sorted({x: None for x in extras})
 
-def _maybe_add_common_dep(deps, deps_select, platforms, dep):
-    abis = sorted({p.abi: True for p in platforms if p.abi})
-    if len(abis) < 2:
+def _add_req(deps, deps_select, req, *, extras, platforms, default_abi = None):
+    if not req.marker:
+        _add(deps, deps_select, req.name, None)
         return
 
-    platforms = [_platform()] + [
-        _platform(abi = abi)
-        for abi in abis
-    ]
+    # NOTE @aignas 2023-12-08: in order to have reasonable select statements
+    # we do have to have some parsing of the markers, so it begs the question
+    # if packaging should be reimplemented in Starlark to have the best solution
+    # for now we will implement it in Python and see what the best parsing result
+    # can be before making this decision.
+    match_os = len([
+        tag
+        for tag in [
+            "os_name",
+            "sys_platform",
+            "platform_system",
+        ]
+        if tag in req.marker
+    ]) > 0
+    match_arch = "platform_machine" in req.marker
+    match_version = "version" in req.marker
 
-    # If the dep is targeting all target python versions, lets add it to
-    # the common dependency list to simplify the select statements.
-    for p in platforms:
-        if p not in deps_select:
-            return
+    if not (match_os or match_arch or match_version):
+        if [
+            True
+            for extra in extras
+            for p in platforms
+            if evaluate(
+                req.marker,
+                env = env(
+                    target_platform = p,
+                    extra = extra,
+                ),
+            )
+        ]:
+            _add(deps, deps_select, req.name, None)
+        return
 
-        if dep not in deps_select[p]:
-            return
+    for plat in platforms:
+        if not [
+            True
+            for extra in extras
+            if evaluate(
+                req.marker,
+                env = env(
+                    target_platform = plat,
+                    extra = extra,
+                ),
+            )
+        ]:
+            continue
 
-    # All of the python version-specific branches have the dep, so lets add
-    # it to the common deps.
-    deps[dep] = True
-    for p in platforms:
-        deps_select[p].pop(dep)
-        if not deps_select[p]:
-            deps_select.pop(p)
+        if match_arch and default_abi:
+            _add(deps, deps_select, req.name, plat)
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
+        elif match_arch:
+            _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
+        elif match_os and default_abi:
+            _add(deps, deps_select, req.name, _platform(os = plat.os, abi = plat.abi))
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform(os = plat.os))
+        elif match_os:
+            _add(deps, deps_select, req.name, _platform(os = plat.os))
+        elif match_version and default_abi:
+            _add(deps, deps_select, req.name, _platform(abi = plat.abi))
+            if plat.abi == default_abi:
+                _add(deps, deps_select, req.name, _platform())
+        elif match_version:
+            _add(deps, deps_select, req.name, None)
+        else:
+            fail("BUG: {} support is not implemented".format(req.marker))
+
+    _maybe_add_common_dep(deps, deps_select, platforms, req.name)
