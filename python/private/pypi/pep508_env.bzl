@@ -163,9 +163,11 @@ def _versioned_platform(os_arch, python_version):
 def _req(requires_dist):
     requires, _, marker = requires_dist.partition(";")
     requires, _, extras_unparsed = requires.partition("[")
+    requires, _, _ = requires.partition("(")
+    requires, _, _ = requires.partition(" ")
     extras = extras_unparsed.strip("]").split(",")
     return struct(
-        name = normalize_name(requires),
+        name = normalize_name(requires.strip(" ")),
         marker = marker.strip(" "),
         extras = extras,
     )
@@ -285,6 +287,8 @@ def _add_req(deps, deps_select, req, *, extras, platforms, default_abi = None):
         else:
             fail("TODO: {}, {}".format(req.marker, plat))
 
+    _maybe_add_common_dep(deps, deps_select, platforms, req.name)
+
 def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
     add_to = []
@@ -375,6 +379,35 @@ def _resolve_extras(self_name, reqs, extras):
 
     # Poor mans set
     return sorted({x: None for x in extras})
+
+def _maybe_add_common_dep(deps, deps_select, platforms, dep):
+    abis = sorted({p.abi: True for p in platforms if p.abi})
+    if len(abis) < 2:
+        return
+
+    platforms = [_platform()] + [
+        _platform(abi = abi)
+        for abi in abis
+    ]
+
+    # If the dep is targeting all target python versions, lets add it to
+    # the common dependency list to simplify the select statements.
+    for p in platforms:
+        if p not in deps_select:
+            return
+
+        if dep not in deps_select[p]:
+            return
+
+    # All of the python version-specific branches have the dep, so lets add
+    # it to the common deps.
+    deps.append(dep)
+    for p in platforms:
+        deps_select[p].remove(dep)
+        if not deps_select[p]:
+            deps_select.pop(p)
+
+# ================
 
 #       if not self._platforms:
 #           if any(req.marker.evaluate({"extra": extra}) for extra in extras):
@@ -512,31 +545,6 @@ def _resolve_extras(self_name, reqs, extras):
 #                   continue
 
 #               self._select[platform].update(self._select[p])
-
-#   def _maybe_add_common_dep(self, dep):
-#       if len(self._target_versions) < 2:
-#           return
-
-#       platforms = [Platform()] + [
-#           Platform(minor_version=v) for v in self._target_versions
-#       ]
-
-#       # If the dep is targeting all target python versions, lets add it to
-#       # the common dependency list to simplify the select statements.
-#       for p in platforms:
-#           if p not in self._select:
-#               return
-
-#           if dep not in self._select[p]:
-#               return
-
-#       # All of the python version-specific branches have the dep, so lets add
-#       # it to the common deps.
-#       self._deps.add(dep)
-#       for p in platforms:
-#           self._select[p].remove(dep)
-#           if not self._select[p]:
-#               self._select.pop(p)
 
 #   def _resolve_extras(
 #       self, reqs: List[Requirement], extras: Optional[Set[str]]

@@ -290,6 +290,29 @@ def _test_can_get_version_select(env):
 
 _tests.append(_test_can_get_version_select)
 
+def _test_deps_spanning_all_target_py_versions_are_added_to_common(env):
+    requires_dist = [
+        "bar",
+        "baz (<2,>=1.11) ; python_version < '3.8'",
+        "baz (<2,>=1.14) ; python_version >= '3.8'",
+    ]
+    python_version = "3.8"
+
+    got = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = [
+            "cp3{}_linux_x86_64".format(minor)
+            for minor in [7, 8, 9]
+        ],
+        python_version = python_version,
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar", "baz"])
+    env.expect.that_dict(got.deps_select).contains_exactly({})
+
+_tests.append(_test_deps_spanning_all_target_py_versions_are_added_to_common)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -297,28 +320,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     @mock.patch(_HOST_INTERPRETER_FN)
-#
-#     @mock.patch(_HOST_INTERPRETER_FN)
-#     def test_deps_spanning_all_target_py_versions_are_added_to_common(
-#         self, mock_host_version
-#     ):
-#         requires_dist = [
-#             "bar",
-#             "baz (<2,>=1.11) ; python_version < '3.8'",
-#             "baz (<2,>=1.14) ; python_version >= '3.8'",
-#         ]
-#         mock_host_version.return_value = 8
-#
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=Platform.from_string(["cp37_*", "cp38_*", "cp39_*"]),
-#         )
-#         got = deps.build()
-#
-#         self.assertEqual(["bar", "baz"], got.deps)
-#         self.assertEqual({}, got.deps_select)
 #
 #     @mock.patch(_HOST_INTERPRETER_FN)
 #     def test_deps_are_not_duplicated(self, mock_host_version):
