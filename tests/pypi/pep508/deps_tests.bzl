@@ -127,6 +127,30 @@ def test_deps_from_more_specialized_platforms_are_propagated(env):
 
 _tests.append(test_deps_from_more_specialized_platforms_are_propagated)
 
+def test_non_platform_markers_are_added_to_common_deps(env):
+    got = deps(
+        "foo",
+        requires_dist = [
+            "bar",
+            "baz; implementation_name=='cpython'",
+            "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+        ],
+        platforms = [
+            "linux_x86_64",
+            "osx_x86_64",
+            "osx_aarch64",
+            "windows_x86_64",
+        ],
+        python_version = "3.8",
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar", "baz"])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "osx_aarch64": ["m1_dep"],
+    })
+
+_tests.append(test_non_platform_markers_are_added_to_common_deps)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -134,30 +158,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     def test_non_platform_markers_are_added_to_common_deps(self):
-#         got = wheel.Deps(
-#             "foo",
-#             requires_dist=[
-#                 "bar",
-#                 "baz; implementation_name=='cpython'",
-#                 "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
-#             ],
-#             platforms={
-#                 Platform(os=OS.linux, arch=Arch.x86_64),
-#                 Platform(os=OS.osx, arch=Arch.x86_64),
-#                 Platform(os=OS.osx, arch=Arch.aarch64),
-#                 Platform(os=OS.windows, arch=Arch.x86_64),
-#             },
-#         ).build()
-#
-#         self.assertEqual(["bar", "baz"], got.deps)
-#         self.assertEqual(
-#             {
-#                 "osx_aarch64": ["m1_dep"],
-#             },
-#             got.deps_select,
-#         )
-#
 #     def test_self_is_ignored(self):
 #         deps = wheel.Deps(
 #             "foo",

@@ -152,6 +152,10 @@ def _add_req(deps, deps_select, req, platforms):
     ]) > 0
     match_arch = "platform_machine" in req.marker
 
+    if not (match_os or match_arch):
+        _add(deps, deps_select, req.name, None)
+        return
+
     for plat in platforms:
         if not evaluate(req.marker, env = env(plat)):
             continue
@@ -161,7 +165,7 @@ def _add_req(deps, deps_select, req, platforms):
         elif match_os:
             _add(deps, deps_select, req.name, _platform(os = plat.os))
         else:
-            fail("TODO: {}".format(plat))
+            fail("TODO: {}, {}".format(req.marker, plat))
 
 def _platform(*, abi = None, os = None, arch = None):
     return struct(
