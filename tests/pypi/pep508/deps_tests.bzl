@@ -213,6 +213,35 @@ def _test_can_get_deps_based_on_specific_python_version(env):
 
 _tests.append(_test_can_get_deps_based_on_specific_python_version)
 
+def _test_no_version_select_when_single_version(env):
+    requires_dist = [
+        "bar",
+        "baz; python_version >= '3.8'",
+        "posix_dep; os_name=='posix'",
+        "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
+        "arch_dep; platform_machine=='x86_64' and python_version >= '3.8'",
+    ]
+    python_version = "3.7"
+
+    got = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = [
+            "cp38_linux_x86_64",
+            "cp38_windows_x86_64",
+        ],
+        python_version = python_version,
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar", "baz"])
+    env.expect.that_dict(got.deps_select).contains_exactly({
+        "@platforms//os:linux": ["posix_dep", "posix_dep_with_version"],
+        "linux_x86_64": ["arch_dep", "posix_dep", "posix_dep_with_version"],
+        "windows_x86_64": ["arch_dep"],
+    })
+
+_tests.append(_test_no_version_select_when_single_version)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -220,42 +249,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#
-#
-#     @mock.patch(_HOST_INTERPRETER_FN)
-#     def test_no_version_select_when_single_version(self, mock_host_interpreter_version):
-#         requires_dist = [
-#             "bar",
-#             "baz; python_version >= '3.8'",
-#             "posix_dep; os_name=='posix'",
-#             "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
-#             "arch_dep; platform_machine=='x86_64' and python_version >= '3.8'",
-#         ]
-#         mock_host_interpreter_version.return_value = 7
-#
-#         self.maxDiff = None
-#
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=[
-#                 Platform(os=os, arch=Arch.x86_64, minor_version=minor)
-#                 for minor in [8]
-#                 for os in [OS.linux, OS.windows]
-#             ],
-#         )
-#         got = deps.build()
-#
-#         self.assertEqual(["bar", "baz"], got.deps)
-#         self.assertEqual(
-#             {
-#                 "@platforms//os:linux": ["posix_dep", "posix_dep_with_version"],
-#                 "linux_x86_64": ["arch_dep", "posix_dep", "posix_dep_with_version"],
-#                 "windows_x86_64": ["arch_dep"],
-#             },
-#             got.deps_select,
-#         )
-#
 #     @mock.patch(_HOST_INTERPRETER_FN)
 #     def test_can_get_version_select(self, mock_host_interpreter_version):
 #         requires_dist = [
