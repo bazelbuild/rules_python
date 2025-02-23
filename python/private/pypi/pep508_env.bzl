@@ -41,12 +41,13 @@ _os_name_values = {
     "windows": "nt",
 }
 
-def env(target_platform):
+def env(target_platform, *, extra = None):
     """Return an env target platform
 
     Args:
         target_platform: {type}`str` the target platform identifier, e.g.
             `cp33_linux_aarch64`
+        extra: {type}`str` the extra value to be added into the env.
 
     Returns:
         A dict that can be used as `env` in the marker evaluation.
@@ -59,6 +60,8 @@ def env(target_platform):
     arch = target_platform.arch
 
     # TODO @aignas 2025-02-13: consider moving this into config settings.
+
+    extras = {"extra": extra} if extra != None else {}
 
     # This is split by topic
     return {
@@ -75,15 +78,16 @@ def env(target_platform):
         "implementation_version": "3.{}.{}".format(minor, micro),
         "python_full_version": "3.{}.{}".format(minor, micro),
         "python_version": "3.{}".format(minor),
-    }
+    } | extras
 
-def deps(name, *, requires_dist, platforms = [], python_version = None):
+def deps(name, *, requires_dist, platforms = [], extras = [], python_version = None):
     """Parse the RequiresDist from wheel METADATA
 
     Args:
         name: {type}`str` the name of the wheel.
         requires_dist: {type}`list[str]` the list of RequiresDist lines from the
             METADATA file.
+        extras: {type}`list[str]` the requested extras to generate targets for.
         platforms: {type}`list[str]` the list of target platform strings.
         python_version: {type}`str` the host python version.
 
@@ -99,13 +103,19 @@ def deps(name, *, requires_dist, platforms = [], python_version = None):
     )
     deps = []
     deps_select = {}
+    name = normalize_name(name)
+
+    want_extras = _resolve_extras(name, reqs, extras)
+
+    # drop self edges
+    reqs = [r for r in reqs if r.name != name]
 
     platforms = [
         _platform_from_str(_versioned_platform(p, python_version))
         for p in platforms
     ]
     for req in reqs:
-        _add_req(deps, deps_select, req, platforms)
+        _add_req(deps, deps_select, req, extras = want_extras, platforms = platforms, python_version = python_version)
 
     return struct(
         deps = deps,
@@ -126,46 +136,13 @@ def _versioned_platform(os_arch, python_version):
 
 def _req(requires_dist):
     requires, _, marker = requires_dist.partition(";")
+    requires, _, extras_unparsed = requires.partition("[")
+    extras = extras_unparsed.strip("]").split(",")
     return struct(
         name = normalize_name(requires),
         marker = marker.strip(" "),
+        extras = extras,
     )
-
-def _add_req(deps, deps_select, req, platforms):
-    if not req.marker:
-        _add(deps, deps_select, req.name, None)
-        return
-
-    # NOTE @aignas 2023-12-08: in order to have reasonable select statements
-    # we do have to have some parsing of the markers, so it begs the question
-    # if packaging should be reimplemented in Starlark to have the best solution
-    # for now we will implement it in Python and see what the best parsing result
-    # can be before making this decision.
-    match_os = len([
-        tag
-        for tag in [
-            "os_name",
-            "sys_platform",
-            "platform_system",
-        ]
-        if tag in req.marker
-    ]) > 0
-    match_arch = "platform_machine" in req.marker
-
-    if not (match_os or match_arch):
-        _add(deps, deps_select, req.name, None)
-        return
-
-    for plat in platforms:
-        if not evaluate(req.marker, env = env(plat)):
-            continue
-
-        if match_arch:
-            _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
-        elif match_os:
-            _add(deps, deps_select, req.name, _platform(os = plat.os))
-        else:
-            fail("TODO: {}, {}".format(req.marker, plat))
 
 def _platform(*, abi = None, os = None, arch = None):
     return struct(
@@ -213,6 +190,55 @@ def _platform_specializations(self):
         ])
     return specializations
 
+def _add_req(deps, deps_select, req, *, extras, platforms, python_version = None):
+    if not req.marker:
+        _add(deps, deps_select, req.name, None)
+        return
+
+    # NOTE @aignas 2023-12-08: in order to have reasonable select statements
+    # we do have to have some parsing of the markers, so it begs the question
+    # if packaging should be reimplemented in Starlark to have the best solution
+    # for now we will implement it in Python and see what the best parsing result
+    # can be before making this decision.
+    match_os = len([
+        tag
+        for tag in [
+            "os_name",
+            "sys_platform",
+            "platform_system",
+        ]
+        if tag in req.marker
+    ]) > 0
+    match_arch = "platform_machine" in req.marker
+
+    if not (match_os or match_arch):
+        if [
+            True
+            for extra in extras
+            if evaluate(
+                req.marker,
+                env = env(
+                    target_platform = _platform(
+                        abi = "cp" + python_version.replace("3.", "cp3"),
+                    ),
+                    extra = extra,
+                ),
+            )
+        ]:
+            _add(deps, deps_select, req.name, None)
+        return
+
+    for plat in platforms:
+        if not evaluate(req.marker, env = env(plat)):
+            continue
+
+        if match_arch:
+            _add(deps, deps_select, req.name, _platform(os = plat.os, arch = plat.arch))
+        elif match_os:
+            _add(deps, deps_select, req.name, _platform(os = plat.os))
+        else:
+            fail("TODO: {}, {}".format(req.marker, plat))
+
 def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
     add_to = []
@@ -248,6 +274,61 @@ def _add(deps, deps_select, dep, platform):
     for deps in add_to:
         if dep not in deps:
             deps.append(dep)
+
+def _resolve_extras(self_name, reqs, extras):
+    """Resolve extras which are due to depending on self[some_other_extra].
+
+    Some packages may have cyclic dependencies resulting from extras being used, one example is
+    `etils`, where we have one set of extras as aliases for other extras
+    and we have an extra called 'all' that includes all other extras.
+
+    Example: github.com/google/etils/blob/a0b71032095db14acf6b33516bca6d885fe09e35/pyproject.toml#L32.
+
+    When the `requirements.txt` is generated by `pip-tools`, then it is likely that
+    this step is not needed, but for other `requirements.txt` files this may be useful.
+
+    NOTE @aignas 2023-12-08: the extra resolution is not platform dependent,
+    but in order for it to become platform dependent we would have to have
+    separate targets for each extra in extras.
+    """
+
+    # Resolve any extra extras due to self-edges, empty string means no
+    # extras The empty string in the set is just a way to make the handling
+    # of no extras and a single extra easier and having a set of {"", "foo"}
+    # is equivalent to having {"foo"}.
+    extras = extras or [""]
+
+    self_reqs = []
+    for req in reqs:
+        if normalize_name(req.name) != self_name:
+            continue
+
+        if req.marker == None:
+            # I am pretty sure we cannot reach this code as it does not
+            # make sense to specify packages in this way, but since it is
+            # easy to handle, lets do it.
+            #
+            # TODO @aignas 2023-12-08: add a test
+            extras = extras + req.extras
+        else:
+            # process these in a separate loop
+            self_reqs.append(req)
+
+    # A double loop is not strictly optimal, but always correct without recursion
+    for req in self_reqs:
+        if [True for extra in extras if evaluate(req.marker, env = {"extra": extra})]:
+            extras = extras + req.extras
+        else:
+            continue
+
+        # Iterate through all packages to ensure that we include all of the extras from previously
+        # visited packages.
+        for req_ in self_reqs:
+            if [True for extra in extras if evaluate(req.marker, env = {"extra": extra})]:
+                extras = extras + req_.extras
+
+    # Poor mans set
+    return sorted({x: None for x in extras})
 
 #       if not self._platforms:
 #           if any(req.marker.evaluate({"extra": extra}) for extra in extras):

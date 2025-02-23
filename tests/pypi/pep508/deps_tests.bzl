@@ -151,6 +151,24 @@ def test_non_platform_markers_are_added_to_common_deps(env):
 
 _tests.append(test_non_platform_markers_are_added_to_common_deps)
 
+def test_self_is_ignored(env):
+    got = deps(
+        "foo",
+        requires_dist = [
+            "bar",
+            "req_dep; extra == 'requests'",
+            "foo[requests]; extra == 'ssl'",
+            "ssl_lib; extra == 'ssl'",
+        ],
+        extras = ["ssl"],
+        python_version = "3.8",
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar", "req_dep", "ssl_lib"])
+    env.expect.that_dict(got.deps_select).contains_exactly({})
+
+_tests.append(test_self_is_ignored)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -158,23 +176,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#     def test_self_is_ignored(self):
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=[
-#                 "bar",
-#                 "req_dep; extra == 'requests'",
-#                 "foo[requests]; extra == 'ssl'",
-#                 "ssl_lib; extra == 'ssl'",
-#             ],
-#             extras={"ssl"},
-#         )
-#
-#         got = deps.build()
-#
-#         self.assertEqual(["bar", "req_dep", "ssl_lib"], got.deps)
-#         self.assertEqual({}, got.deps_select)
-#
 #     def test_self_dependencies_can_come_in_any_order(self):
 #         deps = wheel.Deps(
 #             "foo",
