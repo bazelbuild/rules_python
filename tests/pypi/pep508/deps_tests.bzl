@@ -313,6 +313,39 @@ def _test_deps_spanning_all_target_py_versions_are_added_to_common(env):
 
 _tests.append(_test_deps_spanning_all_target_py_versions_are_added_to_common)
 
+def _test_deps_are_not_duplicated(env):
+    python_version = "3.7"
+
+    # See an example in
+    # https://files.pythonhosted.org/packages/76/9e/db1c2d56c04b97981c06663384f45f28950a73d9acf840c4006d60d0a1ff/opencv_python-4.9.0.80-cp37-abi3-win32.whl.metadata
+    requires_dist = [
+        "bar >=0.1.0 ; python_version < '3.7'",
+        "bar >=0.2.0 ; python_version >= '3.7'",
+        "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
+        "bar >=0.4.0 ; python_version >= '3.9'",
+        "bar >=0.5.0 ; python_version <= '3.9' and platform_system == 'Darwin' and platform_machine == 'arm64'",
+        "bar >=0.5.0 ; python_version >= '3.10' and platform_system == 'Darwin'",
+        "bar >=0.5.0 ; python_version >= '3.10'",
+        "bar >=0.6.0 ; python_version >= '3.11'",
+    ]
+
+    got = deps(
+        "foo",
+        requires_dist = requires_dist,
+        platforms = [
+            "cp3{}_{}_{}".format(minor, os, arch)
+            for minor in [7, 10]
+            for os in ["linux", "osx", "windows"]
+            for arch in ["x86_64", "aarch64"]
+        ],
+        python_version = python_version,
+    )
+
+    env.expect.that_collection(got.deps).contains_exactly(["bar"])
+    env.expect.that_dict(got.deps_select).contains_exactly({})
+
+_tests.append(_test_deps_are_not_duplicated)
+
 def deps_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
@@ -320,33 +353,6 @@ def deps_test_suite(name):  # buildifier: disable=function-docstring
     )
 
 # class DepsTest(unittest.TestCase):
-#
-#     @mock.patch(_HOST_INTERPRETER_FN)
-#     def test_deps_are_not_duplicated(self, mock_host_version):
-#         mock_host_version.return_value = 7
-#
-#         # See an example in
-#         # https://files.pythonhosted.org/packages/76/9e/db1c2d56c04b97981c06663384f45f28950a73d9acf840c4006d60d0a1ff/opencv_python-4.9.0.80-cp37-abi3-win32.whl.metadata
-#         requires_dist = [
-#             "bar >=0.1.0 ; python_version < '3.7'",
-#             "bar >=0.2.0 ; python_version >= '3.7'",
-#             "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
-#             "bar >=0.4.0 ; python_version >= '3.9'",
-#             "bar >=0.5.0 ; python_version <= '3.9' and platform_system == 'Darwin' and platform_machine == 'arm64'",
-#             "bar >=0.5.0 ; python_version >= '3.10' and platform_system == 'Darwin'",
-#             "bar >=0.5.0 ; python_version >= '3.10'",
-#             "bar >=0.6.0 ; python_version >= '3.11'",
-#         ]
-#
-#         deps = wheel.Deps(
-#             "foo",
-#             requires_dist=requires_dist,
-#             platforms=Platform.from_string(["cp37_*", "cp310_*"]),
-#         )
-#         got = deps.build()
-#
-#         self.assertEqual(["bar"], got.deps)
-#         self.assertEqual({}, got.deps_select)
 #
 #     @mock.patch(_HOST_INTERPRETER_FN)
 #     def test_deps_are_not_duplicated_when_encountering_platform_dep_first(

@@ -101,7 +101,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
         [_req(r) for r in requires_dist],
         key = lambda x: x.name,
     )
-    deps = []
+    deps = {}
     deps_select = {}
     name = normalize_name(name)
 
@@ -111,7 +111,7 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
     reqs = [r for r in reqs if r.name != name]
 
     platforms = [
-        _platform_from_str(_versioned_platform(p, python_version))
+        _platform_from_str(p, python_version)
         for p in platforms
     ]
     if not platforms and python_version:
@@ -144,21 +144,12 @@ def deps(name, *, requires_dist, platforms = [], extras = [], python_version = N
         )
 
     return struct(
-        deps = deps,
+        deps = sorted(deps),
         deps_select = {
-            _platform_str(p): deps
+            _platform_str(p): sorted(deps)
             for p, deps in deps_select.items()
         },
     )
-
-def _versioned_platform(os_arch, python_version):
-    if not python_version or os_arch.startswith("cp"):
-        # This also has ABI
-        return os_arch
-
-    major, _, tail = python_version.partition(".")
-    minor, _, _ = tail.partition(".")
-    return "cp{}{}_{}".format(major, minor, os_arch)
 
 def _req(requires_dist):
     requires, _, marker = requires_dist.partition(";")
@@ -179,8 +170,13 @@ def _platform(*, abi = None, os = None, arch = None):
         arch = arch,
     )
 
-def _platform_from_str(p):
-    abi, _, p = p.partition("_")
+def _platform_from_str(p, python_version):
+    if p.startswith("cp"):
+        abi, _, p = p.partition("_")
+    else:
+        major, _, tail = python_version.partition(".")
+        abi = "cp{}{}".format(major, tail)
+
     os, _, arch = p.partition("_")
     return _platform(abi = abi, os = os, arch = arch)
 
@@ -293,9 +289,26 @@ def _add(deps, deps_select, dep, platform):
     dep = normalize_name(dep)
     add_to = []
 
+    if not platform:
+        deps[dep] = True
+
+        # If the dep is in the platform-specific list, remove it from the select.
+        pop_keys = []
+        for p, _deps in deps_select.items():
+            if dep not in _deps:
+                continue
+
+            _deps.pop(dep)
+            if not _deps:
+                pop_keys.append(p)
+
+        for p in pop_keys:
+            deps_select.pop(p)
+        return
+
     if platform:
         # Add the platform-specific dep
-        deps = deps_select.setdefault(platform, [])
+        deps = deps_select.setdefault(platform, {})
         add_to.append(deps)
         if not deps:
             # We are adding a new item to the select and we need to ensure that
@@ -307,9 +320,7 @@ def _add(deps, deps_select, dep, platform):
                     continue
 
                 # Copy existing elements from the existing specializations.
-                for d in existing_deps:
-                    if d not in deps:
-                        deps.append(d)
+                deps.update(existing_deps)
 
         for p in _platform_specializations(platform):
             if p not in deps_select:
@@ -318,12 +329,9 @@ def _add(deps, deps_select, dep, platform):
             more_specialized_deps = deps_select.get(p, [])
             if dep not in more_specialized_deps:
                 add_to.append(more_specialized_deps)
-    else:
-        add_to.append(deps)
 
     for deps in add_to:
-        if dep not in deps:
-            deps.append(dep)
+        deps[dep] = True
 
 def _resolve_extras(self_name, reqs, extras):
     """Resolve extras which are due to depending on self[some_other_extra].
@@ -401,9 +409,9 @@ def _maybe_add_common_dep(deps, deps_select, platforms, dep):
 
     # All of the python version-specific branches have the dep, so lets add
     # it to the common deps.
-    deps.append(dep)
+    deps[dep] = True
     for p in platforms:
-        deps_select[p].remove(dep)
+        deps_select[p].pop(dep)
         if not deps_select[p]:
             deps_select.pop(p)
 
