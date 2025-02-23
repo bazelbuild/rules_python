@@ -26,11 +26,13 @@ def requirement(spec):
     Returns:
         A struct with the information.
     """
-    requires, _, marker = spec.partition(";")
+    requires, _, maybe_hashes = spec.partition(";")
+    marker, _, _ = maybe_hashes.partition("--hash")
     requires, _, extras_unparsed = requires.partition("[")
     requires, _, _ = requires.partition("(")
     requires, _, _ = requires.partition(" ")
     extras = extras_unparsed.strip("]").split(",")
+
     return struct(
         name = normalize_name(requires.strip(" ")),
         marker = marker.strip(" "),
