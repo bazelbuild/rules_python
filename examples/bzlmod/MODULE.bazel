@@ -105,6 +105,8 @@ use_repo(python, "python_3_10", "python_3_9", "python_versions", "pythons_hub")
 uv = use_extension(
     "@rules_python//python/uv:uv.bzl",
     "uv",
+    # Use `dev_dependency` so that the toolchains are not defined pulled when your
+    # module is used elsewhere.
     dev_dependency = True,
 )
 uv.append_config(version = "0.6.2")
