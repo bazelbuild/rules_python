@@ -52,6 +52,32 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* {obj}`//python/bin:python`: convenience target for directly running an
+  interpreter. {obj}`--//python/bin:python_src` can be used to specify a
+  binary whose interpreter to use.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-2-0}
+## Unreleased
+
+[1.2.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.2.0
+
+{#v1-2-0-changed}
+### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
   fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
 * (rules) deprecation warnings for deprecated symbols have been turned off by
@@ -65,7 +91,7 @@ Unreleased changes template.
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
 
-{#v0-0-0-fixed}
+{#v1-2-0-fixed}
 ### Fixed
 * (rules) `python_zip_file` output with `--bootstrap_impl=script` works again
   ([#2596](https://github.com/bazelbuild/rules_python/issues/2596)).
@@ -82,12 +108,16 @@ Unreleased changes template.
   The related issue is [#908](https://github.com/bazelbuild/rules_python/issue/908).
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
+* (binaries/tests) Fix packaging when using `--bootstrap_impl=script`: set
+  {obj}`--venvs_use_declare_symlink=no` to have it not create symlinks at
+  build time (they will be created at runtime instead).
+  (Fixes [#2489](https://github.com/bazelbuild/rules_python/issues/2489))
 
-{#v0-0-0-added}
+{#v1-2-0-added}
 ### Added
 * Nothing added.
 
-{#v0-0-0-removed}
+{#v1-2-0-removed}
 ### Removed
 * Nothing removed.
 

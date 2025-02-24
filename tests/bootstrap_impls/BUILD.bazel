@@ -62,6 +62,15 @@ sh_py_run_test(
 )
 
 sh_py_run_test(
+    name = "run_binary_venvs_use_declare_symlink_no_test",
+    bootstrap_impl = "script",
+    py_src = "bin.py",
+    sh_src = "run_binary_venvs_use_declare_symlink_no_test.sh",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+    venvs_use_declare_symlink = "no",
+)
+
+sh_py_run_test(
     name = "run_binary_bootstrap_script_zip_yes_test",
     bootstrap_impl = "script",
     build_python_zip = "yes",
