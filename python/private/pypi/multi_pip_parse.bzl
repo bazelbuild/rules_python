@@ -18,7 +18,7 @@ load("//python/private:text_util.bzl", "render")
 load(":pip_repository.bzl", pip_parse = "pip_repository")
 
 def _multi_pip_parse_impl(rctx):
-    rules_python = rctx.attr._rules_python_workspace.workspace_name
+    rules_python = rctx.attr._rules_python_workspace.repo_name
     load_statements = []
     install_deps_calls = []
     process_requirements_calls = []
@@ -69,7 +69,7 @@ def _process_requirements(pkg_labels, python_version, repo_prefix):
         wheel_name = Label(pkg_label).package
         if not wheel_name:
             # We are dealing with the cases where we don't have aliases.
-            workspace_name = Label(pkg_label).workspace_name
+            workspace_name = Label(pkg_label).repo_name
             wheel_name = workspace_name[len(repo_prefix):]
 
         _wheel_names.append(wheel_name)

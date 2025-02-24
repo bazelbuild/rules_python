@@ -18,7 +18,7 @@ load("//python/private:full_version.bzl", "full_version")
 load(":render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
 
 def _whl_library_alias_impl(rctx):
-    rules_python = rctx.attr._rules_python_workspace.workspace_name
+    rules_python = rctx.attr._rules_python_workspace.repo_name
     if rctx.attr.default_version:
         default_repo_prefix = rctx.attr.version_map[rctx.attr.default_version]
     else:

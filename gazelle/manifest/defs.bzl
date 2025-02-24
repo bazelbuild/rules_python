@@ -161,7 +161,7 @@ AllSourcesInfo = provider(fields = {"all_srcs": "All sources collected from the 
 _rules_python_workspace = Label("@rules_python//:WORKSPACE")
 
 def _get_all_sources_impl(target, ctx):
-    is_rules_python = target.label.workspace_name == _rules_python_workspace.workspace_name
+    is_rules_python = target.label.repo_name == _rules_python_workspace.repo_name
     if not is_rules_python:
         # Avoid adding third-party dependency files to the checksum of the srcs.
         return AllSourcesInfo(all_srcs = depset())

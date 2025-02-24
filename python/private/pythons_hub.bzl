@@ -79,7 +79,7 @@ def _hub_build_file_content(
 
     return _HUB_BUILD_FILE_TEMPLATE.format(
         toolchains = toolchains,
-        rules_python = workspace_location.workspace_name,
+        rules_python = workspace_location.repo_name,
     )
 
 _interpreters_bzl_template = """
