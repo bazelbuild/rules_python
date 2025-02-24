@@ -63,6 +63,11 @@ Unreleased changes template.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
+* (uv) Now the extension can be fully configured via `bzlmod` APIs without the
+  need to patch `rules_python`. The documentation has been added to `rules_python`
+  docs but usage of the extension may result in your setup breaking without any
+  notice. What is more, the URLs and SHA256 values will be retrieved from the
+  GitHub releases page metadata published by the `uv` project.
 
 {#v0-0-0-removed}
 ### Removed
