@@ -25,23 +25,16 @@ load(":uv_toolchains_repo.bzl", "uv_toolchains_repo")
 _DOC = """\
 A module extension for working with uv.
 
-Use it in your own setup by:
+Basic usage:
 ```starlark
 uv = use_extension(
     "@rules_python//python/uv:uv.bzl",
     "uv",
+    # Use `dev_dependency` so that the toolchains are not defined pulled when
+    # your module is used elsewhere.
     dev_dependency = True,
 )
-uv.toolchain(
-    name = "uv_toolchains",
-    version = "0.5.24",
-)
-use_repo(uv, "uv_toolchains")
-
-register_toolchains(
-    "@uv_toolchains//:all",
-    dev_dependency = True,
-)
+uv.configure(version = "0.5.24")
 ```
 
 Since this is only for locking the requirements files, it should be always
@@ -75,11 +68,29 @@ Set the uv configuration defaults.
     },
 )
 
-append_config = tag_class(
+configure = tag_class(
     doc = """\
-Build the UV toolchain configuration appending the last configuration fragment or creating a new.
+Build the UV toolchain configuration appending configuration to the last version configuration or starting a new version configuration if {attr}`version` is passed.
 
-A new configuration is created whenever {attr}`version` is passed.
+In addition to the very basic configuration pattern outlined above you can customize
+the configuration:
+```starlark
+# Configure the base_url for the specified version.
+uv.configure(base_url = "my_mirror")
+
+# Add an extra platform that can be used with your version.
+uv.configure(
+    platform = "extra-platform",
+    target_settings = ["//my_config_setting_label"],
+    compatible_with = ["@platforms//os:exotic"],
+)
+```
+
+::::tip
+The configuration is additive for each version. This means that if you need to set
+defaults for all versions, use the {attr}`default` for all of the configuration,
+similarly how `rules_python` is doing it itself.
+::::
 """,
     attrs = {
         "base_url": attr.string(
@@ -145,7 +156,7 @@ def parse_modules(module_ctx):
     versions = {}
     for mod in module_ctx.modules:
         last_version = None
-        for config_attr in mod.tags.append_config:
+        for config_attr in mod.tags.configure:
             last_version = config_attr.version or last_version or config["version"]
             specific_config = versions.setdefault(last_version, {
                 "base_url": config["base_url"],
@@ -292,7 +303,7 @@ uv = module_extension(
     doc = _DOC,
     implementation = _uv_toolchain_extension,
     tag_classes = {
-        "append_config": append_config,
+        "configure": configure,
         "default": default,
     },
 )

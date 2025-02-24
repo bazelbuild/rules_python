@@ -109,14 +109,7 @@ uv = use_extension(
     # module is used elsewhere.
     dev_dependency = True,
 )
-uv.append_config(version = "0.6.2")
-# You can also set the defaults for the base_url
-# uv.append_config(base_url = "my_mirror")
-# uv.append_config(
-#     platform = "extra-platform",
-#     target_settings = ["//my_config_setting_label"],
-#     compatible_with = ["@platforms//os:exotic"],
-# )
+uv.configure(version = "0.6.2")
 
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
