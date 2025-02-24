@@ -62,9 +62,14 @@ Unreleased changes template.
   docs but usage of the extension may result in your setup breaking without any
   notice. What is more, the URLs and SHA256 values will be retrieved from the
   GitHub releases page metadata published by the `uv` project.
+* (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
+  `packaging` from `24.2` to `24.0`.
 
 {#v0-0-0-fixed}
 ### Fixed
+* (rules) `python_zip_file` output with `--bootstrap_impl=script` works again
+  ([#2596](https://github.com/bazelbuild/rules_python/issues/2596)).
+* (docs) Using `python_version` attribute for specifying python versions introduced in `v1.1.0`
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
@@ -72,6 +77,9 @@ Unreleased changes template.
   as UTF-8 on all platforms.
 * (coverage) Coverage with `--bootstrap_impl=script` is fixed
   ([#2572](https://github.com/bazelbuild/rules_python/issues/2572)).
+* (pypi) Non deterministic behaviour in requirement file usage has been fixed
+  by reverting [#2514](https://github.com/bazelbuild/rules_python/pull/2514).
+  The related issue is [#908](https://github.com/bazelbuild/rules_python/issue/908).
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
 
