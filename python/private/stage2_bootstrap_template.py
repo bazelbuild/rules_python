@@ -293,6 +293,14 @@ def _maybe_collect_coverage(enable):
 relative_files = True
 """
         )
+
+    instrumented_files = [abs_path for abs_path, _ in instrumented_file_paths()]
+    unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+    source = list(unique_dirs)
+
+    print_verbose_coverage("[coveragepy] Instrumented Files:\n" + "\n".join(instrumented_files))
+    print_verbose_coverage("[coveragepy] Sources:\n" + "\n".join(unique_dirs))
+
     try:
         cov = coverage.Coverage(
             config_file=rcfile_name,
@@ -314,6 +322,7 @@ relative_files = True
                 # see https://github.com/nedbat/coveragepy/blob/bfb0c708fdd8182b2a9f0fc403596693ef65e475/coverage/inorout.py#L153-L164
                 "*/external/*",
             ],
+            source=source,
         )
         cov.start()
         try:
