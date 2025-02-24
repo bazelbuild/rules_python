@@ -40,6 +40,7 @@ load(
 load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":rule_builders.bzl", "rule_builders")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
@@ -48,12 +49,12 @@ load(
 
 _py_builtins = py_internal
 
-LIBRARY_ATTRS = union_attrs(
+LIBRARY_ATTRS = dicts.add(
     COMMON_ATTRS,
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
-    create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    create_srcs_attr(mandatory = False),
+    ##create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
+    ##create_srcs_attr(mandatory = False),
     {
         "_add_srcs_to_runfiles_flag": attr.label(
             default = "//python/config_settings:add_srcs_to_runfiles",
@@ -145,7 +146,7 @@ Source files are no longer added to the runfiles directly.
 :::
 """
 
-def create_py_library_rule(*, attrs = {}, **kwargs):
+def create_py_library_rule_builder(*, attrs = {}, **kwargs):
     """Creates a py_library rule.
 
     Args:
@@ -162,12 +163,14 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
     # RequiredConfigFragmentsTest passes
     fragments = kwargs.pop("fragments", None) or []
     kwargs["exec_groups"] = REQUIRED_EXEC_GROUPS | (kwargs.get("exec_groups") or {})
-    return rule(
+
+    builder = rule_builders.RuleBuilder(
         attrs = dicts.add(LIBRARY_ATTRS, attrs),
+        fragments = fragments + ["py"],
         toolchains = [
             config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
             config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ],
-        fragments = fragments + ["py"],
         **kwargs
     )
+    return builder
