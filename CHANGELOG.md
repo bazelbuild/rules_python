@@ -52,11 +52,11 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (deps) platforms 0.0.4 -> 0.0.11
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 
 {#v0-0-0-added}
 ### Added
