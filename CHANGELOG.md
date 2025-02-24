@@ -57,6 +57,7 @@ Unreleased changes template.
 * (rules) deprecation warnings for deprecated symbols have been turned off by
   default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
   env var.
+* (deps) platforms 0.0.4 -> 0.0.11
 
 {#v0-0-0-fixed}
 ### Fixed
