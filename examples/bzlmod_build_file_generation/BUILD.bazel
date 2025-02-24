@@ -81,7 +81,7 @@ gazelle_python_manifest(
 # This is the simple case where we only need one language supported.
 # If you also had proto, go, or other gazelle-supported languages,
 # you would also need a gazelle_binary rule.
-# See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
+# See https://github.com/bazel-contrib/bazel-gazelle/blob/master/extend.md#example
 # This is the primary gazelle target to run, so that you can update BUILD.bazel files.
 # You can execute:
 # - bazel run //:gazelle update

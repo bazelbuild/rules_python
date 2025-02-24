@@ -18,15 +18,18 @@ EXPERIMENTAL: This is experimental and may be removed without notice
 A module extension for working with uv.
 """
 
-load("//python/uv:repositories.bzl", "uv_register_toolchains")
+load(":uv_repositories.bzl", "uv_repositories")
 
 _DOC = """\
 A module extension for working with uv.
 """
 
-uv_toolchain = tag_class(attrs = {
-    "uv_version": attr.string(doc = "Explicit version of uv.", mandatory = True),
-})
+uv_toolchain = tag_class(
+    doc = "Configure uv toolchain for lock file generation.",
+    attrs = {
+        "uv_version": attr.string(doc = "Explicit version of uv.", mandatory = True),
+    },
+)
 
 def _uv_toolchain_extension(module_ctx):
     for mod in module_ctx.modules:
@@ -38,7 +41,7 @@ def _uv_toolchain_extension(module_ctx):
                     "NOTE: We may wish to enforce a policy where toolchain configuration is only allowed in the root module, or in rules_python. See https://github.com/bazelbuild/bazel/discussions/22024",
                 )
 
-            uv_register_toolchains(
+            uv_repositories(
                 uv_version = toolchain.uv_version,
                 register_toolchains = False,
             )
