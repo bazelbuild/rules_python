@@ -115,11 +115,12 @@ similarly how `rules_python` is doing it itself.
     },
 )
 
-def parse_modules(module_ctx):
+def parse_modules(module_ctx, uv_repositories = uv_repositories):
     """Parse the modules to get the config for 'uv' toolchains.
 
     Args:
         module_ctx: the context.
+        uv_repositories: the rule to create uv_repositories.
 
     Returns:
         A dictionary for each version of the `uv` to configure.
@@ -180,33 +181,30 @@ def parse_modules(module_ctx):
             if config_attr.manifest_filename:
                 config["manifest_filename"] = config_attr.manifest_filename
 
-    return versions
-
-def _uv_toolchain_extension(module_ctx):
-    uv_versions = parse_modules(module_ctx)
-
-    if not uv_versions:
-        uv_toolchains_repo(
-            name = "uv",
-            toolchain_type = str(UV_TOOLCHAIN_TYPE),
-            toolchain_names = ["none"],
-            toolchain_labels = {
+    versions = {
+        v: config
+        for v, config in versions.items()
+        if config["platforms"]
+    }
+    if not versions:
+        return struct(
+            names = ["none"],
+            labels = {
                 # NOTE @aignas 2025-02-24: the label to the toolchain can be anything
                 "none": str(Label("//python:none")),
             },
-            toolchain_compatible_with = {
+            compatible_with = {
                 "none": ["@platforms//:incompatible"],
             },
-            toolchain_target_settings = {},
+            target_settings = {},
         )
-        return
 
     toolchain_names = []
     toolchain_labels_by_toolchain = {}
     toolchain_compatible_with_by_toolchain = {}
     toolchain_target_settings = {}
 
-    for version, config in uv_versions.items():
+    for version, config in versions.items():
         config["urls"] = _get_tool_urls_from_dist_manifest(
             module_ctx,
             base_url = "{base_url}/{version}".format(
@@ -237,13 +235,25 @@ def _uv_toolchain_extension(module_ctx):
                 for label in platform.target_settings
             ]
 
+    return struct(
+        names = toolchain_names,
+        labels = toolchain_labels_by_toolchain,
+        compatible_with = toolchain_compatible_with_by_toolchain,
+        target_settings = toolchain_target_settings,
+    )
+
+def _uv_toolchain_extension(module_ctx):
+    toolchain = parse_modules(
+        module_ctx,
+    )
+
     uv_toolchains_repo(
         name = "uv",
         toolchain_type = str(UV_TOOLCHAIN_TYPE),
-        toolchain_names = toolchain_names,
-        toolchain_labels = toolchain_labels_by_toolchain,
-        toolchain_compatible_with = toolchain_compatible_with_by_toolchain,
-        toolchain_target_settings = toolchain_target_settings,
+        toolchain_names = toolchain.names,
+        toolchain_labels = toolchain.labels,
+        toolchain_compatible_with = toolchain.compatible_with,
+        toolchain_target_settings = toolchain.target_settings,
     )
 
 def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename):
@@ -253,7 +263,12 @@ def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename
     sha256 values for each binary.
     """
     dist_manifest = module_ctx.path(manifest_filename)
-    module_ctx.download(base_url + "/" + manifest_filename, output = dist_manifest)
+    result = module_ctx.download(
+        base_url + "/" + manifest_filename,
+        output = dist_manifest,
+    )
+    if not result.success:
+        fail(result)
     dist_manifest = json.decode(module_ctx.read(dist_manifest))
 
     artifacts = dist_manifest["artifacts"]
