@@ -52,11 +52,11 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (deps) platforms 0.0.4 -> 0.0.11
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 
 {#v0-0-0-added}
 ### Added
@@ -83,7 +83,6 @@ Unreleased changes template.
 * (rules) deprecation warnings for deprecated symbols have been turned off by
   default for now and can be enabled with `RULES_PYTHON_DEPRECATION_WARNINGS`
   env var.
-* (deps) platforms 0.0.4 -> 0.0.11
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
 
@@ -95,7 +94,6 @@ Unreleased changes template.
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
-* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 * (runfiles) Runfile manifest and repository mapping files are now interpreted
   as UTF-8 on all platforms.
 * (coverage) Coverage with `--bootstrap_impl=script` is fixed
