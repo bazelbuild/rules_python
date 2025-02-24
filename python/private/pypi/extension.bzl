@@ -659,11 +659,6 @@ The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
 
 This is equivalent to `--extra-index-urls` `pip` option.
-
-:::{versionchanged} 1.1.0
-Starting with this version we will iterate over each index specified until
-we find metadata for all references distributions.
-:::
 """,
             default = [],
         ),
