@@ -28,13 +28,16 @@ def _Optional(*initial):
     if len(initial) == 2:
         kwargs, name = initial
         if name in kwargs:
-            initial = kwargs.pop(name)
+            initial = [kwargs.pop(name)]
         else:
-            initial = ()
+            initial = []
+    else:
+        initial = list(initial)
 
     # buildifier: disable=uninitialized
     self = struct(
-        _value = list(initial),
+        # Length zero when no value; length one when has value.
+        _value = initial,
         present = lambda *a, **k: _Optional_present(self, *a, **k),
         set = lambda *a, **k: _Optional_set(self, *a, **k),
         get = lambda *a, **k: _Optional_get(self, *a, **k),
@@ -84,7 +87,7 @@ def _RuleCfgBuilder(**kwargs):
     self = struct(
         _implementation = [kwargs.pop("implementation", None)],
         set_implementation = lambda *a, **k: _RuleCfgBuilder_set_implementation(self, *a, **k),
-        implementation = lambda: _RuleCfgBuilder(self),
+        implementation = lambda: _RuleCfgBuilder_implementation(self),
         outputs = _SetBuilder(_kwargs_pop_list(kwargs, "outputs")),
         inputs = _SetBuilder(_kwargs_pop_list(kwargs, "inputs")),
         build = lambda *a, **k: _RuleCfgBuilder_build(self, *a, **k),
@@ -92,6 +95,12 @@ def _RuleCfgBuilder(**kwargs):
     return self
 
 def _RuleCfgBuilder_set_implementation(self, value):
+    """Set the implementation method.
+
+    Args:
+        self: implicitly added.
+        value: {type}`str | function` a valid `rule.cfg` argument value.
+    """
     self._implementation[0] = value
 
 def _RuleCfgBuilder_implementation(self):
@@ -185,6 +194,7 @@ def _Builder_get_pairs(kwargs, obj):
         pairs.append((name, value))
     return pairs
 
+# This function isn't allowed to call builders to prevent recursion
 def _Builder_to_kwargs_nobuilders(self, kwargs = None):
     if kwargs == None:
         kwargs = {}
@@ -222,6 +232,7 @@ def _AttrsDict(initial):
 
 def _AttrsDict_update(self, other):
     for k, v in other.items():
+        # Handle factory functions that create builders
         if types.is_function(v):
             self.values[k] = v()
         else:
