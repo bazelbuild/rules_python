@@ -181,75 +181,76 @@ uv = use_extension("//python/uv:uv.bzl", "uv")
 # Here is how we can define platforms for the `uv` binaries - this will affect
 # all of the downstream callers because we are using the extension without
 # `dev_dependency = True`.
-uv.platform(
-    name = "aarch64-apple-darwin",
+uv.default(
+    base_url = "https://github.com/astral-sh/uv/releases/download",
+    manifest_filename = "dist-manifest.json",
+    version = "0.6.2",
+)
+uv.default(
     compatible_with = [
         "@platforms//os:macos",
         "@platforms//cpu:aarch64",
     ],
+    platform = "aarch64-apple-darwin",
 )
-uv.platform(
-    name = "aarch64-unknown-linux-gnu",
+uv.default(
     compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:aarch64",
     ],
+    platform = "aarch64-unknown-linux-gnu",
 )
-uv.platform(
-    name = "powerpc64-unknown-linux-gnu",
+uv.default(
     compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:ppc",
     ],
+    platform = "powerpc64-unknown-linux-gnu",
 )
-uv.platform(
-    name = "powerpc64le-unknown-linux-gnu",
+uv.default(
     compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:ppc64le",
     ],
+    platform = "powerpc64le-unknown-linux-gnu",
 )
-uv.platform(
-    name = "s390x-unknown-linux-gnu",
+uv.default(
     compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:s390x",
     ],
+    platform = "s390x-unknown-linux-gnu",
 )
-uv.platform(
-    name = "x86_64-apple-darwin",
+uv.default(
     compatible_with = [
         "@platforms//os:macos",
         "@platforms//cpu:x86_64",
     ],
+    platform = "x86_64-apple-darwin",
 )
-uv.platform(
-    name = "x86_64-pc-windows-msvc",
+uv.default(
     compatible_with = [
         "@platforms//os:windows",
         "@platforms//cpu:x86_64",
     ],
+    platform = "x86_64-pc-windows-msvc",
 )
-uv.platform(
-    name = "x86_64-unknown-linux-gnu",
+uv.default(
     compatible_with = [
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
+    platform = "x86_64-unknown-linux-gnu",
 )
+use_repo(uv, "uv")
+
+register_toolchains("@uv//:all")
 
 uv_dev = use_extension(
     "//python/uv:uv.bzl",
     "uv",
     dev_dependency = True,
 )
-uv_dev.toolchain(
-    name = "uv_toolchains",
-    version = "0.5.24",
-)
-use_repo(uv_dev, "uv_toolchains")
-
-register_toolchains(
-    "@uv_toolchains//:all",
-    dev_dependency = True,
+uv_dev.append_config(
+    version = "0.6.2",
 )
