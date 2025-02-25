@@ -21,6 +21,8 @@ load("//python/uv/private:uv.bzl", "parse_modules")  # buildifier: disable=bzl-v
 _tests = []
 
 def _mock_mctx(*modules, download = None, read = None):
+    # Here we construct a fake minimal manifest file that we use to mock what would
+    # be otherwise read from GH files
     manifest_files = {
         "different.json": {
             x: {
@@ -123,9 +125,9 @@ def _default(
         **kwargs
     )
 
-def _configure(**kwargs):
+def _configure(urls = None, sha256 = None, **kwargs):
     # We have the same attributes
-    return _default(**kwargs)
+    return _default(sha256 = sha256, urls = urls, **kwargs)
 
 def _test_only_defaults(env):
     uv = _parse_modules(
@@ -156,6 +158,56 @@ def _test_only_defaults(env):
     uv.target_settings().contains_exactly({})
 
 _tests.append(_test_only_defaults)
+
+def _test_manual_url_spec(env):
+    calls = []
+    uv = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                default = [
+                    _default(
+                        manifest_filename = "manifest.json",
+                        version = "1.0.0",
+                    ),
+                ],
+                configure = [
+                    _configure(
+                        platform = "linux",
+                        compatible_with = ["@platforms//os:linux"],
+                        urls = ["https://example.org/download.zip"],
+                        sha256 = "deadbeef",
+                    ),
+                ],
+            ),
+            read = lambda *args, **kwargs: fail(args, kwargs),
+        ),
+        uv_repository = lambda **kwargs: calls.append(kwargs),
+    )
+
+    uv.names().contains_exactly([
+        "uv_1_0_0_linux_toolchain",
+    ])
+    uv.labels().contains_exactly({
+        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
+    })
+    uv.compatible_with().contains_exactly({
+        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
+    })
+    uv.target_settings().contains_exactly({
+        "uv_1_0_0_linux_toolchain": [],
+    })
+    env.expect.that_collection(calls).contains_exactly([
+        {
+            "name": "uv_1_0_0_linux",
+            "platform": "linux",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/download.zip"],
+            "version": "1.0.0",
+        },
+    ])
+
+_tests.append(_test_manual_url_spec)
 
 def _test_defaults(env):
     calls = []
@@ -281,7 +333,7 @@ def _test_complex_configuring(env):
                         base_url = "https://example.org",
                         manifest_filename = "manifest.json",
                         version = "1.0.0",
-                        platform = "os",
+                        platform = "osx",
                         compatible_with = ["@platforms//os:os"],
                     ),
                 ],
@@ -296,13 +348,13 @@ def _test_complex_configuring(env):
                         manifest_filename = "different.json",
                     ),  # use defaults
                     _configure(
-                        platform = "os",
+                        platform = "osx",
                         compatible_with = ["@platforms//os:different"],
                     ),
                     _configure(
                         version = "1.0.3",
                     ),
-                    _configure(platform = "os"),  # remove the default
+                    _configure(platform = "osx"),  # remove the default
                     _configure(
                         platform = "linux",
                         compatible_with = ["@platforms//os:linux"],
@@ -314,49 +366,49 @@ def _test_complex_configuring(env):
     )
 
     uv.names().contains_exactly([
-        "uv_1_0_0_os_toolchain",
-        "uv_1_0_1_os_toolchain",
-        "uv_1_0_2_os_toolchain",
+        "uv_1_0_0_osx_toolchain",
+        "uv_1_0_1_osx_toolchain",
+        "uv_1_0_2_osx_toolchain",
         "uv_1_0_3_linux_toolchain",
     ])
     uv.labels().contains_exactly({
-        "uv_1_0_0_os_toolchain": "@uv_1_0_0_os//:uv_toolchain",
-        "uv_1_0_1_os_toolchain": "@uv_1_0_1_os//:uv_toolchain",
-        "uv_1_0_2_os_toolchain": "@uv_1_0_2_os//:uv_toolchain",
+        "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
+        "uv_1_0_1_osx_toolchain": "@uv_1_0_1_osx//:uv_toolchain",
+        "uv_1_0_2_osx_toolchain": "@uv_1_0_2_osx//:uv_toolchain",
         "uv_1_0_3_linux_toolchain": "@uv_1_0_3_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
-        "uv_1_0_0_os_toolchain": ["@platforms//os:os"],
-        "uv_1_0_1_os_toolchain": ["@platforms//os:os"],
-        "uv_1_0_2_os_toolchain": ["@platforms//os:different"],
+        "uv_1_0_0_osx_toolchain": ["@platforms//os:os"],
+        "uv_1_0_1_osx_toolchain": ["@platforms//os:os"],
+        "uv_1_0_2_osx_toolchain": ["@platforms//os:different"],
         "uv_1_0_3_linux_toolchain": ["@platforms//os:linux"],
     })
     uv.target_settings().contains_exactly({
-        "uv_1_0_0_os_toolchain": [],
-        "uv_1_0_1_os_toolchain": [],
-        "uv_1_0_2_os_toolchain": [],
+        "uv_1_0_0_osx_toolchain": [],
+        "uv_1_0_1_osx_toolchain": [],
+        "uv_1_0_2_osx_toolchain": [],
         "uv_1_0_3_linux_toolchain": [],
     })
     env.expect.that_collection(calls).contains_exactly([
         {
-            "name": "uv_1_0_0_os",
-            "platform": "os",
-            "sha256": "deadbeef",
-            "urls": ["https://example.org/1.0.0/os"],
+            "name": "uv_1_0_0_osx",
+            "platform": "osx",
+            "sha256": "deadb00f",
+            "urls": ["https://example.org/1.0.0/osx"],
             "version": "1.0.0",
         },
         {
-            "name": "uv_1_0_1_os",
-            "platform": "os",
-            "sha256": "deadbeef",
-            "urls": ["https://example.org/1.0.1/os"],
+            "name": "uv_1_0_1_osx",
+            "platform": "osx",
+            "sha256": "deadb00f",
+            "urls": ["https://example.org/1.0.1/osx"],
             "version": "1.0.1",
         },
         {
-            "name": "uv_1_0_2_os",
-            "platform": "os",
-            "sha256": "deadbeef",
-            "urls": ["something_different/1.0.2/os"],
+            "name": "uv_1_0_2_osx",
+            "platform": "osx",
+            "sha256": "deadb00f",
+            "urls": ["something_different/1.0.2/osx"],
             "version": "1.0.2",
         },
         {

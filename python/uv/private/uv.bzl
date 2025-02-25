@@ -106,8 +106,14 @@ similarly how `rules_python` is doing it itself.
         "platform": attr.string(
             doc = "The platform string used in the UV repository to denote the platform triple.",
         ),
+        "sha256": attr.string(
+            doc = "The sha256 of the downloaded artifact.",
+        ),
         "target_settings": attr.label_list(
             doc = "The `target_settings` to add to platform definitions.",
+        ),
+        "urls": attr.string_list(
+            doc = "The urls to download the binary from. If this is used, {attr}`base_url` is ignored.",
         ),
         "version": attr.string(
             doc = "The version of uv to use.",
@@ -160,7 +166,7 @@ def parse_modules(module_ctx, uv_repository = None):
         for config_attr in mod.tags.configure:
             last_version = config_attr.version or last_version or config["version"]
             specific_config = versions.setdefault(last_version, {
-                "base_url": config["base_url"],
+                "base_url": config.get("base_url", ""),
                 "manifest_filename": config["manifest_filename"],
                 "platforms": {k: v for k, v in config["platforms"].items()},  # make a copy
             })
@@ -172,6 +178,11 @@ def parse_modules(module_ctx, uv_repository = None):
                     compatible_with = config_attr.compatible_with,
                     target_settings = config_attr.target_settings,
                 )
+                if config_attr.urls:
+                    specific_config.setdefault("urls", {})[config_attr.platform] = struct(
+                        sha256 = config_attr.sha256,
+                        urls = config_attr.urls,
+                    )
             elif config_attr.compatible_with or config_attr.target_settings:
                 fail("TODO: unsupported")
 
@@ -179,7 +190,7 @@ def parse_modules(module_ctx, uv_repository = None):
                 specific_config["base_url"] = config_attr.base_url
 
             if config_attr.manifest_filename:
-                config["manifest_filename"] = config_attr.manifest_filename
+                specific_config["manifest_filename"] = config_attr.manifest_filename
 
     versions = {
         v: config
@@ -205,19 +216,22 @@ def parse_modules(module_ctx, uv_repository = None):
     toolchain_target_settings = {}
 
     for version, config in versions.items():
-        config["urls"] = _get_tool_urls_from_dist_manifest(
-            module_ctx,
-            base_url = "{base_url}/{version}".format(
-                version = version,
-                base_url = config["base_url"],
-            ),
-            manifest_filename = config["manifest_filename"],
-        )
+        urls = config.get("urls")
+        if not urls:
+            urls = _get_tool_urls_from_dist_manifest(
+                module_ctx,
+                base_url = "{base_url}/{version}".format(
+                    version = version,
+                    base_url = config["base_url"],
+                ),
+                manifest_filename = config["manifest_filename"],
+            )
+
         platforms = config["platforms"]
         result = uv_repositories(
             name = "uv",
             platforms = platforms,
-            urls = config["urls"],
+            urls = urls,
             version = version,
             uv_repository = uv_repository,
         )
