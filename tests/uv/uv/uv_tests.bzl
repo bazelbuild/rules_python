@@ -29,16 +29,17 @@ def _mock_mctx(*modules, download = None, read = None):
                     "checksum": x + ".sha256",
                     "kind": "executable-zip",
                 }
-                for x in ["linux", "os"]
+                for x in ["linux", "os", "osx"]
             } | {
                 x + ".sha256": {
                     "name": x + ".sha256",
                     "target_triples": [x],
                 }
-                for x in ["linux", "os"]
+                for x in ["linux", "os", "osx"]
             },
         }),
         "os.sha256": "deadbeef os",
+        "osx.sha256": "deadb00f osx",
     }
 
     return struct(
@@ -217,11 +218,37 @@ def _test_default_building(env):
         uv_repository = lambda **kwargs: calls.append(kwargs),
     )
 
-    uv.names().contains_exactly([])
-    uv.labels().contains_exactly({})
-    uv.compatible_with().contains_exactly({})
-    uv.target_settings().contains_exactly({})
+    uv.names().contains_exactly([
+        "uv_1_0_0_linux_toolchain",
+        "uv_1_0_0_osx_toolchain",
+    ])
+    uv.labels().contains_exactly({
+        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
+        "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
+    })
+    uv.compatible_with().contains_exactly({
+        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
+        "uv_1_0_0_osx_toolchain": ["@platforms//os:osx"],
+    })
+    uv.target_settings().contains_exactly({
+        "uv_1_0_0_linux_toolchain": ["//:my_flag"],
+        "uv_1_0_0_osx_toolchain": [],
+    })
     env.expect.that_collection(calls).contains_exactly([
+        {
+            "name": "uv_1_0_0_linux",
+            "platform": "linux",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/1.0.0/linux"],
+            "version": "1.0.0",
+        },
+        {
+            "name": "uv_1_0_0_osx",
+            "platform": "osx",
+            "sha256": "deadb00f",
+            "urls": ["https://example.org/1.0.0/osx"],
+            "version": "1.0.0",
+        },
     ])
 
 _tests.append(_test_default_building)
