@@ -21,25 +21,42 @@ load("//python/uv/private:uv.bzl", "parse_modules")  # buildifier: disable=bzl-v
 _tests = []
 
 def _mock_mctx(*modules, download = None, read = None):
+    manifest_files = {
+        "different.json": {
+            x: {
+                "checksum": x + ".sha256",
+                "kind": "executable-zip",
+            }
+            for x in ["linux", "osx"]
+        } | {
+            x + ".sha256": {
+                "name": x + ".sha256",
+                "target_triples": [x],
+            }
+            for x in ["linux", "osx"]
+        },
+        "manifest.json": {
+            x: {
+                "checksum": x + ".sha256",
+                "kind": "executable-zip",
+            }
+            for x in ["linux", "os", "osx"]
+        } | {
+            x + ".sha256": {
+                "name": x + ".sha256",
+                "target_triples": [x],
+            }
+            for x in ["linux", "os", "osx"]
+        },
+    }
+
     fake_fs = {
         "linux.sha256": "deadbeef linux",
-        "manifest.json": json.encode({
-            "artifacts": {
-                x: {
-                    "checksum": x + ".sha256",
-                    "kind": "executable-zip",
-                }
-                for x in ["linux", "os", "osx"]
-            } | {
-                x + ".sha256": {
-                    "name": x + ".sha256",
-                    "target_triples": [x],
-                }
-                for x in ["linux", "os", "osx"]
-            },
-        }),
         "os.sha256": "deadbeef os",
         "osx.sha256": "deadb00f osx",
+    } | {
+        fname: json.encode({"artifacts": contents})
+        for fname, contents in manifest_files.items()
     }
 
     return struct(
@@ -296,11 +313,59 @@ def _test_complex_configuring(env):
         uv_repository = lambda **kwargs: calls.append(kwargs),
     )
 
-    uv.names().contains_exactly([])
-    uv.labels().contains_exactly({})
-    uv.compatible_with().contains_exactly({})
-    uv.target_settings().contains_exactly({})
+    uv.names().contains_exactly([
+        "uv_1_0_0_os_toolchain",
+        "uv_1_0_1_os_toolchain",
+        "uv_1_0_2_os_toolchain",
+        "uv_1_0_3_linux_toolchain",
+    ])
+    uv.labels().contains_exactly({
+        "uv_1_0_0_os_toolchain": "@uv_1_0_0_os//:uv_toolchain",
+        "uv_1_0_1_os_toolchain": "@uv_1_0_1_os//:uv_toolchain",
+        "uv_1_0_2_os_toolchain": "@uv_1_0_2_os//:uv_toolchain",
+        "uv_1_0_3_linux_toolchain": "@uv_1_0_3_linux//:uv_toolchain",
+    })
+    uv.compatible_with().contains_exactly({
+        "uv_1_0_0_os_toolchain": ["@platforms//os:os"],
+        "uv_1_0_1_os_toolchain": ["@platforms//os:os"],
+        "uv_1_0_2_os_toolchain": ["@platforms//os:different"],
+        "uv_1_0_3_linux_toolchain": ["@platforms//os:linux"],
+    })
+    uv.target_settings().contains_exactly({
+        "uv_1_0_0_os_toolchain": [],
+        "uv_1_0_1_os_toolchain": [],
+        "uv_1_0_2_os_toolchain": [],
+        "uv_1_0_3_linux_toolchain": [],
+    })
     env.expect.that_collection(calls).contains_exactly([
+        {
+            "name": "uv_1_0_0_os",
+            "platform": "os",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/1.0.0/os"],
+            "version": "1.0.0",
+        },
+        {
+            "name": "uv_1_0_1_os",
+            "platform": "os",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/1.0.1/os"],
+            "version": "1.0.1",
+        },
+        {
+            "name": "uv_1_0_2_os",
+            "platform": "os",
+            "sha256": "deadbeef",
+            "urls": ["something_different/1.0.2/os"],
+            "version": "1.0.2",
+        },
+        {
+            "name": "uv_1_0_3_linux",
+            "platform": "linux",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/1.0.3/linux"],
+            "version": "1.0.3",
+        },
     ])
 
 _tests.append(_test_complex_configuring)
