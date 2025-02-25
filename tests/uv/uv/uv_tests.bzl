@@ -150,7 +150,7 @@ def _test_only_defaults(env):
         "none",
     ])
     uv.labels().contains_exactly({
-        "none": "@@//python:none",
+        "none": str(Label("//python:none")),
     })
     uv.compatible_with().contains_exactly({
         "none": ["@platforms//:incompatible"],
