@@ -84,6 +84,14 @@ uv.configure(
     target_settings = ["//my_config_setting_label"],
     compatible_with = ["@platforms//os:exotic"],
 )
+
+# Add an extra platform that can be used with your version.
+uv.configure(
+    platform = "patched-binary",
+    target_settings = ["//my_super_config_setting"],
+    urls = ["https://example.zip"],
+    sha256 = "deadbeef",
+)
 ```
 
 ::::tip
