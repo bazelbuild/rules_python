@@ -109,7 +109,7 @@ def _configure(**kwargs):
     # We have the same attributes
     return _default(**kwargs)
 
-def _test_simple(env):
+def _test_only_defaults(env):
     uv = _parse_modules(
         env,
         module_ctx = _mock_mctx(
@@ -126,11 +126,21 @@ def _test_simple(env):
     )
 
     # No defined platform means nothing gets registered
-    uv.names().contains_exactly([])
+    uv.names().contains_exactly([
+        "none",
+    ])
+    uv.labels().contains_exactly({
+        "none": "@@//python:none",
+    })
+    uv.compatible_with().contains_exactly({
+        "none": ["@platforms//:incompatible"],
+    })
+    uv.target_settings().contains_exactly({})
 
-_tests.append(_test_simple)
+_tests.append(_test_only_defaults)
 
 def _test_defaults(env):
+    calls = []
     uv = _parse_modules(
         env,
         module_ctx = _mock_mctx(
@@ -150,25 +160,35 @@ def _test_defaults(env):
                 ],
             ),
         ),
+        uv_repository = lambda **kwargs: calls.append(kwargs),
     )
 
-    uv.contains_exactly({
-        "1.0.0": {
-            "base_url": "https://example.org",
-            "manifest_filename": "manifest.json",
-            "platforms": {
-                "linux": struct(
-                    name = "linux",
-                    compatible_with = ["@platforms//os:linux"],
-                    target_settings = ["//:my_flag"],
-                ),
-            },
-        },
+    uv.names().contains_exactly([
+        "uv_1_0_0_linux_toolchain",
+    ])
+    uv.labels().contains_exactly({
+        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
     })
+    uv.compatible_with().contains_exactly({
+        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
+    })
+    uv.target_settings().contains_exactly({
+        "uv_1_0_0_linux_toolchain": ["//:my_flag"],
+    })
+    env.expect.that_collection(calls).contains_exactly([
+        {
+            "name": "uv_1_0_0_linux",
+            "platform": "linux",
+            "sha256": "deadbeef",
+            "urls": ["https://example.org/1.0.0/linux"],
+            "version": "1.0.0",
+        },
+    ])
 
 _tests.append(_test_defaults)
 
 def _test_default_building(env):
+    calls = []
     uv = _parse_modules(
         env,
         module_ctx = _mock_mctx(
@@ -194,30 +214,20 @@ def _test_default_building(env):
                 ],
             ),
         ),
+        uv_repository = lambda **kwargs: calls.append(kwargs),
     )
 
-    uv.contains_exactly({
-        "1.0.0": {
-            "base_url": "https://example.org",
-            "manifest_filename": "manifest.json",
-            "platforms": {
-                "linux": struct(
-                    name = "linux",
-                    compatible_with = ["@platforms//os:linux"],
-                    target_settings = ["//:my_flag"],
-                ),
-                "osx": struct(
-                    name = "osx",
-                    compatible_with = ["@platforms//os:osx"],
-                    target_settings = [],
-                ),
-            },
-        },
-    })
+    uv.names().contains_exactly([])
+    uv.labels().contains_exactly({})
+    uv.compatible_with().contains_exactly({})
+    uv.target_settings().contains_exactly({})
+    env.expect.that_collection(calls).contains_exactly([
+    ])
 
 _tests.append(_test_default_building)
 
-def test_complex_configuring(env):
+def _test_complex_configuring(env):
+    calls = []
     uv = _parse_modules(
         env,
         module_ctx = _mock_mctx(
@@ -256,40 +266,17 @@ def test_complex_configuring(env):
                 ],
             ),
         ),
+        uv_repository = lambda **kwargs: calls.append(kwargs),
     )
 
-    uv.contains_exactly({
-        "1.0.0": {
-            "base_url": "https://example.org",
-            "manifest_filename": "manifest.json",
-            "platforms": {
-                "os": struct(compatible_with = ["@platforms//os:os"], name = "os", target_settings = []),
-            },
-        },
-        "1.0.1": {
-            "base_url": "https://example.org",
-            "manifest_filename": "manifest.json",
-            "platforms": {
-                "os": struct(compatible_with = ["@platforms//os:os"], name = "os", target_settings = []),
-            },
-        },
-        "1.0.2": {
-            "base_url": "something_different",
-            "manifest_filename": "manifest.json",
-            "platforms": {
-                "os": struct(compatible_with = ["@platforms//os:different"], name = "os", target_settings = []),
-            },
-        },
-        "1.0.3": {
-            "base_url": "https://example.org",
-            "manifest_filename": "different.json",
-            "platforms": {
-                "linux": struct(compatible_with = ["@platforms//os:linux"], name = "linux", target_settings = []),
-            },
-        },
-    })
+    uv.names().contains_exactly([])
+    uv.labels().contains_exactly({})
+    uv.compatible_with().contains_exactly({})
+    uv.target_settings().contains_exactly({})
+    env.expect.that_collection(calls).contains_exactly([
+    ])
 
-_tests.append(test_complex_configuring)
+_tests.append(_test_complex_configuring)
 
 def uv_test_suite(name):
     """Create the test suite.

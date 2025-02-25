@@ -62,7 +62,7 @@ def _uv_repo_impl(repository_ctx):
         "version": repository_ctx.attr.version,
     }
 
-uv_repository = repository_rule(
+_uv_repository = repository_rule(
     _uv_repo_impl,
     doc = "Fetch external tools needed for uv toolchain",
     attrs = {
@@ -73,7 +73,7 @@ uv_repository = repository_rule(
     },
 )
 
-def uv_repositories(*, name, version, platforms, urls):
+def uv_repositories(*, name, version, platforms, urls, uv_repository = None):
     """Convenience macro which does typical toolchain setup
 
     Skip this macro if you need more control over the toolchain setup.
@@ -83,10 +83,12 @@ def uv_repositories(*, name, version, platforms, urls):
         version: The uv toolchain version to download.
         platforms: The platforms to register uv for.
         urls: The urls with sha256 values to register uv for.
+        uv_repository: The rule function for creating a uv_repository.
 
     Returns:
         A struct with names, labels and platforms that were created for this invocation.
     """
+    uv_repository = uv_repository or _uv_repository
     if not version:
         fail("version is required")
 

@@ -115,12 +115,12 @@ similarly how `rules_python` is doing it itself.
     },
 )
 
-def parse_modules(module_ctx, uv_repositories = uv_repositories):
+def parse_modules(module_ctx, uv_repository = None):
     """Parse the modules to get the config for 'uv' toolchains.
 
     Args:
         module_ctx: the context.
-        uv_repositories: the rule to create uv_repositories.
+        uv_repository: the rule to create a uv_repository override.
 
     Returns:
         A dictionary for each version of the `uv` to configure.
@@ -219,6 +219,7 @@ def parse_modules(module_ctx, uv_repositories = uv_repositories):
             platforms = platforms,
             urls = config["urls"],
             version = version,
+            uv_repository = uv_repository,
         )
 
         for name in result.names:
