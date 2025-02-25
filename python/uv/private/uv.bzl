@@ -121,7 +121,7 @@ similarly how `rules_python` is doing it itself.
             doc = "The `target_settings` to add to platform definitions.",
         ),
         "urls": attr.string_list(
-            doc = "The urls to download the binary from. If this is used, {attr}`base_url` is ignored.",
+            doc = "The urls to download the binary from. If this is used, {attr}`base_url` is ignored. If the `urls` are specified, they need to be specified for all of the platforms for a particular version.",
         ),
         "version": attr.string(
             doc = "The version of uv to use.",
