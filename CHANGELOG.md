@@ -53,6 +53,8 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (deps) platforms 0.0.4 -> 0.0.11
+* Fall back to directory based runfiles using relative paths if runfiles
+  cannot be found using environment variables.
 
 {#v0-0-0-fixed}
 ### Fixed
