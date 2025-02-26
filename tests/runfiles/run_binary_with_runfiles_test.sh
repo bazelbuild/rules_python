@@ -34,6 +34,8 @@ fi
 unset RUNFILES_MANIFEST_FILE
 unset RUNFILES_DIR
 
+env | sort
+
 # Fail if tests fail
 set -e
 ${bin}

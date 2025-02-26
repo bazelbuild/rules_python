@@ -22,6 +22,7 @@ class RunfilesTest(unittest.TestCase):
     """Unit tests for `rules_python.python.runfiles.Runfiles`."""
 
     def testCreatesDirectoryBasedRunfiles(self) -> None:
+        print(os.environ)
         r = runfiles.Create()
         repo = r.CurrentRepository() or "_main"
         bin_location = r.Rlocation(os.path.join(repo,"tests/runfiles/bin_with_runfiles_test.py"))
