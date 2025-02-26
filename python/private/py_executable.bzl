@@ -1760,7 +1760,7 @@ def create_executable_rule_builder(implementation, **kwargs):
             TOOLCHAIN_TYPE,
             config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ] + _CC_TOOLCHAINS,
-        cfg = rule_builders.RuleCfgBuilder(
+        cfg = dict(
             implementation = _transition_executable_impl,
             inputs = [_PYTHON_VERSION_FLAG],
             outputs = [_PYTHON_VERSION_FLAG],

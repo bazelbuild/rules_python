@@ -102,6 +102,7 @@ sphinx_stardocs(
         "//python/private:py_library_rule_bzl",
         "//python/private:py_runtime_rule_bzl",
         "//python/private:py_test_rule_bzl",
+        "//python/private:rule_builders_bzl",
         "//python/private/api:py_common_api_bzl",
         "//python/private/pypi:config_settings_bzl",
         "//python/private/pypi:pkg_aliases_bzl",
