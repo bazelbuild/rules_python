@@ -1,0 +1,17 @@
+load("@pip//:requirements.bzl", "all_requirements", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_uv//uv:pip.bzl", "pip_compile")
+
+pip_compile(
+    name = "generate_requirements",
+    python_platform = "aarch64-unknown-linux-gnu",
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements.txt",
+)
+
+py_test(
+    name = "test",
+    srcs = ["test_load.py"],
+    main = "test_load.py",
+    deps = all_requirements,
+)
