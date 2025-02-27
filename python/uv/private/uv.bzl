@@ -178,14 +178,15 @@ def parse_modules(module_ctx, uv_repository = None):
                 "manifest_filename": config["manifest_filename"],
                 "platforms": {k: v for k, v in config["platforms"].items()},  # make a copy
             })
-            if config_attr.platform and not (config_attr.compatible_with or config_attr.target_settings):
+            if config_attr.platform and not (config_attr.compatible_with or config_attr.target_settings or config_attr.urls):
                 specific_config["platforms"].pop(config_attr.platform)
             elif config_attr.platform:
-                specific_config["platforms"][config_attr.platform] = struct(
-                    name = config_attr.platform.replace("-", "_").lower(),
-                    compatible_with = config_attr.compatible_with,
-                    target_settings = config_attr.target_settings,
-                )
+                if config_attr.compatible_with or config_attr.target_settings:
+                    specific_config["platforms"][config_attr.platform] = struct(
+                        name = config_attr.platform.replace("-", "_").lower(),
+                        compatible_with = config_attr.compatible_with,
+                        target_settings = config_attr.target_settings,
+                    )
                 if config_attr.urls:
                     specific_config.setdefault("urls", {})[config_attr.platform] = struct(
                         sha256 = config_attr.sha256,
@@ -201,8 +202,8 @@ def parse_modules(module_ctx, uv_repository = None):
                 specific_config["manifest_filename"] = config_attr.manifest_filename
 
     versions = {
-        v: config
-        for v, config in versions.items()
+        version: config
+        for version, config in versions.items()
         if config["platforms"]
     }
     if not versions:
@@ -224,7 +225,13 @@ def parse_modules(module_ctx, uv_repository = None):
     toolchain_target_settings = {}
 
     for version, config in versions.items():
-        urls = config.get("urls")
+        platforms = config["platforms"]
+
+        urls = {
+            platform: src
+            for platform, src in config.get("urls", {}).items()
+            if src.urls
+        }
         if not urls:
             urls = _get_tool_urls_from_dist_manifest(
                 module_ctx,
@@ -233,12 +240,16 @@ def parse_modules(module_ctx, uv_repository = None):
                     base_url = config["base_url"],
                 ),
                 manifest_filename = config["manifest_filename"],
+                platforms = sorted(platforms.keys()),
             )
 
-        platforms = config["platforms"]
         result = uv_repositories(
             name = "uv",
-            platforms = platforms,
+            platforms = {
+                platform_name: platform
+                for platform_name, platform in platforms.items()
+                if platform_name in urls
+            },
             urls = urls,
             version = version,
             uv_repository = uv_repository,
@@ -279,7 +290,14 @@ def _uv_toolchain_extension(module_ctx):
         toolchain_target_settings = toolchain.target_settings,
     )
 
-def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename):
+def _overlap(first_collection, second_collection):
+    for x in first_collection:
+        if x in second_collection:
+            return True
+
+    return False
+
+def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename, platforms):
     """Download the results about remote tool sources.
 
     This relies on the tools using the cargo packaging to infer the actual
@@ -302,6 +320,10 @@ def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename
             continue
 
         checksum = artifacts[artifact["checksum"]]
+        if not _overlap(checksum["target_triples"], platforms):
+            # we are not interested in this platform, so skip
+            continue
+
         checksum_fname = checksum["name"]
         checksum_path = module_ctx.path(checksum_fname)
         downloads[checksum_path] = struct(

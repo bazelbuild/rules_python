@@ -42,13 +42,13 @@ def _mock_mctx(*modules, download = None, read = None):
                 "checksum": x + ".sha256",
                 "kind": "executable-zip",
             }
-            for x in ["linux", "os", "osx"]
+            for x in ["linux", "os", "osx", "something_extra"]
         } | {
             x + ".sha256": {
                 "name": x + ".sha256",
                 "target_triples": [x],
             }
-            for x in ["linux", "os", "osx"]
+            for x in ["linux", "os", "osx", "something_extra"]
         },
     }
 
@@ -170,11 +170,20 @@ def _test_manual_url_spec(env):
                         manifest_filename = "manifest.json",
                         version = "1.0.0",
                     ),
+                    _default(
+                        platform = "linux",
+                        compatible_with = ["@platforms//os:linux"],
+                    ),
+                    # This will be ignored because urls are passed for some of
+                    # the binaries.
+                    _default(
+                        platform = "osx",
+                        compatible_with = ["@platforms//os:osx"],
+                    ),
                 ],
                 configure = [
                     _configure(
                         platform = "linux",
-                        compatible_with = ["@platforms//os:linux"],
                         urls = ["https://example.org/download.zip"],
                         sha256 = "deadbeef",
                     ),
