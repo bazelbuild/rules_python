@@ -184,7 +184,7 @@ uv = use_extension("//python/uv:uv.bzl", "uv")
 uv.default(
     base_url = "https://github.com/astral-sh/uv/releases/download",
     manifest_filename = "dist-manifest.json",
-    version = "0.6.2",
+    version = "0.6.3",
 )
 uv.default(
     compatible_with = [
