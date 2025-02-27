@@ -41,31 +41,48 @@ Since this is only for locking the requirements files, it should be always
 marked as a `dev_dependency`.
 """
 
+_DEFAULT_ATTRS = {
+    "base_url": attr.string(
+        doc = """\
+Base URL to download metadata about the binaries and the binaries themselves.
+""",
+    ),
+    "compatible_with": attr.label_list(
+        doc = """\
+The compatible with constraint values for toolchain resolution.
+""",
+    ),
+    "manifest_filename": attr.string(
+        doc = """\
+The distribution manifest filename to use for the metadata fetching from GH. The
+defaults for this are set in `rules_python` MODULE.bazel file that one can override
+for a specific version.
+""",
+        default = "dist-manifest.json",
+    ),
+    "platform": attr.string(
+        doc = """\
+The platform string used in the UV repository to denote the platform triple.
+""",
+    ),
+    "target_settings": attr.label_list(
+        doc = """\
+The `target_settings` to add to platform definitions that then get used in `toolchain`
+definitions.
+""",
+    ),
+    "version": attr.string(
+        doc = """\
+The version of uv to configure the sources for.
+""",
+    ),
+}
+
 default = tag_class(
     doc = """\
 Set the uv configuration defaults.
 """,
-    attrs = {
-        "base_url": attr.string(
-            doc = "Base URL to download metadata about the binaries and the binaries themselves.",
-        ),
-        "compatible_with": attr.label_list(
-            doc = "The compatible with constraint values for toolchain resolution",
-        ),
-        "manifest_filename": attr.string(
-            doc = "The manifest filename to for the metadata fetching.",
-            default = "dist-manifest.json",
-        ),
-        "platform": attr.string(
-            doc = "The platform string used in the UV repository to denote the platform triple.",
-        ),
-        "target_settings": attr.label_list(
-            doc = "The `target_settings` to add to platform definitions.",
-        ),
-        "version": attr.string(
-            doc = "The version of uv to use.",
-        ),
-    },
+    attrs = _DEFAULT_ATTRS,
 )
 
 configure = tag_class(
@@ -100,31 +117,20 @@ defaults for all versions, use the {attr}`default` for all of the configuration,
 similarly how `rules_python` is doing it itself.
 ::::
 """,
-    attrs = {
-        "base_url": attr.string(
-            doc = "Base URL to download metadata about the binaries and the binaries themselves.",
-        ),
-        "compatible_with": attr.label_list(
-            doc = "The compatible with constraint values for toolchain resolution",
-        ),
-        "manifest_filename": attr.string(
-            doc = "The manifest filename to for the metadata fetching.",
-            default = "dist-manifest.json",
-        ),
-        "platform": attr.string(
-            doc = "The platform string used in the UV repository to denote the platform triple.",
-        ),
+    attrs = _DEFAULT_ATTRS | {
         "sha256": attr.string(
-            doc = "The sha256 of the downloaded artifact.",
-        ),
-        "target_settings": attr.label_list(
-            doc = "The `target_settings` to add to platform definitions.",
+            doc = "The sha256 of the downloaded artifact if the {attr}`urls` is specified.",
         ),
         "urls": attr.string_list(
-            doc = "The urls to download the binary from. If this is used, {attr}`base_url` is ignored. If the `urls` are specified, they need to be specified for all of the platforms for a particular version.",
-        ),
-        "version": attr.string(
-            doc = "The version of uv to use.",
+            doc = """\
+The urls to download the binary from. If this is used, {attr}`base_url` and
+{attr}`manifest_name` are ignored for the given version.
+
+::::note
+If the `urls` are specified, they need to be specified for all of the platforms
+for a particular version.
+::::
+""",
         ),
     },
 )
