@@ -135,6 +135,32 @@ for a particular version.
     },
 )
 
+def _build_config(config, *, platform, compatible_with, target_settings, urls = [], sha256 = "", **values):
+    """Set the value in the config if the value is provided"""
+    for key, value in values.items():
+        if not value:
+            continue
+
+        config[key] = value
+
+    config.setdefault("platforms", {})
+    if platform and not (compatible_with or target_settings or urls):
+        config["platforms"].pop(platform)
+    elif platform:
+        if compatible_with or target_settings:
+            config["platforms"][platform] = struct(
+                name = platform.replace("-", "_").lower(),
+                compatible_with = compatible_with,
+                target_settings = target_settings,
+            )
+        if urls:
+            config.setdefault("urls", {})[platform] = struct(
+                sha256 = sha256,
+                urls = urls,
+            )
+    elif compatible_with or target_settings:
+        fail("`platform` name must be specified when specifying `compatible_with` or `target_settings`")
+
 def parse_modules(module_ctx, uv_repository = None):
     """Parse the modules to get the config for 'uv' toolchains.
 
@@ -145,67 +171,47 @@ def parse_modules(module_ctx, uv_repository = None):
     Returns:
         A dictionary for each version of the `uv` to configure.
     """
-    config = {
-        "platforms": {},
-    }
+    config = {}
 
     for mod in module_ctx.modules:
         for default_attr in mod.tags.default:
-            if default_attr.version:
-                config["version"] = default_attr.version
-
-            if default_attr.base_url:
-                config["base_url"] = default_attr.base_url
-
-            if default_attr.manifest_filename:
-                config["manifest_filename"] = default_attr.manifest_filename
-
-            if default_attr.platform and not (default_attr.compatible_with or default_attr.target_settings):
-                config["platforms"].pop(default_attr.platform)
-            elif default_attr.platform:
-                config["platforms"].setdefault(
-                    default_attr.platform,
-                    struct(
-                        name = default_attr.platform.replace("-", "_").lower(),
-                        compatible_with = default_attr.compatible_with,
-                        target_settings = default_attr.target_settings,
-                    ),
-                )
-            elif default_attr.compatible_with or default_attr.target_settings:
-                fail("TODO: unsupported")
+            _build_config(
+                config,
+                version = default_attr.version,
+                base_url = default_attr.base_url,
+                manifest_filename = default_attr.manifest_filename,
+                platform = default_attr.platform,
+                compatible_with = default_attr.compatible_with,
+                target_settings = default_attr.target_settings,
+            )
 
     versions = {}
     for mod in module_ctx.modules:
         last_version = None
         for config_attr in mod.tags.configure:
             last_version = config_attr.version or last_version or config["version"]
-            specific_config = versions.setdefault(last_version, {
-                "base_url": config.get("base_url", ""),
-                "manifest_filename": config["manifest_filename"],
-                "platforms": {k: v for k, v in config["platforms"].items()},  # make a copy
-            })
-            if config_attr.platform and not (config_attr.compatible_with or config_attr.target_settings or config_attr.urls):
-                specific_config["platforms"].pop(config_attr.platform)
-            elif config_attr.platform:
-                if config_attr.compatible_with or config_attr.target_settings:
-                    specific_config["platforms"][config_attr.platform] = struct(
-                        name = config_attr.platform.replace("-", "_").lower(),
-                        compatible_with = config_attr.compatible_with,
-                        target_settings = config_attr.target_settings,
-                    )
-                if config_attr.urls:
-                    specific_config.setdefault("urls", {})[config_attr.platform] = struct(
-                        sha256 = config_attr.sha256,
-                        urls = config_attr.urls,
-                    )
-            elif config_attr.compatible_with or config_attr.target_settings:
-                fail("TODO: unsupported")
+            if not last_version:
+                fail("version must be specified")
 
-            if config_attr.base_url:
-                specific_config["base_url"] = config_attr.base_url
+            specific_config = versions.setdefault(
+                last_version,
+                {
+                    "base_url": config.get("base_url", ""),
+                    "manifest_filename": config["manifest_filename"],
+                    "platforms": dict(config["platforms"]),  # copy
+                },
+            )
 
-            if config_attr.manifest_filename:
-                specific_config["manifest_filename"] = config_attr.manifest_filename
+            _build_config(
+                specific_config,
+                base_url = config_attr.base_url,
+                manifest_filename = config_attr.manifest_filename,
+                platform = config_attr.platform,
+                compatible_with = config_attr.compatible_with,
+                target_settings = config_attr.target_settings,
+                sha256 = config_attr.sha256,
+                urls = config_attr.urls,
+            )
 
     versions = {
         version: config
