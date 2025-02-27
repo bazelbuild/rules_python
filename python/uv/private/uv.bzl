@@ -135,7 +135,7 @@ for a particular version.
     },
 )
 
-def _build_config(config, *, platform, compatible_with, target_settings, urls = [], sha256 = "", **values):
+def _configure(config, *, platform, compatible_with, target_settings, urls = [], sha256 = "", **values):
     """Set the value in the config if the value is provided"""
     for key, value in values.items():
         if not value:
@@ -171,12 +171,11 @@ def parse_modules(module_ctx, uv_repository = None):
     Returns:
         A dictionary for each version of the `uv` to configure.
     """
-    config = {}
-
+    defaults = {}
     for mod in module_ctx.modules:
         for default_attr in mod.tags.default:
-            _build_config(
-                config,
+            _configure(
+                defaults,
                 version = default_attr.version,
                 base_url = default_attr.base_url,
                 manifest_filename = default_attr.manifest_filename,
@@ -189,20 +188,20 @@ def parse_modules(module_ctx, uv_repository = None):
     for mod in module_ctx.modules:
         last_version = None
         for config_attr in mod.tags.configure:
-            last_version = config_attr.version or last_version or config["version"]
+            last_version = config_attr.version or last_version or defaults["version"]
             if not last_version:
                 fail("version must be specified")
 
             specific_config = versions.setdefault(
                 last_version,
                 {
-                    "base_url": config.get("base_url", ""),
-                    "manifest_filename": config["manifest_filename"],
-                    "platforms": dict(config["platforms"]),  # copy
+                    "base_url": defaults.get("base_url", ""),
+                    "manifest_filename": defaults["manifest_filename"],
+                    "platforms": dict(defaults["platforms"]),  # copy
                 },
             )
 
-            _build_config(
+            _configure(
                 specific_config,
                 base_url = config_attr.base_url,
                 manifest_filename = config_attr.manifest_filename,
@@ -235,15 +234,18 @@ def parse_modules(module_ctx, uv_repository = None):
     toolchain_labels_by_toolchain = {}
     toolchain_compatible_with_by_toolchain = {}
     toolchain_target_settings = {}
-
     for version, config in versions.items():
         platforms = config["platforms"]
 
+        # Use the manually specified urls
         urls = {
             platform: src
             for platform, src in config.get("urls", {}).items()
             if src.urls
         }
+
+        # Or fallback to fetching them from GH manifest file
+        # Example file: https://github.com/astral-sh/uv/releases/download/0.6.3/dist-manifest.json
         if not urls:
             urls = _get_tool_urls_from_dist_manifest(
                 module_ctx,
@@ -252,7 +254,7 @@ def parse_modules(module_ctx, uv_repository = None):
                     base_url = config["base_url"],
                 ),
                 manifest_filename = config["manifest_filename"],
-                platforms = sorted(platforms.keys()),
+                platforms = sorted(platforms),
             )
 
         result = uv_repositories(
