@@ -52,11 +52,13 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (deps) platforms 0.0.4 -> 0.0.11
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
+* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in 
+  `file` generation mode. Fixed in [#2619](https://github.com/bazelbuild/rules_python/pull/2619).
 
 {#v0-0-0-added}
 ### Added
