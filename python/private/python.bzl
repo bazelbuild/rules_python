@@ -693,18 +693,7 @@ dependencies are introduced.
         ),
         "ignore_root_user_error": attr.bool(
             default = True,
-            doc = """\
-The Python runtime installation is made read only. This improves the ability for
-Bazel to cache it by preventing the interpreter from creating `.pyc` files for
-the standard library dynamically at runtime as they are loaded (this often leads
-to spurious cache misses or build failures).
-
-However, if the user is running Bazel as root, this read-onlyness is not
-respected. Bazel will print a warning message when it detects that the runtime
-installation is writable despite being made read only (i.e. it's running with
-root access). If this attribute is set to `False`, Bazel will make it a hard
-error to run with root access instead.
-""",
+            doc = """Deprecated; do not use. This attribute has no effect.""",
             mandatory = False,
         ),
         "minor_mapping": attr.string_dict(
