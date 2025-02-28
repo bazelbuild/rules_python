@@ -180,7 +180,7 @@ def _ExecGroupBuilder_typedef():
     :type: list[str]
     :::
 
-    :::{field} build() -> exec_group
+    :::{function} build() -> exec_group
     :::
     """
 
@@ -319,7 +319,6 @@ RuleCfgBuilder = struct(
 def _RuleBuilder_typedef():
     """A builder to accumulate state for constructing a `rule` object.
 
-
     :::{field} attrs
     :type: AttrsDict
     :::
@@ -378,16 +377,13 @@ def _RuleBuilder_new(implementation = None, **kwargs):
     self = struct(
         attrs = _AttrsDict_new(kwargs.pop("attrs", None)),
         cfg = _RuleCfgBuilder_new(kwargs.pop("cfg", None)),
-        # dict[str, ExecGroupBuilder]
         exec_groups = _kwargs_pop_dict(kwargs, "exec_groups"),
         executable = _Optional_new(kwargs, "executable"),
-        # list[str]
         fragments = _kwargs_pop_list(kwargs, "fragments"),
         implementation = _Optional_new(implementation),
         extra_kwargs = kwargs,
         provides = _kwargs_pop_list(kwargs, "provides"),
         test = _Optional_new(kwargs, "test"),
-        # list[ToolchainTypeBuilder]
         toolchains = _kwargs_pop_list(kwargs, "toolchains"),
         build = lambda *a, **k: _RuleBuilder_build(self, *a, **k),
         to_kwargs = lambda *a, **k: _RuleBuilder_to_kwargs(self, *a, **k),
@@ -414,6 +410,9 @@ def _RuleBuilder_build(self, debug = ""):
 
 def _RuleBuilder_to_kwargs(self):
     """Builds the arguments for calling `rule()`.
+
+    This is added as an escape hatch to construct the final values `rule()`
+    kwarg values in case callers want to manually change them.
 
     Args:
         self: implicitly added
@@ -587,18 +586,41 @@ def _IntAttrBuilder_build(self):
     kwargs = _common_to_kwargs_nobuilders(self)
     return attr.int(**kwargs)
 
-# called as:
-# AttrBuilder(cfg="exec|target")
-# AttrBuilder(cfg=dict(implementation=...))
-# AttrBuilder(cfg=dict(exec_group=...))
-def _AttrCfgBuilder(outer_kwargs, name):
-    """Create a AttrCfgBuilder.
+def _AttrCfgBuilder_typedef():
+    """Builder for `cfg` arg of label attributes.
+
+    :::{function} implementation() -> callable
+
+    Returns the implementation function for using custom transition.
+    :::
+
+    :::{field} outputs
+    :type: SetBuilder[str | Label]
+    :::
+
+    :::{field} inputs
+    :type: SetBuilder[str | Label]
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
+    :::
+    """
+
+def _AttrCfgBuilder_new(outer_kwargs, name):
+    """Creates an instance.
 
     Args:
         outer_kwargs: {type}`dict` the kwargs to look for `name` within.
         name: {type}`str` a key to look for in `outer_kwargs` for the
             values to initilize from. If present in `outer_kwargs`, it
-            will be removed and the value initializes the builder.
+            will be removed and the value initializes the builder. The value
+            is allowed to be one of:
+            - The string `exec` or `target`
+            - A dict with key `implementation`, which is a transition
+              implementation function.
+            - A dict with key `exec_group`, which is a string name for an
+              exec group to use for an exec transition.
 
     Returns:
         {type}`AttrCfgBuilder`
@@ -614,20 +636,21 @@ def _AttrCfgBuilder(outer_kwargs, name):
 
     if "cfg" in kwargs:
         initial = kwargs.pop("cfg")
-        is_exec_group = False
+        is_exec = False
     elif "exec_group" in kwargs:
         initial = kwargs.pop("exec_group")
-        is_exec_group = True
+        is_exec = True
     else:
         initial = None
-        is_exec_group = False
+        is_exec = False
 
     self = struct(
-        # tuple of (value, bool is_exec_group)
-        _implementation = [initial, is_exec_group],
+        # list of (value, bool is_exec)
+        _implementation = [initial, is_exec],
         implementation = lambda: self._implementation[0],
         set_implementation = lambda *a, **k: _AttrCfgBuilder_set_implementation(self, *a, **k),
-        set_exec_group = lambda *a, **k: _AttrCfgBuilder_set_exec_group(self, *a, **k),
+        set_exec = lambda *a, **k: _AttrCfgBuilder_set_exec(self, *a, **k),
+        set_target = lambda: _AttrCfgBuilder_set_implementation(self, "target"),
         exec_group = lambda: _AttrCfgBuilder_exec_group(self),
         outputs = _SetBuilder(kwargs, "outputs"),
         inputs = _SetBuilder(kwargs, "inputs"),
@@ -636,48 +659,105 @@ def _AttrCfgBuilder(outer_kwargs, name):
     )
     return self
 
-def _AttrCfgBuilder_set_implementation(self, value):
-    self._implementation[0] = value
+def _AttrCfgBuilder_set_implementation(self, impl):
+    """Sets a custom transition function to use.
+
+    Args:
+        impl: {type}`callable` a transition implementation function.
+    """
+    self._implementation[0] = impl
     self._implementation[1] = False
 
-def _AttrCfgBuilder_set_exec_group(self, exec_group):
+def _AttrCfgBuilder_set_exec(self, exec_group = None):
+    """Sets to use an exec transition.
+
+    Args:
+        exec_group: {type}`str | None` the exec group name to use, if any.
+    """
     self._implementation[0] = exec_group
     self._implementation[1] = True
 
 def _AttrCfgBuilder_exec_group(self):
+    """Tells the exec group to use if an exec transition is being used.
+
+    Args:
+        self: implicitly added.
+
+    Returns:
+        {type}`str | None` the name of the exec group to use if any.
+
+    """
     if self._implementation[1]:
         return self._implementation[0]
     else:
         return None
 
 def _AttrCfgBuilder_build(self):
-    impl, is_exec_group = self._implementation
-    if impl == None:
+    value, is_exec = self._implementation
+    if value == None:
         return None
-    elif is_exec_group:
-        return config.exec(impl)
-    elif impl == "target":
+    elif is_exec:
+        return config.exec(value)
+    elif value == "target":
         return config.target()
-    elif impl == "exec":
-        return config.exec()  # todo: replace with set_exec(exec_group)
-    elif types.is_function(impl):
+    elif types.is_function(value):
         return transition(
-            implementation = impl,
+            implementation = value,
             inputs = self.inputs.build(),
             outputs = self.outputs.build(),
         )
     else:
         return impl
 
+AttrCfgBuilder = struct(
+    TYPEDEF = _AttrCfgBuilder_typedef,
+    new = _AttrCfgBuilder_new,
+    set_implementation = _AttrCfgBuilder_set_implementation,
+    set_exec = _AttrCfgBuilder_set_exec,
+    exec_group = _AttrCfgBuilder_exec_group,
+)
+
 def _LabelAttrBuilder_typedef():
     """Builder for `attr.label` objects.
 
     :::{field} default
-    :type: Any | configuration_field
+    :type: Optional[str | label | configuration_field | None]
     :::
 
     :::{field} doc
     :type: str
+    :::
+
+    :::{field} mandatory
+    :type: Optional[bool]
+    :::
+
+    :::{field} executable
+    :type: Optional[bool]
+    :::
+
+    :::{field} allow_files
+    :type: Optional[bool | list[str]]
+    :::
+
+    :::{field} allow_single_file
+    :type: Optional[bool]
+    :::
+
+    :::{field} providers
+    :type: list[provider | list[provider]]
+    :::
+
+    :::{field} cfg
+    :type: AttrCfgBuilder
+    :::
+
+    :::{field} aspects
+    :type: list[aspect]
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
     :::
     """
 
@@ -693,16 +773,14 @@ def _LabelAttrBuilder_new(**kwargs):
 
     # buildifier: disable=uninitialized
     self = struct(
-        # value or configuration_field
         default = _Optional_new(kwargs, "default"),
         doc = _Optional_new(kwargs, "doc"),
         mandatory = _Optional_new(kwargs, "mandatory"),
         executable = _Optional_new(kwargs, "executable"),
-        # True, False, or list
         allow_files = _Optional_new(kwargs, "allow_files"),
         allow_single_file = _Optional_new(kwargs, "allow_single_file"),
         providers = _kwargs_pop_list(kwargs, "providers"),
-        cfg = _AttrCfgBuilder(kwargs, "cfg"),
+        cfg = _AttrCfgBuilder_new(kwargs, "cfg"),
         aspects = _kwargs_pop_list(kwargs, "aspects"),
         build = lambda: _LabelAttrBuilder_build(self),
         extra_kwargs = kwargs,
@@ -721,24 +799,63 @@ def _LabelAttrBuilder_build(self):
 LabelAttrBuilder = struct(
     TYPEDEF = _LabelAttrBuilder_typedef,
     new = _LabelAttrBuilder_new,
+    build = _LabelAttrBuilder_build,
 )
 
-def _LabelListAttrBuilder(**kwargs):
+def _LabelListAttrBuilder_typedef():
+    """Builder for `attr.label_list`
+
+    :::{field} default
+    :type: Optional[list[str|Label] | configuration_field]
+    :::
+
+    :::{field} doc
+    :type: Optional[str]
+    :::
+
+    :::{field} mandatory
+    :type: Optional[bool]
+    :::
+
+    :::{field} executable
+    :type: Optional[bool]
+    :::
+
+    :::{field} allow_files
+    :type: Optional[bool | list[str]]
+    :::
+
+    :::{field} allow_empty
+    :type: Optional[bool]
+    :::
+
+    :::{field} providers
+    :type: list[provider | list[provider]]
+    :::
+
+    :::{field} cfg
+    :type: AttrCfgBuilder
+    :::
+
+    :::{field} aspects
+    :type: list[aspect]
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
+    :::
+    """
+
+def _LabelListAttrBuilder_new(**kwargs):
     self = struct(
         default = _kwargs_pop_list(kwargs, "default"),
         doc = _Optional_new(kwargs, "doc"),
         mandatory = _Optional_new(kwargs, "mandatory"),
-        # True, False, or not set
         executable = _Optional_new(kwargs, "executable"),
-        # True or False
         allow_empty = _Optional_new(kwargs, "allow_empty"),
-        # True, False, or list
         allow_files = _Optional_new(kwargs, "allow_files"),
         providers = _kwargs_pop_list(kwargs, "providers"),
-        # string, config.exec_group, config.none, config.target, or transition
-        # For the latter, it's a builder
-        cfg = _AttrCfgBuilder(kwargs, "cfg"),
-        # list of aspect functions
+        cfg = _AttrCfgBuilder_new(kwargs, "cfg"),
         aspects = _kwargs_pop_list(kwargs, "aspects"),
         build = lambda: _LabelListAttrBuilder_build(self),
         extra_kwargs = kwargs,
@@ -751,19 +868,86 @@ def _LabelListAttrBuilder_build(self):
         kwargs[key] = value.build() if hasattr(value, "build") else value
     return attr.label_list(**kwargs)
 
-def _StringListAttrBuilder(**kwargs):
+LabelListAttrBuilder = struct(
+    TYPEDEF = _LabelListAttrBuilder_typedef,
+    new = _LabelListAttrBuilder_new,
+    build = _LabelListAttrBuilder_build,
+)
+
+def _StringListAttrBuilder_typedef():
+    """Builder for `attr.string_list`
+
+    :::{field} default
+    :type: Optiona[list[str] | configuration_field]
+    :::
+
+    :::{field} doc
+    :type: Optional[str]
+    :::
+
+    :::{field} mandatory
+    :type: Optional[bool]
+    :::
+
+    :::{field} allow_empty
+    :type: Optional[bool]
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
+    :::
+
+    :::{function} build() -> attr.string_list
+    :::
+    """
+
+def _StringListAttrBuilder_new(**kwargs):
     self = struct(
         default = _Optional_new(kwargs, "default"),
         doc = _Optional_new(kwargs, "doc"),
         mandatory = _Optional_new(kwargs, "mandatory"),
         allow_empty = _Optional_new(kwargs, "allow_empty"),
-        # True, False, or list
         build = lambda *a, **k: attr.string_list(**_common_to_kwargs_nobuilders(self, *a, **k)),
         extra_kwargs = kwargs,
     )
     return self
 
-def _StringAttrBuilder(**kwargs):
+StringListBuilder = struct(
+    TYPEDEF = _StringListBuilder_typedef,
+    new = _StringListBuilder_new,
+)
+
+def _StringAttrBuilder_typedef():
+    """Builder for `attr.string`
+
+    :::{field} default
+    :type: Optiona[str]
+    :::
+
+    :::{field} doc
+    :type: Optiona[str]
+    :::
+    :::{field} mandatory
+    :type: Optiona[bool]
+    :::
+
+    :::{field} allow_empty
+    :type: Optiona[bool]
+    :::
+
+    :::{function} build() -> attr.string
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
+    :::
+
+    :::{field} values
+    :type: list[str]
+    :::
+    """
+
+def _StringAttrBuilder_new(**kwargs):
     self = struct(
         default = _Optional_new(kwargs, "default"),
         doc = _Optional_new(kwargs, "doc"),
@@ -772,11 +956,51 @@ def _StringAttrBuilder(**kwargs):
         allow_empty = _Optional_new(kwargs, "allow_empty"),
         build = lambda *a, **k: attr.string(**_common_to_kwargs_nobuilders(self, *a, **k)),
         extra_kwargs = kwargs,
-        values = kwargs.get("values") or [],
+        values = _kwargs_pop_list(kwargs, "values"),
     )
     return self
 
-def _StringDictAttrBuilder(**kwargs):
+StringAttrBuilder = struct(
+    TYPEDEF = _StringAttrBuilder_typedef,
+    new = _StringAttrBuilder_new,
+)
+
+def _StringDictAttrBuilder_typedef():
+    """Builder for `attr.string_dict`
+
+    :::{field} default
+    :type: dict[str, str],
+    :::
+
+    :::{field} doc
+    :type: Optional[str]
+    :::
+
+    :::{field} mandatory
+    :type: Optional[bool]
+    :::
+
+    :::{field} allow_empty
+    :type: Optional[bool]
+    :::
+
+    :::{function} build() -> attr.string_dict
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, Any]
+    :::
+    """
+
+def _StringDictAttrBuilder_new(**kwargs):
+    """Creates an instance.
+
+    Args:
+        **kwargs: {type}`dict` The same args as for `attr.string_dict`.
+
+    Returns:
+        {type}`StringDictAttrBuilder`
+    """
     self = struct(
         default = _kwargs_pop_dict(kwargs, "default"),
         doc = _Optional_new(kwargs, "doc"),
@@ -787,10 +1011,14 @@ def _StringDictAttrBuilder(**kwargs):
     )
     return self
 
+StringDictAttrBuilder = struct(
+    TYPEDEF = _StringDictAttrBuilder_typedef,
+    new = _StringDictAttrBuilder_new,
+)
+
+# todo: remove Builder suffixes on all these?
 rule_builders = struct(
     RuleBuilder = _RuleBuilder_new,
-    ##SetBuilder = _SetBuilder,
-    ##Optional = _Optional,
     LabelAttrBuilder = _LabelAttrBuilder_new,
     LabelListAttrBuilder = _LabelListAttrBuilder,
     IntAttrBuilder = _IntAttrBuilder,
@@ -798,6 +1026,5 @@ rule_builders = struct(
     StringAttrBuilder = _StringAttrBuilder,
     StringDictAttrBuilder = _StringDictAttrBuilder,
     BoolAttrBuilder = _BoolAttrBuilder,
-    ##RuleCfgBuilder = _RuleCfgBuilder,
     AttrCfgBuilder = _AttrCfgBuilder,
 )
