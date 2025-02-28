@@ -135,7 +135,7 @@ def _python_repository_impl(rctx):
             logger = logger,
         )
 
-        fail_or_warn = print if rctx.attr.ignore_root_user_error else fail
+        fail_or_warn = logger.warn if rctx.attr.ignore_root_user_error else logger.fail
         exec_result = repo_utils.execute_unchecked(
             rctx,
             op = "python_repository.TestReadOnly",
