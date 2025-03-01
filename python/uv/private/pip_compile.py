@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import pathlib
+import shutil
 import sys
+from pathlib import Path
 
 from python import runfiles
 
@@ -19,7 +20,6 @@ def _run() -> None:
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
     args = sys.argv[1:]
-    running_interactively = "BUILD_WORKSPACE_DIRECTORY" in env
 
     src_out = args[1] if args[0] == "--src-out" else None
     if src_out:
@@ -32,12 +32,13 @@ def _run() -> None:
     else:
         out = args[1]
 
-    if running_interactively:
-        args[1] = pathlib.Path(env["BUILD_WORKSPACE_DIRECTORY"]) / out
+    workspace = env.get("BUILD_WORKSPACE_DIRECTORY")
+    if workspace:
+        args[1] = Path(workspace) / out
     elif src_out:
-        src = pathlib.Path(src_out)
-        dst = pathlib.Path(out)
-        dst.write_text(src.read_text())
+        src = Path(src_out)
+        dst = Path(out)
+        shutil.copy(src, dst)
 
     uv_args = ["pip", "compile"] + args
 
