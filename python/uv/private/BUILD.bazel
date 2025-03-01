@@ -91,8 +91,8 @@ bzl_library(
 )
 
 py_binary(
-    name = "locker",
-    srcs = ["locker.py"],
+    name = "pip_compile",
+    srcs = ["pip_compile.py"],
     data = [
         "//python/uv:current_toolchain",
     ],

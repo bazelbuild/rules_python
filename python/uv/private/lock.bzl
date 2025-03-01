@@ -41,20 +41,13 @@ def _impl(ctx):
         "--emit-index-url",
         "--no-strip-extras",
         "--no-python-downloads",
+        "--no-cache",
     ])
 
-    cache_dir = ctx.actions.declare_directory(".uv_cache_{}".format(ctx.label.name))
-    args.add_all(["--cache-dir", cache_dir], expand_directories = False)
-
     args.add_all(ctx.attr.args)
-    srcs = ctx.files.srcs
+    srcs = ctx.files.srcs + ctx.files.src_outs
 
-    args.add_all(srcs)
-    if ctx.attr.upgrade:
-        args.add("--upgrade")
-
-    if ctx.attr.universal:
-        args.add("--universal")
+    args.add_all(ctx.files.srcs)
 
     args.add("--output-file", ctx.outputs.out)
     ctx.actions.run(
@@ -62,7 +55,6 @@ def _impl(ctx):
         inputs = srcs,
         outputs = [
             ctx.outputs.out,
-            cache_dir,
         ],
         arguments = [args],
         tools = [
@@ -86,18 +78,16 @@ _lock = rule(
         "out": attr.output(mandatory = True),
         "src_outs": attr.label_list(mandatory = True, allow_files = True),
         "srcs": attr.label_list(mandatory = True, allow_files = True),
-        "universal": attr.bool(default = True),
         "update_target": attr.string(mandatory = True),
-        "upgrade": attr.bool(default = False),
         "_locker": attr.label(
-            default = "//python/uv/private:locker",
+            default = "//python/uv/private:pip_compile",
             executable = True,
             cfg = "target",
         ),
     },
 )
 
-def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwargs):
+def lock(*, name, srcs, out, args = [], **kwargs):
     """Pin the requirements based on the src files.
 
     Differences with the current {obj}`compile_pip_requirements` rule:
@@ -109,9 +99,6 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
         name: The name of the target to run for updating the requirements.
         srcs: The srcs to use as inputs.
         out: The output file.
-        upgrade: Tell `uv` to always upgrade the dependencies instead of
-            keeping them as they are.
-        universal: Tell `uv` to generate a universal lock file.
         args: Extra args to pass to `uv`.
         **kwargs: Extra kwargs passed to the {obj}`py_binary` rule.
     """
@@ -131,8 +118,6 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
             "manual",
             "no-cache",
         ],
-        universal = universal,
-        upgrade = upgrade,
         args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     )
@@ -149,8 +134,10 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
             "",
             'src = Path(environ["REQUIREMENTS_FILE"])',
             'assert src.exists(), f"the {src} file does not exist"',
-            'dst = Path(environ["BUILD_WORKSPACE_DIRECTORY"]) / "{}" / "{}"'.format(pkg, out),
-            'print(f"Writing requirements contents\\n  from {src.absolute()}\\n  to {dst.absolute()}", file=stderr)',
+            'dst = "{}/{}"'.format(pkg, out),
+            'print(f"cp <bazel-sandbox>/{src}\\n    -> <workspace>/{dst}", file=stderr)',
+            'build_workspace = Path(environ["BUILD_WORKSPACE_DIRECTORY"])',
+            "dst = build_workspace / dst",
             "dst.write_text(src.read_text())",
             'print("Success!", file=stderr)',
         ],
