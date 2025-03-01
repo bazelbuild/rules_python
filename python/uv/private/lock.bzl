@@ -15,6 +15,7 @@
 """A simple macro to lock the requirements.
 """
 
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
@@ -23,35 +24,33 @@ visibility(["//..."])
 
 _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
+_RunLockInfo = provider(
+    doc = "Information for running the underlying Sphinx command directly",
+    fields = {
+        "locker": """
+:type: Target
+
+The locker binary to run.
+""",
+    },
+)
+
 def _impl(ctx):
     args = ctx.actions.args()
     if ctx.files.src_outs:
-        # This means that the output file already exists and it should be used
-        # to create a new file. This will be taken care by the locker tool.
         args.add_all([
             "--src-out",
             ctx.files.src_outs[0].path,
         ])
 
-    args.add_all([
-        "pip",
-        "compile",
-        "--custom-compile-command=bazel run {}".format(ctx.attr.update_target),
-        "--generate-hashes",
-        "--emit-index-url",
-        "--no-strip-extras",
-        "--no-python-downloads",
-        "--no-cache",
-    ])
-
     args.add_all(ctx.attr.args)
     srcs = ctx.files.srcs + ctx.files.src_outs
-
     args.add_all(ctx.files.srcs)
-
     args.add("--output-file", ctx.outputs.out)
+
     ctx.actions.run(
         executable = ctx.executable._locker,
+        mnemonic = "RulesPythonLock",
         inputs = srcs,
         outputs = [
             ctx.outputs.out,
@@ -66,6 +65,7 @@ def _impl(ctx):
 
     return [
         DefaultInfo(files = depset([ctx.outputs.out])),
+        _RunLockInfo(locker = ctx.executable._locker),
     ]
 
 _lock = rule(
@@ -78,7 +78,6 @@ _lock = rule(
         "out": attr.output(mandatory = True),
         "src_outs": attr.label_list(mandatory = True, allow_files = True),
         "srcs": attr.label_list(mandatory = True, allow_files = True),
-        "update_target": attr.string(mandatory = True),
         "_locker": attr.label(
             default = "//python/uv/private:pip_compile",
             executable = True,
@@ -104,14 +103,34 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     """
     pkg = native.package_name()
     update_target = name + ".update"
+
+    user_args = args
+
+    existing_outputs = native.glob([out])
+    existing_outputs = [
+        path
+        for path in existing_outputs
+        if path == out
+    ]
+    args = [
+        "pip",
+        "compile",
+        "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
+        "--generate-hashes",
+        "--emit-index-url",
+        "--no-strip-extras",
+        "--no-python-downloads",
+        "--no-cache",
+    ]
+    args += user_args
+
     _lock(
         name = name,
         srcs = srcs,
         # Check if the output file already exists, if yes, first copy it to the
         # output file location in order to make `uv` not change the requirements if
         # we are just running the command.
-        src_outs = native.glob([out]),
-        update_target = "//{}:{}".format(pkg, update_target),
+        src_outs = existing_outputs,
         out = out + ".new",
         tags = [
             "local",
@@ -120,6 +139,27 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         ],
         args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
+    )
+
+    run_args = []
+    run_args += args + [
+        "$(location {})".format(s)
+        for s in srcs
+    ]
+    if existing_outputs:
+        # This means that the output file already exists and it should be used
+        # to create a new file. This will be taken care by the locker tool.
+        run_args += ["--output-file", "$(location {})".format(existing_outputs[0])]
+    else:
+        run_out = "{}/{}".format(pkg, out)
+        run_args += ["--output-file", run_out]
+    run_data = srcs + existing_outputs
+
+    native_binary(
+        name = name + ".run",
+        args = run_args,
+        data = run_data,
+        src = "//python/uv/private:pip_compile",
     )
 
     # Write a script that can be used for updating the in-tree version of the

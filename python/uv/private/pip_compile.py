@@ -19,14 +19,18 @@ def _run() -> None:
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
     args = sys.argv[1:]
+    running_interactively = "BUILD_WORKSPACE_DIRECTORY" in env
+
+    if args[-2] != "--output-file":
+        raise ValueError("The last arg should be the output file")
 
     src_out = args[1] if args[0] == "--src-out" else None
-    if src_out:
+
+    if running_interactively:
+        args[-1] = pathlib.Path(env["BUILD_WORKSPACE_DIRECTORY"]) / args[-1]
+    elif src_out:
         args = args[2:]
-        if args[-2] != "--output-file":
-            raise ValueError("The last arg should be the output file")
-        else:
-            out = args[-1]
+        out = args[-1]
 
         src = pathlib.Path(src_out)
         dst = pathlib.Path(out)

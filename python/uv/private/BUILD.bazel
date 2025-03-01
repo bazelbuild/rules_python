@@ -97,5 +97,7 @@ py_binary(
         "//python/uv:current_toolchain",
     ],
     tags = ["manual"],
+    # only because this is used from a macro and we want to make the tool runable via `native_binary`.
+    visibility = ["//visibility:public"],
     deps = ["//python/runfiles"],
 )
