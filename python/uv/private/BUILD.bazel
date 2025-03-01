@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:py_binary.bzl", "py_binary")
 
 filegroup(
     name = "distribution",
@@ -87,4 +88,14 @@ bzl_library(
     name = "versions_bzl",
     srcs = ["versions.bzl"],
     visibility = ["//python/uv:__subpackages__"],
+)
+
+py_binary(
+    name = "locker",
+    srcs = ["locker.py"],
+    data = [
+        "//python/uv:current_toolchain",
+    ],
+    tags = ["manual"],
+    deps = ["//python/runfiles"],
 )

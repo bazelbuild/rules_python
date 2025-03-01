@@ -21,10 +21,81 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: dis
 
 visibility(["//..."])
 
-_REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
-    "@platforms//os:windows": ["@platforms//:incompatible"],
-    "//conditions:default": [],
-}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+_REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+
+def _impl(ctx):
+    args = ctx.actions.args()
+    if ctx.files.src_outs:
+        # This means that the output file already exists and it should be used
+        # to create a new file. This will be taken care by the locker tool.
+        args.add_all([
+            "--src-out",
+            ctx.files.src_outs[0].path,
+        ])
+
+    args.add_all([
+        "pip",
+        "compile",
+        "--custom-compile-command=bazel run {}".format(ctx.attr.update_target),
+        "--generate-hashes",
+        "--emit-index-url",
+        "--no-strip-extras",
+        "--no-python-downloads",
+    ])
+
+    cache_dir = ctx.actions.declare_directory(".uv_cache_{}".format(ctx.label.name))
+    args.add_all(["--cache-dir", cache_dir], expand_directories = False)
+
+    args.add_all(ctx.attr.args)
+    srcs = ctx.files.srcs
+
+    args.add_all(srcs)
+    if ctx.attr.upgrade:
+        args.add("--upgrade")
+
+    if ctx.attr.universal:
+        args.add("--universal")
+
+    args.add("--output-file", ctx.outputs.out)
+    ctx.actions.run(
+        executable = ctx.executable._locker,
+        inputs = srcs,
+        outputs = [
+            ctx.outputs.out,
+            cache_dir,
+        ],
+        arguments = [args],
+        tools = [
+            ctx.executable._locker,
+        ],
+        progress_message = "Locking requirements using uv",
+        env = ctx.attr.env,
+    )
+
+    return [
+        DefaultInfo(files = depset([ctx.outputs.out])),
+    ]
+
+_lock = rule(
+    implementation = _impl,
+    doc = """\
+""",
+    attrs = {
+        "args": attr.string_list(),
+        "env": attr.string_dict(),
+        "out": attr.output(mandatory = True),
+        "src_outs": attr.label_list(mandatory = True, allow_files = True),
+        "srcs": attr.label_list(mandatory = True, allow_files = True),
+        "universal": attr.bool(default = True),
+        "update_target": attr.string(mandatory = True),
+        "upgrade": attr.bool(default = False),
+        "_locker": attr.label(
+            default = "//python/uv/private:locker",
+            executable = True,
+            cfg = "target",
+        ),
+    },
+)
 
 def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwargs):
     """Pin the requirements based on the src files.
@@ -46,49 +117,24 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
     """
     pkg = native.package_name()
     update_target = name + ".update"
-
-    _args = [
-        "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
-        "--generate-hashes",
-        "--emit-index-url",
-        "--no-strip-extras",
-        "--python=$(PYTHON3)",
-    ] + args + [
-        "$(location {})".format(src)
-        for src in srcs
-    ]
-    if upgrade:
-        _args.append("--upgrade")
-    if universal:
-        _args.append("--universal")
-    _args.append("--output-file=$@")
-    cmd = "$(UV_BIN) pip compile " + " ".join(_args)
-
-    # Make a copy to ensure that we are not modifying the initial list
-    srcs = list(srcs)
-
-    # Check if the output file already exists, if yes, first copy it to the
-    # output file location in order to make `uv` not change the requirements if
-    # we are just running the command.
-    if native.glob([out]):
-        cmd = "cp -v $(location {}) $@; {}".format(out, cmd)
-        srcs.append(out)
-
-    native.genrule(
+    _lock(
         name = name,
         srcs = srcs,
-        outs = [out + ".new"],
-        cmd_bash = cmd,
+        # Check if the output file already exists, if yes, first copy it to the
+        # output file location in order to make `uv` not change the requirements if
+        # we are just running the command.
+        src_outs = native.glob([out]),
+        update_target = "@//{}:{}".format(pkg, update_target),
+        out = out + ".new",
         tags = [
             "local",
             "manual",
             "no-cache",
         ],
+        universal = universal,
+        upgrade = upgrade,
+        args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
-        toolchains = [
-            Label("//python/uv:current_toolchain"),
-            Label("//python:current_py_toolchain"),
-        ],
     )
 
     # Write a script that can be used for updating the in-tree version of the
