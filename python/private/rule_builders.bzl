@@ -1,4 +1,18 @@
-"""Builders for creating rules, aspects, attributes et al.
+# Copyright 2025 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Builders for creating rules, aspects et al.
 
 When defining rules, Bazel only allows creating *immutable* objects that can't
 be introspected. This makes it difficult to perform arbitrary customizations of
@@ -31,34 +45,38 @@ in a `dict[str, lambda]`, e.g. `ATTRS = {"srcs": lambda: LabelList(...)}`.
 Example usage:
 
 ```
+
+load(":rule_builders.bzl", "ruleb")
+load(":attr_builders.bzl", "attrb")
+
 # File: foo_binary.bzl
 _COMMON_ATTRS = {
-    "srcs": lambda: attr_builders.LabelList(...),
+    "srcs": lambda: attrb.LabelList(...),
 }
 
 def create_foo_binary_builder():
-    r = rule_builders.Rule(
+    foo = ruleb.Rule(
         executable = True,
     )
-    r.implementation.set(_foo_binary_impl)
-    r.attrs.update(COMMON_ATTRS)
-    return r
+    foo.implementation.set(_foo_binary_impl)
+    foo.attrs.update(COMMON_ATTRS)
+    return foo
 
 def create_foo_test_builder():
-    r = create_foo_binary_build()
+    foo = create_foo_binary_build()
 
-    binary_impl = r.implementation.get()
+    binary_impl = foo.implementation.get()
     def foo_test_impl(ctx):
       binary_impl(ctx)
       ...
 
-    r.implementation.set(foo_test_impl)
-    r.executable.set(False)
-    r.test.test(True)
-    r.attrs.update(
-        _coverage = attr_builders.Label(default="//:coverage")
+    foo.implementation.set(foo_test_impl)
+    foo.executable.set(False)
+    foo.test.test(True)
+    foo.attrs.update(
+        _coverage = attrb.Label(default="//:coverage")
     )
-    return r
+    return foo
 
 foo_binary = create_foo_binary_builder().build()
 foo_test = create_foo_test_builder().build()
@@ -76,144 +94,30 @@ custom_foo_binary = create_custom_foo_binary()
 """
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load(":builders.bzl", "builders")
-
-def _to_kwargs_get_pairs(kwargs, obj):
-    ignore_names = {"extra_kwargs": None}
-    pairs = []
-    for name in dir(obj):
-        if name in ignore_names or name in kwargs:
-            continue
-        value = getattr(obj, name)
-        if types.is_function(value):
-            continue  # Assume it's a method
-        if _is_optional(value):
-            if not value.present():
-                continue
-            else:
-                value = value.get()
-
-        # NOTE: We can't call value.build() here: it would likely lead to
-        # recursion.
-        pairs.append((name, value))
-    return pairs
-
-# To avoid recursion, this function shouldn't call `value.build()`.
-# Recall that Bazel identifies recursion based on the (line, column) that
-# a function (or lambda) is **defined** at -- the closure of variables
-# is ignored. Thus, Bazel's recursion detection can be incidentally
-# triggered if X.build() calls helper(), which calls Y.build(), which
-# then calls helper() again -- helper() is indirectly recursive.
-def _common_to_kwargs_nobuilders(self, kwargs = None):
-    if kwargs == None:
-        kwargs = {}
-    kwargs.update(self.extra_kwargs)
-    for name, value in _to_kwargs_get_pairs(kwargs, self):
-        kwargs[name] = value
-
-    return kwargs
-
-def _Optional_typedef():
-    """A wrapper for a re-assignable value that may or may not be set.
-
-    This allows structs to have attributes whose values can be re-assigned,
-    e.g. ints, strings, bools, or values where the presence matteres.
-    """
-
-def _Optional_new(*initial):
-    """Creates an instance.
-
-    Args:
-        *initial: Either zero, one, or two positional args to set the
-            initial value stored for the optional.
-            - If zero args, then no value is stored.
-            - If one arg, then the arg is the value stored.
-            - If two args, then the first arg is a kwargs dict, and the
-              second arg is a name in kwargs to look for. If the name is
-              present in kwargs, it is removed from kwargs and its value
-              stored, otherwise kwargs is unmodified and no value is stored.
-
-    Returns:
-        {type}`Optional`
-    """
-    if len(initial) > 2:
-        fail("Only zero, one, or two positional args allowed, but got: {}".format(initial))
-
-    if len(initial) == 2:
-        kwargs, name = initial
-        if name in kwargs:
-            initial = [kwargs.pop(name)]
-        else:
-            initial = []
-    else:
-        initial = list(initial)
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        # Length zero when no value; length one when has value.
-        _value = initial,
-        present = lambda *a, **k: _Optional_present(self, *a, **k),
-        set = lambda *a, **k: _Optional_set(self, *a, **k),
-        get = lambda *a, **k: _Optional_get(self, *a, **k),
-    )
-    return self
-
-def _Optional_set(self, value):
-    """Sets the value of the optional.
-
-    Args:
-        self: implicitly added
-        value: the value to set.
-    """
-    if len(self._value) == 0:
-        self._value.append(value)
-    else:
-        self._value[0] = value
-
-def _Optional_get(self):
-    """Gets the value of the optional, or error.
-
-    Args:
-        self: implicitly added
-
-    Returns:
-        The stored value, or error if not set.
-    """
-    if not len(self._value):
-        fail("Value not present")
-    return self._value[0]
-
-def _Optional_present(self):
-    """Tells if a value is present.
-
-    Args:
-        self: implicitly added
-
-    Returns:
-        {type}`bool` True if the value is set, False if not.
-    """
-    return len(self._value) > 0
-
-def _is_optional(obj):
-    return hasattr(obj, "present")
-
-Optional = struct(
-    TYPEDEF = _Optional_typedef,
-    new = _Optional_new,
-    get = _Optional_get,
-    set = _Optional_set,
-    present = _Optional_present,
+load(
+    ":builders_util.bzl",
+    "UniqueList",
+    "Value",
+    "common_to_kwargs_nobuilders",
+    "kwargs_pop_dict",
+    "kwargs_pop_doc",
+    "kwargs_pop_list",
+    "to_kwargs_get_pairs",
 )
 
 def _ExecGroup_typedef():
-    """Builder for {obj}`exec_group()`
+    """Builder for {external:bzl:obj}`exec_group`
 
     :::{field} toolchains
-    :type: list[rule_builders.ToolchainType]
+    :type: list[ToolchainType]
     :::
 
     :::{field} exec_compatible_with
     :type: list[str]
+    :::
+
+    :::{field} extra_kwargs
+    :type: dict[str, object]
     :::
 
     :::{function} build() -> exec_group
@@ -221,11 +125,19 @@ def _ExecGroup_typedef():
     """
 
 def _ExecGroup_new(**kwargs):
+    """Creates a builder for {external:bzl:obj}`exec_group`.
+
+    Args:
+        **kwargs: Same as {external:bzl:obj}`exec_group`
+
+    Returns:
+        {type}`ExecGroup`
+    """
     self = struct(
-        toolchains = _kwargs_pop_list(kwargs, "toolchains"),
-        # List of strings
-        exec_compatible_with = _kwargs_pop_list(kwargs, "exec_compatible_with"),
-        build = lambda: exec_group(**_common_to_kwargs_nobuilders(self)),
+        toolchains = kwargs_pop_list(kwargs, "toolchains"),
+        exec_compatible_with = kwargs_pop_list(kwargs, "exec_compatible_with"),
+        extra_kwargs = kwargs,
+        build = lambda: exec_group(**common_to_kwargs_nobuilders(self)),
     )
     return self
 
@@ -242,29 +154,50 @@ def _ToolchainType_typedef():
     :::
 
     :::{field} mandatory
-    :type: Optional[bool]
+    :type: Value[bool]
     :::
 
     :::{field} name
-    :type: Optional[str | Label]
-    :::
-
-    :::{function} build() -> config_common.toolchain_type
+    :type: Value[str | Label | None]
     :::
     """
 
-def _ToolchainType_new(**kwargs):
+def _ToolchainType_new(name = None, **kwargs):
+    """Creates a builder for `config_common.toolchain_type`.
+
+    Args:
+        name: {type}`str | Label` the `toolchain_type` target this creates
+            a dependency to.
+        **kwargs: Same as {obj}`config_common.toolchain_type`
+
+    Returns:
+        {type}`ToolchainType`
+    """
     self = struct(
-        build = lambda: config_common.toolchain_type(**_common_to_kwargs_nobuilders(self)),
+        build = lambda: _ToolchainType_build(self),
         extra_kwargs = kwargs,
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        name = _Optional_new(kwargs, "name"),
+        mandatory = Value.kwargs(kwargs, "mandatory", True),
+        name = Value.new(name),
     )
     return self
+
+def _ToolchainType_build(self):
+    """Builds a `config_common.toolchain_type`
+
+    Args:
+        self: implicitly added
+
+    Returns:
+        {type}`config_common.toolchain_type`
+    """
+    kwargs = common_to_kwargs_nobuilders(self)
+    name = kwargs.pop("name")  # Name must be positional
+    return config_common.toolchain_type(name, **kwargs)
 
 ToolchainType = struct(
     TYPEDEF = _ToolchainType_typedef,
     new = _ToolchainType_new,
+    build = _ToolchainType_build,
 )
 
 def _RuleCfg_typedef():
@@ -275,15 +208,23 @@ def _RuleCfg_typedef():
     :::
 
     :::{field} inputs
-    :type: SetBuilder
+    :type: UniqueList[Label]
     :::
 
     :::{field} outputs
-    :type: SetBuilder
+    :type: UniqueList[Label]
     :::
     """
 
 def _RuleCfg_new(kwargs):
+    """Creates a builder for the `rule.cfg` arg.
+
+    Args:
+        kwargs: Same args as `rule.cfg`
+
+    Returns:
+        {type}`RuleCfg`
+    """
     if kwargs == None:
         kwargs = {}
 
@@ -292,16 +233,8 @@ def _RuleCfg_new(kwargs):
         build = lambda: _RuleCfg_build(self),
         extra_kwargs = kwargs,
         implementation = lambda: _RuleCfg_implementation(self),
-        # Bazel requires transition.inputs to have unique values, so use set
-        # semantics so extenders of a transition can easily add/remove values.
-        # TODO - Use set builtin instead of custom builder, when available.
-        # https://bazel.build/rules/lib/core/set
-        inputs = _SetBuilder(kwargs, "inputs"),
-        # Bazel requires transition.outputs to have unique values, so use set
-        # semantics so extenders of a transition can easily add/remove values.
-        # TODO - Use set builtin instead of custom builder, when available.
-        # https://bazel.build/rules/lib/core/set
-        outputs = _SetBuilder(kwargs, "outputs"),
+        inputs = UniqueList.new(kwargs, "inputs"),
+        outputs = UniqueList.new(kwargs, "outputs"),
         set_implementation = lambda *a, **k: _RuleCfg_set_implementation(self, *a, **k),
     )
     return self
@@ -362,19 +295,25 @@ def _Rule_typedef():
     :type: RuleCfg
     :::
 
+    :::{field} doc
+    :type: Value[str]
+    :::
+
     :::{field} exec_groups
     :type: dict[str, ExecGroup]
     :::
 
     :::{field} executable
-    :type: Optional[bool]
+    :type: Value[bool]
     :::
 
     :::{field} extra_kwargs
     :type: dict[str, Any]
 
     Additional keyword arguments to use when constructing the rule. Their
-    values have precedence when creating the rule kwargs.
+    values have precedence when creating the rule kwargs. This is, essentially,
+    an escape hatch for manually overriding or inserting values into
+    the args passed to `rule()`.
     :::
 
     :::{field} fragments
@@ -382,7 +321,7 @@ def _Rule_typedef():
     :::
 
     :::{field} implementation
-    :type: Optional[callable]
+    :type: Value[callable | None]
     :::
 
     :::{field} provides
@@ -390,7 +329,7 @@ def _Rule_typedef():
     :::
 
     :::{field} test
-    :type: Optional[bool]
+    :type: Value[bool]
     :::
 
     :::{field} toolchains
@@ -412,14 +351,15 @@ def _Rule_new(implementation = None, **kwargs):
     self = struct(
         attrs = _AttrsDict_new(kwargs.pop("attrs", None)),
         cfg = _RuleCfg_new(kwargs.pop("cfg", None)),
-        exec_groups = _kwargs_pop_dict(kwargs, "exec_groups"),
-        executable = _Optional_new(kwargs, "executable"),
-        fragments = _kwargs_pop_list(kwargs, "fragments"),
-        implementation = _Optional_new(implementation),
+        doc = kwargs_pop_doc(kwargs),
+        exec_groups = kwargs_pop_dict(kwargs, "exec_groups"),
+        executable = Value.kwargs(kwargs, "executable", False),
+        fragments = kwargs_pop_list(kwargs, "fragments"),
+        implementation = Value.new(implementation),
         extra_kwargs = kwargs,
-        provides = _kwargs_pop_list(kwargs, "provides"),
-        test = _Optional_new(kwargs, "test"),
-        toolchains = _kwargs_pop_list(kwargs, "toolchains"),
+        provides = kwargs_pop_list(kwargs, "provides"),
+        test = Value.kwargs(kwargs, "test", False),
+        toolchains = kwargs_pop_list(kwargs, "toolchains"),
         build = lambda *a, **k: _Rule_build(self, *a, **k),
         to_kwargs = lambda *a, **k: _Rule_to_kwargs(self, *a, **k),
     )
@@ -455,8 +395,23 @@ def _Rule_to_kwargs(self):
     Returns:
         {type}`dict`
     """
+
     kwargs = dict(self.extra_kwargs)
-    for name, value in _to_kwargs_get_pairs(kwargs, self):
+    if "exec_groups" not in kwargs:
+        for k, v in self.exec_groups.items():
+            if not hasattr(v, "build"):
+                fail("bad execgroup", k, v)
+        kwargs["exec_groups"] = {
+            k: v.build()
+            for k, v in self.exec_groups.items()
+        }
+    if "toolchains" not in kwargs:
+        kwargs["toolchains"] = [
+            v.build()
+            for v in self.toolchains
+        ]
+
+    for name, value in to_kwargs_get_pairs(self, kwargs):
         value = value.build() if hasattr(value, "build") else value
         kwargs[name] = value
     return kwargs
@@ -488,6 +443,15 @@ def _AttrsDict_typedef():
     """
 
 def _AttrsDict_new(initial):
+    """Creates a builder for the `rule.attrs` dict.
+
+    Args:
+        initial: {type}`dict[str, callable | AttributeBuilder]` dict of initial
+            values to populate the attributes dict with.
+
+    Returns:
+        {type}`AttrsDict`
+    """
     self = struct(
         values = {},
         update = lambda *a, **k: _AttrsDict_update(self, *a, **k),
@@ -524,11 +488,7 @@ def _AttrsDict_build(self):
     """
     attrs = {}
     for k, v in self.values.items():
-        if hasattr(v, "build"):
-            v = v.build()
-        if not type(v) == "Attribute":
-            fail("bad attr type:", k, type(v), v)
-        attrs[k] = v
+        attrs[k] = v.build() if hasattr(v, "build") else v
     return attrs
 
 AttrsDict = struct(
@@ -538,532 +498,8 @@ AttrsDict = struct(
     build = _AttrsDict_build,
 )
 
-# todo: move to another file; rename Set
-def _SetBuilder(kwargs, name):
-    """Builder for list of unique values.
-
-    Args:
-        kwargs: {type}`dict[str, Any]` kwargs to search for `name`
-        name: {type}`str` A key in `kwargs` to initialize the value
-            to. If present, kwargs will be modified in place.
-        initial: {type}`list | None` The initial values.
-
-    Returns:
-        {type}`SetBuilder`
-    """
-    initial = {v: None for v in _kwargs_pop_list(kwargs, name)}
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        # TODO - Switch this to use set() builtin when available
-        # https://bazel.build/rules/lib/core/set
-        _values = initial,
-        update = lambda *a, **k: _SetBuilder_update(self, *a, **k),
-        build = lambda *a, **k: _SetBuilder_build(self, *a, **k),
-    )
-    return self
-
-def _SetBuilder_build(self):
-    """Builds the values into a list
-
-    Returns:
-        {type}`list`
-    """
-    return self._values.keys()
-
-def _SetBuilder_update(self, *others):
-    """Adds values to the builder.
-
-    Args:
-        self: implicitly added
-        *others: {type}`list` values to add to the set.
-    """
-    for other in others:
-        for value in other:
-            if value not in self._values:
-                self._values[value] = None
-
-def _kwargs_pop_dict(kwargs, key):
-    return dict(kwargs.pop(key, None) or {})
-
-def _kwargs_pop_list(kwargs, key):
-    return list(kwargs.pop(key, None) or [])
-
-def _BoolAttr(**kwargs):
-    """Create a builder for attributes.
-
-    Returns:
-        {type}`BoolAttr`
-    """
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        default = _Optional_new(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        extra_kwargs = kwargs,
-        build = lambda: attr.bool(**_common_to_kwargs_nobuilders(self)),
-    )
-    return self
-
-def _IntAttr(**kwargs):
-    # buildifier: disable=uninitialized
-    self = struct(
-        default = _Optional_new(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        values = kwargs.get("values") or [],
-        build = lambda *a, **k: _IntAttr_build(self, *a, **k),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-def _IntAttr_build(self):
-    kwargs = _common_to_kwargs_nobuilders(self)
-    return attr.int(**kwargs)
-
-def _AttrCfg_typedef():
-    """Builder for `cfg` arg of label attributes.
-
-    :::{function} implementation() -> callable
-
-    Returns the implementation function for using custom transition.
-    :::
-
-    :::{field} outputs
-    :type: SetBuilder[str | Label]
-    :::
-
-    :::{field} inputs
-    :type: SetBuilder[str | Label]
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-    """
-
-def _AttrCfg_new(outer_kwargs, name):
-    """Creates an instance.
-
-    Args:
-        outer_kwargs: {type}`dict` the kwargs to look for `name` within.
-        name: {type}`str` a key to look for in `outer_kwargs` for the
-            values to initilize from. If present in `outer_kwargs`, it
-            will be removed and the value initializes the builder. The value
-            is allowed to be one of:
-            - The string `exec` or `target`
-            - A dict with key `implementation`, which is a transition
-              implementation function.
-            - A dict with key `exec_group`, which is a string name for an
-              exec group to use for an exec transition.
-
-    Returns:
-        {type}`AttrCfg`
-    """
-    cfg = outer_kwargs.pop(name, None)
-    if cfg == None:
-        kwargs = {}
-    elif types.is_string(cfg):
-        kwargs = {"cfg": cfg}
-    else:
-        # Assume its a dict
-        kwargs = cfg
-
-    if "cfg" in kwargs:
-        initial = kwargs.pop("cfg")
-        is_exec = False
-    elif "exec_group" in kwargs:
-        initial = kwargs.pop("exec_group")
-        is_exec = True
-    else:
-        initial = None
-        is_exec = False
-
-    self = struct(
-        # list of (value, bool is_exec)
-        _implementation = [initial, is_exec],
-        implementation = lambda: self._implementation[0],
-        set_implementation = lambda *a, **k: _AttrCfg_set_implementation(self, *a, **k),
-        set_exec = lambda *a, **k: _AttrCfg_set_exec(self, *a, **k),
-        set_target = lambda: _AttrCfg_set_implementation(self, "target"),
-        exec_group = lambda: _AttrCfg_exec_group(self),
-        outputs = _SetBuilder(kwargs, "outputs"),
-        inputs = _SetBuilder(kwargs, "inputs"),
-        build = lambda: _AttrCfg_build(self),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-def _AttrCfg_set_implementation(self, impl):
-    """Sets a custom transition function to use.
-
-    Args:
-        impl: {type}`callable` a transition implementation function.
-    """
-    self._implementation[0] = impl
-    self._implementation[1] = False
-
-def _AttrCfg_set_exec(self, exec_group = None):
-    """Sets to use an exec transition.
-
-    Args:
-        exec_group: {type}`str | None` the exec group name to use, if any.
-    """
-    self._implementation[0] = exec_group
-    self._implementation[1] = True
-
-def _AttrCfg_exec_group(self):
-    """Tells the exec group to use if an exec transition is being used.
-
-    Args:
-        self: implicitly added.
-
-    Returns:
-        {type}`str | None` the name of the exec group to use if any.
-
-    """
-    if self._implementation[1]:
-        return self._implementation[0]
-    else:
-        return None
-
-def _AttrCfg_build(self):
-    value, is_exec = self._implementation
-    if value == None:
-        return None
-    elif is_exec:
-        return config.exec(value)
-    elif value == "target":
-        return config.target()
-    elif types.is_function(value):
-        return transition(
-            implementation = value,
-            inputs = self.inputs.build(),
-            outputs = self.outputs.build(),
-        )
-    else:
-        # Otherwise, just assume the value is valid and whoever set it
-        # knows what they're doing.
-        return value
-
-AttrCfg = struct(
-    TYPEDEF = _AttrCfg_typedef,
-    new = _AttrCfg_new,
-    set_implementation = _AttrCfg_set_implementation,
-    set_exec = _AttrCfg_set_exec,
-    exec_group = _AttrCfg_exec_group,
-)
-
-def _LabelAttr_typedef():
-    """Builder for `attr.label` objects.
-
-    :::{field} default
-    :type: Optional[str | label | configuration_field | None]
-    :::
-
-    :::{field} doc
-    :type: str
-    :::
-
-    :::{field} mandatory
-    :type: Optional[bool]
-    :::
-
-    :::{field} executable
-    :type: Optional[bool]
-    :::
-
-    :::{field} allow_files
-    :type: Optional[bool | list[str]]
-    :::
-
-    :::{field} allow_single_file
-    :type: Optional[bool]
-    :::
-
-    :::{field} providers
-    :type: list[provider | list[provider]]
-    :::
-
-    :::{field} cfg
-    :type: AttrCfg
-    :::
-
-    :::{field} aspects
-    :type: list[aspect]
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-    """
-
-def _LabelAttr_new(**kwargs):
-    """Creates an instance.
-
-    Args:
-        **kwargs: The same as `attr.label()`.
-
-    Returns:
-        {type}`LabelAttr`
-    """
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        default = _Optional_new(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        executable = _Optional_new(kwargs, "executable"),
-        allow_files = _Optional_new(kwargs, "allow_files"),
-        allow_single_file = _Optional_new(kwargs, "allow_single_file"),
-        providers = _kwargs_pop_list(kwargs, "providers"),
-        cfg = _AttrCfg_new(kwargs, "cfg"),
-        aspects = _kwargs_pop_list(kwargs, "aspects"),
-        build = lambda: _LabelAttr_build(self),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-def _LabelAttr_build(self):
-    kwargs = {
-        "aspects": [v.build() for v in self.aspects],
-    }
-    _common_to_kwargs_nobuilders(self, kwargs)
-    for name, value in kwargs.items():
-        kwargs[name] = value.build() if hasattr(value, "build") else value
-    return attr.label(**kwargs)
-
-LabelAttr = struct(
-    TYPEDEF = _LabelAttr_typedef,
-    new = _LabelAttr_new,
-    build = _LabelAttr_build,
-)
-
-def _LabelListAttr_typedef():
-    """Builder for `attr.label_list`
-
-    :::{field} default
-    :type: Optional[list[str|Label] | configuration_field]
-    :::
-
-    :::{field} doc
-    :type: Optional[str]
-    :::
-
-    :::{field} mandatory
-    :type: Optional[bool]
-    :::
-
-    :::{field} executable
-    :type: Optional[bool]
-    :::
-
-    :::{field} allow_files
-    :type: Optional[bool | list[str]]
-    :::
-
-    :::{field} allow_empty
-    :type: Optional[bool]
-    :::
-
-    :::{field} providers
-    :type: list[provider | list[provider]]
-    :::
-
-    :::{field} cfg
-    :type: AttrCfg
-    :::
-
-    :::{field} aspects
-    :type: list[aspect]
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-    """
-
-def _LabelListAttr_new(**kwargs):
-    self = struct(
-        default = _kwargs_pop_list(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        executable = _Optional_new(kwargs, "executable"),
-        allow_empty = _Optional_new(kwargs, "allow_empty"),
-        allow_files = _Optional_new(kwargs, "allow_files"),
-        providers = _kwargs_pop_list(kwargs, "providers"),
-        cfg = _AttrCfg_new(kwargs, "cfg"),
-        aspects = _kwargs_pop_list(kwargs, "aspects"),
-        build = lambda: _LabelListAttr_build(self),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-def _LabelListAttr_build(self):
-    kwargs = _common_to_kwargs_nobuilders(self)
-    for key, value in kwargs.items():
-        kwargs[key] = value.build() if hasattr(value, "build") else value
-    return attr.label_list(**kwargs)
-
-LabelListAttr = struct(
-    TYPEDEF = _LabelListAttr_typedef,
-    new = _LabelListAttr_new,
-    build = _LabelListAttr_build,
-)
-
-def _StringListAttr_typedef():
-    """Builder for `attr.string_list`
-
-    :::{field} default
-    :type: Optiona[list[str] | configuration_field]
-    :::
-
-    :::{field} doc
-    :type: Optional[str]
-    :::
-
-    :::{field} mandatory
-    :type: Optional[bool]
-    :::
-
-    :::{field} allow_empty
-    :type: Optional[bool]
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-
-    :::{function} build() -> attr.string_list
-    :::
-    """
-
-def _StringListAttr_new(**kwargs):
-    self = struct(
-        default = _Optional_new(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        allow_empty = _Optional_new(kwargs, "allow_empty"),
-        build = lambda *a, **k: attr.string_list(**_common_to_kwargs_nobuilders(self, *a, **k)),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-StringList = struct(
-    TYPEDEF = _StringList_typedef,
-    new = _StringList_new,
-)
-
-def _StringAttr_typedef():
-    """Builder for `attr.string`
-
-    :::{field} default
-    :type: Optiona[str]
-    :::
-
-    :::{field} doc
-    :type: Optiona[str]
-    :::
-    :::{field} mandatory
-    :type: Optiona[bool]
-    :::
-
-    :::{field} allow_empty
-    :type: Optiona[bool]
-    :::
-
-    :::{function} build() -> attr.string
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-
-    :::{field} values
-    :type: list[str]
-    :::
-    """
-
-def _StringAttr_new(**kwargs):
-    self = struct(
-        default = _Optional_new(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        # True, False, or list
-        allow_empty = _Optional_new(kwargs, "allow_empty"),
-        build = lambda *a, **k: attr.string(**_common_to_kwargs_nobuilders(self, *a, **k)),
-        extra_kwargs = kwargs,
-        values = _kwargs_pop_list(kwargs, "values"),
-    )
-    return self
-
-StringAttr = struct(
-    TYPEDEF = _StringAttr_typedef,
-    new = _StringAttr_new,
-)
-
-def _StringDictAttr_typedef():
-    """Builder for `attr.string_dict`
-
-    :::{field} default
-    :type: dict[str, str],
-    :::
-
-    :::{field} doc
-    :type: Optional[str]
-    :::
-
-    :::{field} mandatory
-    :type: Optional[bool]
-    :::
-
-    :::{field} allow_empty
-    :type: Optional[bool]
-    :::
-
-    :::{function} build() -> attr.string_dict
-    :::
-
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-    :::
-    """
-
-def _StringDictAttr_new(**kwargs):
-    """Creates an instance.
-
-    Args:
-        **kwargs: {type}`dict` The same args as for `attr.string_dict`.
-
-    Returns:
-        {type}`StringDictAttr`
-    """
-    self = struct(
-        default = _kwargs_pop_dict(kwargs, "default"),
-        doc = _Optional_new(kwargs, "doc"),
-        mandatory = _Optional_new(kwargs, "mandatory"),
-        allow_empty = _Optional_new(kwargs, "allow_empty"),
-        build = lambda: attr.string_dict(**_common_to_kwargs_nobuilders(self)),
-        extra_kwargs = kwargs,
-    )
-    return self
-
-StringDictAttr = struct(
-    TYPEDEF = _StringDictAttr_typedef,
-    new = _StringDictAttr_new,
-)
-
-# todo: remove Builder suffixes
-# todo: move attr classes: attr_builders.LabelList
-rule_builders = struct(
+ruleb = struct(
     Rule = _Rule_new,
-    LabelAttr = _LabelAttr_new,
-    LabelListAttr = _LabelListAttr,
-    IntAttr = _IntAttr,
-    StringListAttr = _StringListAttr,
-    StringAttr = _StringAttr,
-    StringDictAttr = _StringDictAttr,
-    BoolAttr = _BoolAttr,
-    AttrCfg = _AttrCfg,
+    ToolchainType = _ToolchainType_new,
+    ExecGroup = _ExecGroup_new,
 )

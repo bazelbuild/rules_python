@@ -18,6 +18,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load(":attr_builders.bzl", "attrb")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -27,10 +28,7 @@ load(
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
     "PycCollectionAttr",
-    "REQUIRED_EXEC_GROUPS",
-    "SRCS_VERSION_ALL_VALUES",
-    "create_srcs_attr",
-    "create_srcs_version_attr",
+    "REQUIRED_EXEC_GROUP_BUILDERS",
 )
 load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
@@ -51,7 +49,6 @@ load(
     "is_bool",
     "runfiles_root_path",
     "target_platform_has_any_constraint",
-    "union_attrs",
 )
 load(":flags.bzl", "BootstrapImplFlag", "VenvsUseDeclareSymlinkFlag")
 load(":precompile.bzl", "maybe_precompile")
@@ -61,7 +58,7 @@ load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(":py_runtime_info.bzl", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
-load(":rule_builders.bzl", "rule_builders")
+load(":rule_builders.bzl", "ruleb")
 load(
     ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
@@ -72,7 +69,6 @@ load(
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
-    "TARGET_TOOLCHAIN_TYPE",
     TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
 
@@ -80,12 +76,6 @@ _py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"
 _ZIP_RUNFILES_DIRECTORY_NAME = "runfiles"
 _PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
-
-# Bazel 5.4 doesn't have config_common.toolchain_type
-_CC_TOOLCHAINS = [config_common.toolchain_type(
-    "@bazel_tools//tools/cpp:toolchain_type",
-    mandatory = False,
-)] if hasattr(config_common, "toolchain_type") else []
 
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
@@ -96,7 +86,7 @@ EXECUTABLE_ATTRS = dicts.add(
     IMPORTS_ATTRS,
     COVERAGE_ATTRS,
     {
-        "legacy_create_init": lambda: rule_builders.IntAttrBuilder(
+        "legacy_create_init": lambda: attrb.Int(
             default = -1,
             values = [-1, 0, 1],
             doc = """\
@@ -113,7 +103,7 @@ the `srcs` of Python targets as required.
         # label, it is more treated as a string, and doesn't have to refer to
         # anything that exists because it gets treated as suffix-search string
         # over `srcs`.
-        "main": lambda: rule_builders.LabelAttrBuilder(
+        "main": lambda: attrb.Label(
             allow_single_file = True,
             doc = """\
 Optional; the name of the source file that is the main entry point of the
@@ -122,7 +112,7 @@ application. This file must also be listed in `srcs`. If left unspecified,
 filename in `srcs`, `main` must be specified.
 """,
         ),
-        "pyc_collection": lambda: rule_builders.StringAttrBuilder(
+        "pyc_collection": lambda: attrb.String(
             default = PycCollectionAttr.INHERIT,
             values = sorted(PycCollectionAttr.__members__.values()),
             doc = """
@@ -137,7 +127,7 @@ Valid values are:
   target level.
 """,
         ),
-        "python_version": lambda: rule_builders.StringAttrBuilder(
+        "python_version": lambda: attrb.String(
             # TODO(b/203567235): In the Java impl, the default comes from
             # --python_version. Not clear what the Starlark equivalent is.
             doc = """
@@ -163,25 +153,25 @@ accepting arbitrary Python versions.
 """,
         ),
         # Required to opt-in to the transition feature.
-        "_allowlist_function_transition": lambda: rule_builders.LabelAttrBuilder(
+        "_allowlist_function_transition": lambda: attrb.Label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
-        "_bootstrap_impl_flag": lambda: rule_builders.LabelAttrBuilder(
+        "_bootstrap_impl_flag": lambda: attrb.Label(
             default = "//python/config_settings:bootstrap_impl",
             providers = [BuildSettingInfo],
         ),
-        "_bootstrap_template": lambda: rule_builders.LabelAttrBuilder(
+        "_bootstrap_template": lambda: attrb.Label(
             allow_single_file = True,
             default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
         ),
-        "_launcher": lambda: rule_builders.LabelAttrBuilder(
+        "_launcher": lambda: attrb.Label(
             cfg = "target",
             # NOTE: This is an executable, but is only used for Windows. It
             # can't have executable=True because the backing target is an
             # empty target for other platforms.
             default = "//tools/launcher:launcher",
         ),
-        "_py_interpreter": lambda: rule_builders.LabelAttrBuilder(
+        "_py_interpreter": lambda: attrb.Label(
             # The configuration_field args are validated when called;
             # we use the precense of py_internal to indicate this Bazel
             # build has that fragment and name.
@@ -196,24 +186,24 @@ accepting arbitrary Python versions.
         ##"_py_toolchain_type": attr.label(
         ##    default = TARGET_TOOLCHAIN_TYPE,
         ##),
-        "_python_version_flag": lambda: rule_builders.LabelAttrBuilder(
+        "_python_version_flag": lambda: attrb.Label(
             default = "//python/config_settings:python_version",
         ),
-        "_venvs_use_declare_symlink_flag": lambda: rule_builders.LabelAttrBuilder(
+        "_venvs_use_declare_symlink_flag": lambda: attrb.Label(
             default = "//python/config_settings:venvs_use_declare_symlink",
             providers = [BuildSettingInfo],
         ),
-        "_windows_constraints": lambda: rule_builders.LabelListAttrBuilder(
+        "_windows_constraints": lambda: attrb.LabelList(
             default = [
                 "@platforms//os:windows",
             ],
         ),
-        "_windows_launcher_maker": lambda: rule_builders.LabelAttrBuilder(
+        "_windows_launcher_maker": lambda: attrb.Label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
             executable = True,
         ),
-        "_zipper": lambda: rule_builders.LabelAttrBuilder(
+        "_zipper": lambda: attrb.Label(
             cfg = "exec",
             executable = True,
             default = "@bazel_tools//tools/zip:zipper",
@@ -1750,16 +1740,19 @@ def create_base_executable_rule():
     return create_executable_rule_builder().build()
 
 def create_executable_rule_builder(implementation, **kwargs):
-    builder = rule_builders.RuleBuilder(
+    builder = ruleb.Rule(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,
-        exec_groups = REQUIRED_EXEC_GROUPS,
+        # todo: create builder for REQUIRED_EXEC_GROUPS, but keep the
+        # existing plain dict for now (Google uses it)
+        exec_groups = REQUIRED_EXEC_GROUP_BUILDERS,
         fragments = ["py", "bazel_py"],
         provides = [PyExecutableInfo],
         toolchains = [
-            TOOLCHAIN_TYPE,
-            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
-        ] + _CC_TOOLCHAINS,
+            ruleb.ToolchainType(TOOLCHAIN_TYPE),
+            ruleb.ToolchainType(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+            ruleb.ToolchainType("@bazel_tools//tools/cpp:toolchain_type", mandatory = False),
+        ],
         cfg = dict(
             implementation = _transition_executable_impl,
             inputs = [_PYTHON_VERSION_FLAG],

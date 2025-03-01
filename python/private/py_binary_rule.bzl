@@ -14,7 +14,6 @@
 """Rule implementation of py_binary for Bazel."""
 
 load(":attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
-load(":builders.bzl", "builders")
 load(
     ":py_executable.bzl",
     "create_executable_rule_builder",

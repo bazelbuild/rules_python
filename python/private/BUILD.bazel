@@ -52,9 +52,19 @@ filegroup(
 )
 
 bzl_library(
+    name = "attr_builders_bzl",
+    srcs = ["attr_builders.bzl"],
+    deps = [
+        ":builders_util_bzl",
+        "@bazel_skylib//lib:types",
+    ],
+)
+
+bzl_library(
     name = "attributes_bzl",
     srcs = ["attributes.bzl"],
     deps = [
+        ":attr_builders_bzl",
         ":common_bzl",
         ":enum_bzl",
         ":flags_bzl",
@@ -93,10 +103,19 @@ bzl_library(
 )
 
 bzl_library(
+    name = "builders_util_bzl",
+    srcs = ["builders_util.bzl"],
+    deps = [
+        "@bazel_skylib//lib:types",
+    ],
+)
+
+bzl_library(
     name = "rule_builders_bzl",
     srcs = ["rule_builders.bzl"],
     deps = [
         ":builders_bzl",
+        ":builders_util_bzl",
         "@bazel_skylib//lib:types",
     ],
 )

@@ -60,6 +60,7 @@ ctx.workspace_name bzl:obj 1 rules/lib/builtins/ctx#workspace_name -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
 exec_compatible_with bzl:attr 1 reference/be/common-definitions#common.exec_compatible_with -
+exec_group bzl:function 1 rules/lib/globals/bzl#exec_group -
 int bzl:type 1 rules/lib/int -
 label bzl:type 1 concepts/labels -
 list bzl:type 1 rules/lib/list -

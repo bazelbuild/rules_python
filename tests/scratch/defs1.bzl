@@ -1,5 +1,3 @@
-load(":defs2.bzl", "D", "THING")
-
 def recursive_build(top):
     top_res = {}
 
