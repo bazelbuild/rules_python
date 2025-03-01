@@ -27,8 +27,8 @@ other patches ensures that the users have overview on exactly what has changed
 within the wheel.
 """
 
-load("//python/private:repo_utils.bzl", "repo_utils")
 load(":parse_whl_name.bzl", "parse_whl_name")
+load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
 _rules_python_root = Label("//:BUILD.bazel")
 
@@ -102,10 +102,14 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
     record_patch = rctx.path("RECORD.patch")
     whl_patched = patched_whl_name(whl_input.basename)
 
-    repo_utils.execute_checked(
+    pypi_repo_utils.execute_checked(
         rctx,
+        python = python_interpreter,
+        srcs = [
+            "//python/private/pypi:repack_whl.py",
+            "//tools:wheelmaker.py",
+        ],
         arguments = [
-            python_interpreter,
             "-m",
             "python.private.pypi.repack_whl",
             "--record-patch",

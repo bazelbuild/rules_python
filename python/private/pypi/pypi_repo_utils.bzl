@@ -104,11 +104,27 @@ def _construct_pypath(mrctx, *, entries):
     ])
     return pypath
 
-def _execute_checked(mrctx, *, srcs, **kwargs):
+def _execute_prep(mrctx, *, python, srcs, **kwargs):
+    for src in srcs:
+        # This will ensure that we will re-evaluate the bzlmod extension or
+        # refetch the repository_rule when the srcs change. This should work on
+        # Bazel versions without `mrctx.watch` as well.
+        repo_utils.watch(mrctx, mrctx.path(src))
+
+    environment = kwargs.pop("environment", {})
+    pythonpath = environment.get("PYTHONPATH", "")
+    if pythonpath and not types.is_string(pythonpath):
+        environment["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
+    kwargs["environment"] = environment
+    kwargs["arguments"] = [python, "-B"] + kwargs.get("arguments", [])
+    return kwargs
+
+def _execute_checked(mrctx, *, python, srcs, **kwargs):
     """Helper function to run a python script and modify the PYTHONPATH to include external deps.
 
     Args:
         mrctx: Handle to the module_ctx or repository_ctx.
+        python: The python interpreter to use.
         srcs: The src files that the script depends on. This is important to
             ensure that the Bazel repository cache or the bzlmod lock file gets
             invalidated when any one file changes. It is advisable to use
@@ -118,26 +134,34 @@ def _execute_checked(mrctx, *, srcs, **kwargs):
             the `environment` has a value `PYTHONPATH` and it is a list, then
             it will be passed to `construct_pythonpath` function.
     """
-
-    for src in srcs:
-        # This will ensure that we will re-evaluate the bzlmod extension or
-        # refetch the repository_rule when the srcs change. This should work on
-        # Bazel versions without `mrctx.watch` as well.
-        repo_utils.watch(mrctx, mrctx.path(src))
-
-    env = kwargs.pop("environment", {})
-    pythonpath = env.get("PYTHONPATH", "")
-    if pythonpath and not types.is_string(pythonpath):
-        env["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
-
     return repo_utils.execute_checked(
         mrctx,
-        environment = env,
-        **kwargs
+        **_execute_prep(mrctx, python = python, srcs = srcs, **kwargs)
+    )
+
+def _execute_checked_stdout(mrctx, *, python, srcs, **kwargs):
+    """Helper function to run a python script and modify the PYTHONPATH to include external deps.
+
+    Args:
+        mrctx: Handle to the module_ctx or repository_ctx.
+        python: The python interpreter to use.
+        srcs: The src files that the script depends on. This is important to
+            ensure that the Bazel repository cache or the bzlmod lock file gets
+            invalidated when any one file changes. It is advisable to use
+            `RECORD` files for external deps and the list of srcs from the
+            rules_python repo for any scripts.
+        **kwargs: Arguments forwarded to `repo_utils.execute_checked`. If
+            the `environment` has a value `PYTHONPATH` and it is a list, then
+            it will be passed to `construct_pythonpath` function.
+    """
+    return repo_utils.execute_checked_stdout(
+        mrctx,
+        **_execute_prep(mrctx, python = python, srcs = srcs, **kwargs)
     )
 
 pypi_repo_utils = struct(
     construct_pythonpath = _construct_pypath,
     execute_checked = _execute_checked,
+    execute_checked_stdout = _execute_checked_stdout,
     resolve_python_interpreter = _resolve_python_interpreter,
 )

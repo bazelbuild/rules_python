@@ -109,6 +109,9 @@ Unreleased changes template.
   {obj}`--venvs_use_declare_symlink=no` to have it not create symlinks at
   build time (they will be created at runtime instead).
   (Fixes [#2489](https://github.com/bazelbuild/rules_python/issues/2489))
+* (pypi) From now on `python` invocations in repository and module extension
+  evaluation contexts will invoke Python interpreter with `-B` to avoid
+  creating `.pyc` files.
 
 {#v1-2-0-added}
 ### Added
