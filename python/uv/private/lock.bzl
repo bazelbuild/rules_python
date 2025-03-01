@@ -50,8 +50,8 @@ def _impl(ctx):
     srcs = ctx.files.srcs
 
     args.add_all(srcs)
-    # if ctx.attr.upgrade:
-    #     args.add("--upgrade")
+    if ctx.attr.upgrade:
+        args.add("--upgrade")
 
     if ctx.attr.universal:
         args.add("--universal")
@@ -124,7 +124,7 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
         # output file location in order to make `uv` not change the requirements if
         # we are just running the command.
         src_outs = native.glob([out]),
-        update_target = "@//{}:{}".format(pkg, update_target),
+        update_target = "//{}:{}".format(pkg, update_target),
         out = out + ".new",
         tags = [
             "local",
