@@ -21,17 +21,20 @@ def _run() -> None:
     args = sys.argv[1:]
     running_interactively = "BUILD_WORKSPACE_DIRECTORY" in env
 
-    if args[-2] != "--output-file":
-        raise ValueError("The last arg should be the output file")
-
     src_out = args[1] if args[0] == "--src-out" else None
+    if src_out:
+        args = args[2:]
+
+    if args[2] != "--output-file":
+        raise ValueError(
+            "The first arg after 'pip compile' should be to declare the output file"
+        )
+    else:
+        out = args[3]
 
     if running_interactively:
-        args[-1] = pathlib.Path(env["BUILD_WORKSPACE_DIRECTORY"]) / args[-1]
+        args[3] = pathlib.Path(env["BUILD_WORKSPACE_DIRECTORY"]) / out
     elif src_out:
-        args = args[2:]
-        out = args[-1]
-
         src = pathlib.Path(src_out)
         dst = pathlib.Path(out)
         dst.write_text(src.read_text())
