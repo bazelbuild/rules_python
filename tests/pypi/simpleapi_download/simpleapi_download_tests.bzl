@@ -21,6 +21,7 @@ _tests = []
 
 def _test_simple(env):
     calls = []
+    warnings_suggestion = []
 
     def read_simpleapi(ctx, url, attr, cache, get_auth, block):
         _ = ctx  # buildifier: disable=unused-variable
@@ -31,12 +32,18 @@ def _test_simple(env):
         calls.append(url)
         if "foo" in url and "main" in url:
             return struct(
-                output = "",
+                output = struct(
+                    sdists = {"": ""},
+                    whls = {},
+                ),
                 success = False,
             )
         else:
             return struct(
-                output = "data from {}".format(url),
+                output = struct(
+                    sdists = {"": "data from {}".format(url)},
+                    whls = {},
+                ),
                 success = True,
             )
 
@@ -48,12 +55,14 @@ def _test_simple(env):
             index_url_overrides = {},
             index_url = "main",
             extra_index_urls = ["extra"],
+            index_strategy = "first-index",
             sources = ["foo", "bar", "baz"],
             envsubst = [],
         ),
         cache = {},
         parallel_download = True,
         read_simpleapi = read_simpleapi,
+        _print = warnings_suggestion.append,
     )
 
     env.expect.that_collection(calls).contains_exactly([
@@ -63,12 +72,194 @@ def _test_simple(env):
         "main/foo/",
     ])
     env.expect.that_dict(contents).contains_exactly({
-        "bar": "data from main/bar/",
-        "baz": "data from main/baz/",
-        "foo": "data from extra/foo/",
+        "bar": struct(
+            sdists = {"": "data from main/bar/"},
+            whls = {},
+        ),
+        "baz": struct(
+            sdists = {"": "data from main/baz/"},
+            whls = {},
+        ),
+        "foo": struct(
+            sdists = {"": "data from extra/foo/"},
+            whls = {},
+        ),
     })
+    env.expect.that_collection(warnings_suggestion).contains_exactly([
+        """\
+You can use the following `index_url_overrides` to avoid the 404 warnings:
+{
+    "foo": "extra",
+    "bar": "main",
+    "baz": "main",
+}""",
+    ])
 
 _tests.append(_test_simple)
+
+def _test_overrides_and_precedence(env):
+    calls = []
+
+    def read_simpleapi(ctx, url, attr, cache, get_auth, block):
+        _ = ctx  # buildifier: disable=unused-variable
+        _ = attr
+        _ = cache
+        _ = get_auth
+        env.expect.that_bool(block).equals(False)
+        calls.append(url)
+        if "foo" in url and "main" in url:
+            return struct(
+                output = struct(
+                    sdists = {"": ""},
+                    whls = {},
+                ),
+                # This will ensure that we fail the test if we go into this
+                # branch unexpectedly.
+                success = False,
+            )
+        else:
+            return struct(
+                output = struct(
+                    sdists = {"": "data from {}".format(url)},
+                    whls = {
+                        url: "whl from {}".format(url),
+                    } if "foo" in url else {},
+                ),
+                success = True,
+            )
+
+    contents = simpleapi_download(
+        ctx = struct(
+            os = struct(environ = {}),
+        ),
+        attr = struct(
+            index_url_overrides = {
+                "foo": "extra1,extra2",
+            },
+            index_url = "main",
+            extra_index_urls = [],
+            # If we pass overrides, then we will get packages from all indexes.
+            # However, for packages without index_url_overrides, we will honour
+            # the strategy setting.
+            index_strategy = "first-index",
+            sources = ["foo", "bar", "baz"],
+            envsubst = [],
+        ),
+        cache = {},
+        parallel_download = True,
+        read_simpleapi = read_simpleapi,
+        _print = fail,
+    )
+
+    env.expect.that_collection(calls).contains_exactly([
+        "extra1/foo/",
+        "extra2/foo/",
+        "main/bar/",
+        "main/baz/",
+    ])
+    env.expect.that_dict(contents).contains_exactly({
+        "bar": struct(
+            sdists = {"": "data from main/bar/"},
+            whls = {},
+        ),
+        "baz": struct(
+            sdists = {"": "data from main/baz/"},
+            whls = {},
+        ),
+        "foo": struct(
+            # We prioritize the first index
+            sdists = {"": "data from extra1/foo/"},
+            whls = {
+                "extra1/foo/": "whl from extra1/foo/",
+                "extra2/foo/": "whl from extra2/foo/",
+            },
+        ),
+    })
+
+_tests.append(_test_overrides_and_precedence)
+
+def _test_unsafe_strategy(env):
+    calls = []
+    warnings_suggestion = []
+
+    def read_simpleapi(ctx, url, attr, cache, get_auth, block):
+        _ = ctx  # buildifier: disable=unused-variable
+        _ = attr
+        _ = cache
+        _ = get_auth
+        env.expect.that_bool(block).equals(False)
+        calls.append(url)
+        return struct(
+            output = struct(
+                sdists = {"": "data from {}".format(url)},
+                whls = {
+                    url: "whl from {}".format(url),
+                } if "foo" in url else {},
+            ),
+            success = True,
+        )
+
+    contents = simpleapi_download(
+        ctx = struct(
+            os = struct(environ = {}),
+        ),
+        attr = struct(
+            index_url_overrides = {
+                "foo": "extra1,extra2",
+            },
+            index_url = "main",
+            # This field would be ignored for others
+            extra_index_urls = ["extra"],
+            # If we pass overrides, then we will get packages from all indexes.
+            # However, for packages without index_url_overrides, we will honour
+            # the strategy setting.
+            index_strategy = "unsafe",
+            sources = ["foo", "bar", "baz"],
+            envsubst = [],
+        ),
+        cache = {},
+        parallel_download = True,
+        read_simpleapi = read_simpleapi,
+        _print = warnings_suggestion.append,
+    )
+
+    env.expect.that_collection(calls).contains_exactly([
+        "extra1/foo/",
+        "extra2/foo/",
+        "main/bar/",
+        "main/baz/",
+        "extra/bar/",
+        "extra/baz/",
+    ])
+    env.expect.that_dict(contents).contains_exactly({
+        "bar": struct(
+            sdists = {"": "data from main/bar/"},
+            whls = {},
+        ),
+        "baz": struct(
+            sdists = {"": "data from main/baz/"},
+            whls = {},
+        ),
+        "foo": struct(
+            # We prioritize the first index
+            sdists = {"": "data from extra1/foo/"},
+            whls = {
+                "extra1/foo/": "whl from extra1/foo/",
+                "extra2/foo/": "whl from extra2/foo/",
+            },
+        ),
+    })
+    env.expect.that_collection(warnings_suggestion).contains_exactly([
+        """\
+You can use the following `index_url_overrides` to avoid the 404 warnings:
+{
+    "foo": "extra1,extra2",
+    "bar": "main,extra",
+    "baz": "main,extra",
+}""",
+    ])
+
+_tests.append(_test_unsafe_strategy)
 
 def _test_fail(env):
     calls = []
@@ -83,12 +274,18 @@ def _test_fail(env):
         calls.append(url)
         if "foo" in url:
             return struct(
-                output = "",
+                output = struct(
+                    sdists = {"": ""},
+                    whls = {},
+                ),
                 success = False,
             )
         else:
             return struct(
-                output = "data from {}".format(url),
+                output = struct(
+                    sdists = {"": "data from {}".format(url)},
+                    whls = {},
+                ),
                 success = True,
             )
 
@@ -100,6 +297,7 @@ def _test_fail(env):
             index_url_overrides = {},
             index_url = "main",
             extra_index_urls = ["extra"],
+            index_strategy = "first-index",
             sources = ["foo", "bar", "baz"],
             envsubst = [],
         ),
@@ -107,10 +305,11 @@ def _test_fail(env):
         parallel_download = True,
         read_simpleapi = read_simpleapi,
         _fail = fails.append,
+        _print = fail,
     )
 
     env.expect.that_collection(fails).contains_exactly([
-        """Failed to download metadata for ["foo"] for from urls: ["main", "extra"]""",
+        """Failed to download metadata for ["foo"] from urls: ["main", "extra"]""",
     ])
     env.expect.that_collection(calls).contains_exactly([
         "extra/foo/",
@@ -140,12 +339,14 @@ def _test_download_url(env):
             index_url_overrides = {},
             index_url = "https://example.com/main/simple/",
             extra_index_urls = [],
+            index_strategy = "first-index",
             sources = ["foo", "bar", "baz"],
             envsubst = [],
         ),
         cache = {},
         parallel_download = False,
         get_auth = lambda ctx, urls, ctx_attr: struct(),
+        _print = fail,
     )
 
     env.expect.that_dict(downloads).contains_exactly({
@@ -175,12 +376,14 @@ def _test_download_url_parallel(env):
             index_url_overrides = {},
             index_url = "https://example.com/main/simple/",
             extra_index_urls = [],
+            index_strategy = "first-index",
             sources = ["foo", "bar", "baz"],
             envsubst = [],
         ),
         cache = {},
         parallel_download = True,
         get_auth = lambda ctx, urls, ctx_attr: struct(),
+        _print = fail,
     )
 
     env.expect.that_dict(downloads).contains_exactly({
@@ -210,12 +413,14 @@ def _test_download_envsubst_url(env):
             index_url_overrides = {},
             index_url = "$INDEX_URL",
             extra_index_urls = [],
+            index_strategy = "first-index",
             sources = ["foo", "bar", "baz"],
             envsubst = ["INDEX_URL"],
         ),
         cache = {},
         parallel_download = False,
         get_auth = lambda ctx, urls, ctx_attr: struct(),
+        _print = fail,
     )
 
     env.expect.that_dict(downloads).contains_exactly({
