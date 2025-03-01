@@ -163,7 +163,10 @@ lock(
     name = "requirements",
     srcs = ["pyproject.toml"],
     out = "requirements.txt",
-    args = ["--universal"],
+    args = [
+        "--universal",
+        "--upgrade",
+    ],
     visibility = ["//private:__pkg__"],
 )
 
