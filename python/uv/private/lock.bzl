@@ -42,11 +42,10 @@ def _impl(ctx):
             "--src-out",
             ctx.files.src_outs[0].path,
         ])
-
+    args.add("--output-file", ctx.outputs.out)
     args.add_all(ctx.attr.args)
     srcs = ctx.files.srcs + ctx.files.src_outs
     args.add_all(ctx.files.srcs)
-    args.add("--output-file", ctx.outputs.out)
 
     ctx.actions.run(
         executable = ctx.executable._locker,
@@ -113,8 +112,6 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         if path == out
     ]
     args = [
-        "pip",
-        "compile",
         "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
         "--generate-hashes",
         "--emit-index-url",
@@ -142,10 +139,6 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     )
 
     run_args = []
-    run_args += args + [
-        "$(location {})".format(s)
-        for s in srcs
-    ]
     if existing_outputs:
         # This means that the output file already exists and it should be used
         # to create a new file. This will be taken care by the locker tool.
@@ -153,6 +146,10 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     else:
         run_out = "{}/{}".format(pkg, out)
         run_args += ["--output-file", run_out]
+    run_args += args + [
+        "$(location {})".format(s)
+        for s in srcs
+    ]
     run_data = srcs + existing_outputs
 
     native_binary(
