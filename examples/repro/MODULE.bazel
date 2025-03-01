@@ -30,6 +30,8 @@ pip.parse(
     ],
     hub_name = "pip",
     python_version = "3.12",
-    requirements_lock = "requirements.txt",
+    requirements_by_platform = {
+        "requirements.txt": "osx_aarch64,linux_aarch64,linux_x86_64",
+    },
 )
 use_repo(pip, "pip")
