@@ -106,7 +106,7 @@ def lock(*, name, srcs, out, args = [], **kwargs):
 
     user_args = args
 
-    existing_outputs = native.glob([out])
+    existing_outputs = native.glob([out], allow_empty = True)
     existing_outputs = [
         path
         for path in existing_outputs
