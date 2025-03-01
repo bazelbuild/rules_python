@@ -50,8 +50,8 @@ def _impl(ctx):
     srcs = ctx.files.srcs
 
     args.add_all(srcs)
-    if ctx.attr.upgrade:
-        args.add("--upgrade")
+    # if ctx.attr.upgrade:
+    #     args.add("--upgrade")
 
     if ctx.attr.universal:
         args.add("--universal")
