@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -38,6 +37,8 @@ def _run() -> None:
     elif src_out:
         src = Path(src_out)
         dst = Path(out)
+        import shutil
+
         shutil.copy(src, dst)
 
     uv_args = ["pip", "compile"] + args
