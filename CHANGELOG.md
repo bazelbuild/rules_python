@@ -63,6 +63,8 @@ Unreleased changes template.
   is now the default. Note that running as root may still cause spurious
   Bazel cache invalidation
   ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
+* (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
+  Support spilling modules mapping args into a params file.
 
 {#v0-0-0-added}
 ### Added
