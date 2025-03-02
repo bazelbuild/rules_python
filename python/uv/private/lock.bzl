@@ -94,7 +94,9 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     """Pin the requirements based on the src files.
 
     Differences with the current {obj}`compile_pip_requirements` rule:
-    - This is implemented in shell and uv.
+    - This is implemented as a rule that performs locking in a build action.
+    - Additionally one can use the runnable target.
+    - Uses `uv`.
     - This does not error out if the output file does not exist yet.
     - Supports transitions out of the box.
 
