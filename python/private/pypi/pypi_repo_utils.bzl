@@ -116,6 +116,8 @@ def _execute_prep(mrctx, *, python, srcs, **kwargs):
     if pythonpath and not types.is_string(pythonpath):
         environment["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
     kwargs["environment"] = environment
+    # -B is added to prevent the repo-phase invocation from creating timestamp
+    # based pyc files, which contributes to race conditions and non-determinism
     kwargs["arguments"] = [python, "-B"] + kwargs.get("arguments", [])
     return kwargs
 
