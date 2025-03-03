@@ -62,7 +62,7 @@ def _override(
         auth_patterns = {},
         available_python_versions = [],
         base_url = "",
-        ignore_root_user_error = False,
+        ignore_root_user_error = True,
         minor_mapping = {},
         netrc = "",
         register_all_versions = False):
@@ -139,7 +139,7 @@ def _test_default(env):
         "ignore_root_user_error",
         "tool_versions",
     ])
-    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(False)
+    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(True)
     env.expect.that_str(py.default_python_version).equals("3.11")
 
     want_toolchain = struct(
@@ -212,13 +212,13 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
         module_ctx = _mock_mctx(
             _mod(
                 name = "my_module",
-                toolchain = [_toolchain("3.12", ignore_root_user_error = True)],
+                toolchain = [_toolchain("3.12", ignore_root_user_error = False)],
             ),
             _mod(name = "rules_python", toolchain = [_toolchain("3.11")]),
         ),
     )
 
-    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(True)
+    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(False)
     env.expect.that_str(py.default_python_version).equals("3.12")
 
     my_module_toolchain = struct(
@@ -238,49 +238,17 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error)
 
-def _test_default_non_rules_python_ignore_root_user_error_override(env):
-    py = parse_modules(
-        module_ctx = _mock_mctx(
-            _mod(
-                name = "my_module",
-                toolchain = [_toolchain("3.12")],
-                override = [_override(ignore_root_user_error = True)],
-            ),
-            _mod(name = "rules_python", toolchain = [_toolchain("3.11")]),
-        ),
-    )
-
-    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(True)
-    env.expect.that_str(py.default_python_version).equals("3.12")
-
-    my_module_toolchain = struct(
-        name = "python_3_12",
-        python_version = "3.12",
-        register_coverage_tool = False,
-    )
-    rules_python_toolchain = struct(
-        name = "python_3_11",
-        python_version = "3.11",
-        register_coverage_tool = False,
-    )
-    env.expect.that_collection(py.toolchains).contains_exactly([
-        rules_python_toolchain,
-        my_module_toolchain,
-    ]).in_order()
-
-_tests.append(_test_default_non_rules_python_ignore_root_user_error_override)
-
 def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
     py = parse_modules(
         module_ctx = _mock_mctx(
             _mod(name = "my_module", toolchain = [_toolchain("3.13")]),
-            _mod(name = "some_module", toolchain = [_toolchain("3.12", ignore_root_user_error = True)]),
+            _mod(name = "some_module", toolchain = [_toolchain("3.12", ignore_root_user_error = False)]),
             _mod(name = "rules_python", toolchain = [_toolchain("3.11")]),
         ),
     )
 
     env.expect.that_str(py.default_python_version).equals("3.13")
-    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(False)
+    env.expect.that_bool(py.config.default["ignore_root_user_error"]).equals(True)
 
     my_module_toolchain = struct(
         name = "python_3_13",
@@ -338,8 +306,8 @@ def _test_first_occurance_of_the_toolchain_wins(env):
 
     env.expect.that_dict(py.debug_info).contains_exactly({
         "toolchains_registered": [
-            {"ignore_root_user_error": False, "module": {"is_root": True, "name": "my_module"}, "name": "python_3_12"},
-            {"ignore_root_user_error": False, "module": {"is_root": False, "name": "rules_python"}, "name": "python_3_11"},
+            {"ignore_root_user_error": True, "module": {"is_root": True, "name": "my_module"}, "name": "python_3_12"},
+            {"ignore_root_user_error": True, "module": {"is_root": False, "name": "rules_python"}, "name": "python_3_11"},
         ],
     })
 
@@ -364,7 +332,7 @@ def _test_auth_overrides(env):
 
     env.expect.that_dict(py.config.default).contains_at_least({
         "auth_patterns": {"foo": "bar"},
-        "ignore_root_user_error": False,
+        "ignore_root_user_error": True,
         "netrc": "/my/netrc",
     })
     env.expect.that_str(py.default_python_version).equals("3.12")
