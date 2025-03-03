@@ -106,8 +106,8 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         rctx,
         python = python_interpreter,
         srcs = [
-            "//python/private/pypi:repack_whl.py",
-            "//tools:wheelmaker.py",
+            Label("//python/private/pypi:repack_whl.py"),
+            Label("//tools:wheelmaker.py"),
         ],
         arguments = [
             "-m",
