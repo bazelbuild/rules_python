@@ -57,7 +57,7 @@ Unreleased changes template.
 {#v0-0-0-fixed}
 ### Fixed
 * (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
-* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in 
+* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in
   `file` generation mode. Fixed in [#2619](https://github.com/bazelbuild/rules_python/pull/2619).
 * (bzlmod) Running as root is no longer an error. `ignore_root_user_error=True`
   is now the default. Note that running as root may still cause spurious
@@ -65,6 +65,8 @@ Unreleased changes template.
   ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
 * (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
   Support spilling modules mapping args into a params file.
+* (uv) Adds support for versions 0.5.26 through 0.6.3 and a maintenance script
+  for future releases. Fixed in [#2647](https://github.com/bazelbuild/rules_python/pull/2647).
 
 {#v0-0-0-added}
 ### Added
