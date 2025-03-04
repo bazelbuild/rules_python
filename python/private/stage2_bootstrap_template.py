@@ -298,8 +298,8 @@ relative_files = True
     unique_dirs = {os.path.dirname(file) for file in instrumented_files}
     source = list(unique_dirs)
 
-    print_verbose_coverage("[coveragepy] Instrumented Files:\n" + "\n".join(instrumented_files))
-    print_verbose_coverage("[coveragepy] Sources:\n" + "\n".join(unique_dirs))
+    print_verbose_coverage("Instrumented Files:\n" + "\n".join(instrumented_files))
+    print_verbose_coverage("Sources:\n" + "\n".join(unique_dirs))
 
     try:
         cov = coverage.Coverage(
