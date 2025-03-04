@@ -481,6 +481,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     cache = simpleapi_cache,
                     parallel_download = pip_attr.parallel_download,
                 )
+            elif pip_attr.experimental_extra_index_urls:
+                fail("'experimental_extra_index_urls' is a no-op unless 'experimental_index_url' is set")
+            elif pip_attr.experimental_index_url_overrides:
+                fail("'experimental_index_url_overrides' is a no-op unless 'experimental_index_url' is set")
 
             out = _create_whl_repos(
                 module_ctx,

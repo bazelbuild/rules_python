@@ -127,37 +127,36 @@ def _python_repository_impl(rctx):
     # pycs being generated at runtime:
     # * The pycs are not deterministic (they contain timestamps)
     # * Multiple processes trying to write the same pycs can result in errors.
-    if not rctx.attr.ignore_root_user_error:
-        if "windows" not in platform:
-            lib_dir = "lib" if "windows" not in platform else "Lib"
+    if "windows" not in platform:
+        repo_utils.execute_checked(
+            rctx,
+            op = "python_repository.MakeReadOnly",
+            arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", "lib"],
+            logger = logger,
+        )
 
-            repo_utils.execute_checked(
+        fail_or_warn = logger.warn if rctx.attr.ignore_root_user_error else logger.fail
+        exec_result = repo_utils.execute_unchecked(
+            rctx,
+            op = "python_repository.TestReadOnly",
+            arguments = [repo_utils.which_checked(rctx, "touch"), "lib/.test"],
+            logger = logger,
+        )
+
+        # The issue with running as root is the installation is no longer
+        # read-only, so the problems due to pyc can resurface.
+        if exec_result.return_code == 0:
+            stdout = repo_utils.execute_checked_stdout(
                 rctx,
-                op = "python_repository.MakeReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", lib_dir],
+                op = "python_repository.GetUserId",
+                arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
                 logger = logger,
             )
-            exec_result = repo_utils.execute_unchecked(
-                rctx,
-                op = "python_repository.TestReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
-                logger = logger,
-            )
-
-            # The issue with running as root is the installation is no longer
-            # read-only, so the problems due to pyc can resurface.
-            if exec_result.return_code == 0:
-                stdout = repo_utils.execute_checked_stdout(
-                    rctx,
-                    op = "python_repository.GetUserId",
-                    arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
-                    logger = logger,
-                )
-                uid = int(stdout.strip())
-                if uid == 0:
-                    fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
-                else:
-                    fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+            uid = int(stdout.strip())
+            if uid == 0:
+                fail_or_warn("The current user is root, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+            else:
+                fail_or_warn("The current user has CAP_DAC_OVERRIDE set, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
@@ -294,7 +293,7 @@ For more information see {attr}`py_runtime.coverage_tool`.
             mandatory = False,
         ),
         "ignore_root_user_error": attr.bool(
-            default = False,
+            default = True,
             doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
         ),
