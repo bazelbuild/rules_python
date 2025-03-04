@@ -15,16 +15,14 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load(":attr_builders.bzl", "attrb")
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
     "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
-    "REQUIRED_EXEC_GROUPS",
-    "SRCS_VERSION_ALL_VALUES",
-    "create_srcs_attr",
-    "create_srcs_version_attr",
+    "REQUIRED_EXEC_GROUP_BUILDERS",
 )
 load(":builders.bzl", "builders")
 load(
@@ -35,11 +33,11 @@ load(
     "create_output_group_info",
     "create_py_info",
     "filter_to_py_srcs",
-    "union_attrs",
 )
 load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":rule_builders.bzl", "ruleb")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
@@ -48,14 +46,12 @@ load(
 
 _py_builtins = py_internal
 
-LIBRARY_ATTRS = union_attrs(
+LIBRARY_ATTRS = dicts.add(
     COMMON_ATTRS,
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
-    create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    create_srcs_attr(mandatory = False),
     {
-        "_add_srcs_to_runfiles_flag": attr.label(
+        "_add_srcs_to_runfiles_flag": lambda: attrb.Label(
             default = "//python/config_settings:add_srcs_to_runfiles",
         ),
     },
@@ -145,14 +141,15 @@ Source files are no longer added to the runfiles directly.
 :::
 """
 
-def create_py_library_rule(*, attrs = {}, **kwargs):
+def create_py_library_rule_builder(*, attrs = {}, **kwargs):
     """Creates a py_library rule.
 
     Args:
         attrs: dict of rule attributes.
-        **kwargs: Additional kwargs to pass onto the rule() call.
+        **kwargs: Additional kwargs to pass onto {obj}`ruleb.Rule()`.
+
     Returns:
-        A rule object
+        {type}`ruleb.Rule` builder object.
     """
 
     # Within Google, the doc attribute is overridden
@@ -161,13 +158,15 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
     # TODO: b/253818097 - fragments=py is only necessary so that
     # RequiredConfigFragmentsTest passes
     fragments = kwargs.pop("fragments", None) or []
-    kwargs["exec_groups"] = REQUIRED_EXEC_GROUPS | (kwargs.get("exec_groups") or {})
-    return rule(
+    kwargs["exec_groups"] = REQUIRED_EXEC_GROUP_BUILDERS | (kwargs.get("exec_groups") or {})
+
+    builder = ruleb.Rule(
         attrs = dicts.add(LIBRARY_ATTRS, attrs),
-        toolchains = [
-            config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
-            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
-        ],
         fragments = fragments + ["py"],
+        toolchains = [
+            ruleb.ToolchainType(TOOLCHAIN_TYPE, mandatory = False),
+            ruleb.ToolchainType(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+        ],
         **kwargs
     )
+    return builder
