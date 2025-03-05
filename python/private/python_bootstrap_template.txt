@@ -427,6 +427,7 @@ def _RunForCoverage(python_program, main_filename, args, env,
   """
   instrumented_files = [abs_path for abs_path, _ in InstrumentedFilePaths()]
   unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+  source = "\n\t".join(unique_dirs)
 
   PrintVerboseCoverage("[coveragepy] Instrumented Files:\n" + "\n".join(instrumented_files))
   PrintVerboseCoverage("[coveragepy] Sources:\n" + "\n".join(unique_dirs))
@@ -438,7 +439,7 @@ def _RunForCoverage(python_program, main_filename, args, env,
     rcfile.write(f'''[run]
 relative_files = True
 source =
-\t{"\n\t".join(unique_dirs)}
+\t{source}
 ''')
   PrintVerboseCoverage('Coverage entrypoint:', coverage_entrypoint)
   # First run the target Python file via coveragepy to create a .coverage

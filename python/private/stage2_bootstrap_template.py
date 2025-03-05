@@ -278,6 +278,7 @@ def _maybe_collect_coverage(enable):
 
     instrumented_files = [abs_path for abs_path, _ in instrumented_file_paths()]
     unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+    source = "\n\t".join(unique_dirs)
 
     print_verbose_coverage("Instrumented Files:\n" + "\n".join(instrumented_files))
     print_verbose_coverage("Sources:\n" + "\n".join(unique_dirs))
@@ -298,7 +299,7 @@ def _maybe_collect_coverage(enable):
             f"""[run]
 relative_files = True
 source =
-\t{"\n\t".join(unique_dirs)}
+\t{source}
 """
         )
     try:
