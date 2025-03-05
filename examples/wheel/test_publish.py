@@ -104,7 +104,7 @@ class TestTwineUpload(unittest.TestCase):
     </head>
     <body>
         <h1>Links for example-minimal-library</h1>
-             <a href="/packages/example_minimal_library-0.0.1-py3-none-any.whl#sha256=554179da3b6a355d8e79a834ef36e14467f69aa2c107215ac76947267063bfe7">example_minimal_library-0.0.1-py3-none-any.whl</a><br>
+             <a href="/packages/example_minimal_library-0.0.1-py3-none-any.whl#sha256=0cbf4ec574676015af595f570caf4ae2812f994f6338e247b002b4e496b6fbd5">example_minimal_library-0.0.1-py3-none-any.whl</a><br>
     </body>
 </html>"""
             self.assertEqual(
