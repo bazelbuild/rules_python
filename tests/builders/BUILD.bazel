@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load(":attr_builders_tests.bzl", "attr_builders_test_suite")
 load(":builders_tests.bzl", "builders_test_suite")
+load(":rule_builders_tests.bzl", "rule_builders_test_suite")
 
 builders_test_suite(name = "builders_test_suite")
+
+rule_builders_test_suite(name = "rule_builders_test_suite")
+
+attr_builders_test_suite(name = "attr_builders_test_suite")
