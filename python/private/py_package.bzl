@@ -46,6 +46,9 @@ def _py_package_impl(ctx):
     if hasattr(py_info, "transitive_pyc_files"):
         inputs.add(py_info.transitive_pyc_files)
 
+    if hasattr(py_info, "transitive_pyi_files"):
+        inputs.add(py_info.transitive_pyi_files)
+
     inputs = inputs.build()
 
     # TODO: '/' is wrong on windows, but the path separator is not available in starlark.
