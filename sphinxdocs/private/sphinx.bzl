@@ -177,7 +177,7 @@ def sphinx_docs(
     )
 
     common_kwargs_with_manual_tag = dict(common_kwargs)
-    common_kwargs_with_manual_tag.setdefault("tags", []).append("manual")
+    common_kwargs_with_manual_tag["tags"] = list(common_kwargs.get("tags") or []) + ["manual"]
 
     py_binary(
         name = name + ".serve",
