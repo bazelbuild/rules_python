@@ -69,6 +69,7 @@ load(
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    "TARGET_TOOLCHAIN_TYPE",
     TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
 
@@ -183,9 +184,9 @@ accepting arbitrary Python versions.
         # TODO: This appears to be vestigial. It's only added because
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
-        ##"_py_toolchain_type": attr.label(
-        ##    default = TARGET_TOOLCHAIN_TYPE,
-        ##),
+        "_py_toolchain_type": attr.label(
+            default = TARGET_TOOLCHAIN_TYPE,
+        ),
         "_python_version_flag": lambda: attrb.Label(
             default = "//python/config_settings:python_version",
         ),
@@ -209,9 +210,6 @@ accepting arbitrary Python versions.
             default = "@bazel_tools//tools/zip:zipper",
         ),
     },
-    ##create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    ##create_srcs_attr(mandatory = True),
-    ##allow_none = True,
 )
 
 def convert_legacy_create_init_to_int(kwargs):
@@ -1743,9 +1741,7 @@ def create_executable_rule_builder(implementation, **kwargs):
     builder = ruleb.Rule(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,
-        # todo: create builder for REQUIRED_EXEC_GROUPS, but keep the
-        # existing plain dict for now (Google uses it)
-        exec_groups = REQUIRED_EXEC_GROUP_BUILDERS,
+        exec_groups = dict(REQUIRED_EXEC_GROUP_BUILDERS),  # Mutable copy
         fragments = ["py", "bazel_py"],
         provides = [PyExecutableInfo],
         toolchains = [
@@ -1760,7 +1756,7 @@ def create_executable_rule_builder(implementation, **kwargs):
         ),
         **kwargs
     )
-    builder.attrs.get("srcs").mandatory.set(True)
+    builder.attrs.get("srcs").set_mandatory(True)
     return builder
 
 def cc_configure_features(

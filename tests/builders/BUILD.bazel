@@ -21,3 +21,33 @@ builders_test_suite(name = "builders_test_suite")
 rule_builders_test_suite(name = "rule_builders_test_suite")
 
 attr_builders_test_suite(name = "attr_builders_test_suite")
+
+toolchain_type(name = "tct_1")
+
+toolchain_type(name = "tct_2")
+
+toolchain_type(name = "tct_3")
+
+toolchain_type(name = "tct_4")
+
+toolchain_type(name = "tct_5")
+
+filegroup(name = "empty")
+
+toolchain(
+    name = "tct_3_toolchain",
+    toolchain = "//tests/support/empty_toolchain:empty",
+    toolchain_type = "//tests/builders:tct_3",
+)
+
+toolchain(
+    name = "tct_4_toolchain",
+    toolchain = "//tests/support/empty_toolchain:empty",
+    toolchain_type = ":tct_4",
+)
+
+toolchain(
+    name = "tct_5_toolchain",
+    toolchain = "//tests/support/empty_toolchain:empty",
+    toolchain_type = ":tct_5",
+)

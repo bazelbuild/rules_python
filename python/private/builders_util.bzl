@@ -12,309 +12,89 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utilities for builders."""
+
 load("@bazel_skylib//lib:types.bzl", "types")
 
-def kwargs_pop_dict(kwargs, key):
-    """Get a dict value for a kwargs key.
+def to_label_maybe(value):
+    """Converts `value` to a `Label`, maybe.
 
+    The "maybe" qualification is because invalid values for `Label()`
+    are returned as-is (e.g. None, or special values that might be
+    used with e.g. the `default` attribute arg).
+
+    Args:
+        value: {type}`str | Label | None | object` the value to turn into a label,
+            or return as-is.
+
+    Returns:
+        {type}`Label | input_value`
     """
-    existing = kwargs.pop(key, None)
+    if value == None:
+        return None
+    if is_label(value):
+        return value
+    if types.is_string(value):
+        return Label(value)
+    return value
+
+def is_label(obj):
+    """Tell if an object is a `Label`."""
+    return type(obj) == "Label"
+
+def kwargs_set_default_ignore_none(kwargs, key, default):
+    """Normalize None/missing to `default`."""
+    existing = kwargs.get(key)
     if existing == None:
-        return {}
-    else:
-        return {
-            k: v() if types.is_function(v) else v
-            for k, v in existing.items()
-        }
+        kwargs[key] = default
 
-def kwargs_pop_list(kwargs, key):
-    existing = kwargs.pop(key, None)
+def kwargs_set_default_list(kwargs, key):
+    """Normalizes None/missing to list."""
+    existing = kwargs.get(key)
     if existing == None:
-        return []
-    else:
-        return [
-            v() if types.is_function(v) else v
-            for v in existing
-        ]
+        kwargs[key] = []
 
-def kwargs_pop_doc(kwargs):
-    return _Value_kwargs(kwargs, "doc", "")
+def kwargs_set_default_dict(kwargs, key):
+    """Normalizes None/missing to list."""
+    existing = kwargs.get(key)
+    if existing == None:
+        kwargs[key] = {}
 
-def kwargs_pop_mandatory(kwargs):
-    return _Value_kwargs(kwargs, "mandatory", False)
+def kwargs_set_default_doc(kwargs):
+    """Sets the `doc` arg default."""
+    existing = kwargs.get("doc")
+    if existing == None:
+        kwargs["doc"] = ""
 
-def to_kwargs_get_pairs(obj, existing_kwargs):
-    """Partially converts attributes of `obj` to kwarg values.
+def kwargs_set_default_mandatory(kwargs):
+    """Sets `False` as the `mandatory` arg default."""
+    existing = kwargs.get("mandatory")
+    if existing == None:
+        kwargs["mandatory"] = False
 
-    This is not a recursive function. Callers must manually handle:
-    * Attributes that are lists/dicts of non-primitive values.
-    * Attributes that are builders.
+def kwargs_getter(kwargs, key):
+    """Create a function to get `key` from `kwargs`."""
+    return lambda: kwargs.get(key)
 
-    Args:
-        obj: A struct whose attributes to turn into kwarg vales.
-        existing_kwargs: Existing kwarg values that should are already
-            computed and this function should ignore.
+def kwargs_setter(kwargs, key):
+    """Create a function to set `key` in `kwargs`."""
 
-    Returns:
-        {type}`list[tuple[str, object | Builder]]` a list of key-value
-        tuples, where the keys are kwarg names, and the values are
-        a builder for the final value or the final kwarg value.
-    """
-    ignore_names = {"extra_kwargs": None}
-    pairs = []
-    for name in dir(obj):
-        if name in ignore_names or name in existing_kwargs:
-            continue
-        value = getattr(obj, name)
-        if types.is_function(value):
-            continue  # Assume it's a method
-        if _is_value_wrapper(value):
-            value = value.get()
-        elif _is_optional(value):
-            if not value.present():
-                continue
-            else:
-                value = value.get()
+    def setter(v):
+        kwargs[key] = v
 
-        # NOTE: We can't call value.build() here: it would likely lead to
-        # recursion.
-        pairs.append((name, value))
-    return pairs
+    return setter
 
-# To avoid recursion, this function shouldn't call `value.build()`.
-# Recall that Bazel identifies recursion based on the (line, column) that
-# a function (or lambda) is **defined** at -- the closure of variables
-# is ignored. Thus, Bazel's recursion detection can be incidentally
-# triggered if X.build() calls helper(), which calls Y.build(), which
-# then calls helper() again -- helper() is indirectly recursive.
-def common_to_kwargs_nobuilders(self, kwargs = None):
-    """Convert attributes of `self` to kwargs.
+def list_add_unique(add_to, others):
+    """Bulk add values to a list if not already present.
 
     Args:
-        self: the object whose attributes to convert.
-        kwargs: An existing kwargs dict to populate.
-
-    Returns:
-        {type}`dict[str, object]` A new kwargs dict, or the passed-in `kwargs`
-        if one was passed in.
+        add_to: {type}`list[T]` the list to add values to. It is modified
+            in-place.
+        others: {type}`collection[collection[T]]` collection of collections of
+            the values to add.
     """
-    if kwargs == None:
-        kwargs = {}
-    kwargs.update(self.extra_kwargs)
-    for name, value in to_kwargs_get_pairs(self, kwargs):
-        kwargs[name] = value
-
-    return kwargs
-
-def _Optional_typedef():
-    """A wrapper for a re-assignable value that may or may not exist at all.
-
-    This allows structs to have attributes whose values can be re-assigned,
-    e.g. ints, strings, bools, or values where the presence matters.
-
-    This is like {obj}`Value`, except it supports not having a value specified
-    at all. This allows entirely omitting an argument when the arguments
-    are constructed for calling e.g. `rule()`
-
-    :::{function} clear()
-    :::
-    """
-
-def _Optional_new(*initial):
-    """Creates an instance.
-
-    Args:
-        *initial: Either zero, one, or two positional args to set the
-            initial value stored for the optional.
-            - If zero args, then no value is stored.
-            - If one arg, then the arg is the value stored.
-            - If two args, then the first arg is a kwargs dict, and the
-              second arg is a name in kwargs to look for. If the name is
-              present in kwargs, it is removed from kwargs and its value
-              stored, otherwise kwargs is unmodified and no value is stored.
-
-    Returns:
-        {type}`Optional`
-    """
-    if len(initial) > 2:
-        fail("Only zero, one, or two positional args allowed, but got: {}".format(initial))
-
-    if len(initial) == 2:
-        kwargs, name = initial
-        if name in kwargs:
-            initial = [kwargs.pop(name)]
-        else:
-            initial = []
-    else:
-        initial = list(initial)
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        # Length zero when no value; length one when has value.
-        # NOTE: This name is load bearing: it indicates this is a Value
-        # object; see _is_optional()
-        _Optional_value = initial,
-        present = lambda *a, **k: _Optional_present(self, *a, **k),
-        clear = lambda: self.Optional_value.clear(),
-        set = lambda *a, **k: _Optional_set(self, *a, **k),
-        get = lambda *a, **k: _Optional_get(self, *a, **k),
-    )
-    return self
-
-def _Optional_set(self, value):
-    """Sets the value of the optional.
-
-    Args:
-        self: implicitly added
-        value: the value to set.
-    """
-    if len(self._Optional_value) == 0:
-        self._Optional_value.append(value)
-    else:
-        self._Optional_value[0] = value
-
-def _Optional_get(self):
-    """Gets the value of the optional, or error.
-
-    Args:
-        self: implicitly added
-
-    Returns:
-        The stored value, or error if not set.
-    """
-    if not len(self._Optional_value):
-        fail("Value not present")
-    return self._Optional_value[0]
-
-def _Optional_present(self):
-    """Tells if a value is present.
-
-    Args:
-        self: implicitly added
-
-    Returns:
-        {type}`bool` True if the value is set, False if not.
-    """
-    return len(self._Optional_value) > 0
-
-def _is_optional(obj):
-    return hasattr(obj, "_Optional_value")
-
-Optional = struct(
-    TYPEDEF = _Optional_typedef,
-    new = _Optional_new,
-    get = _Optional_get,
-    set = _Optional_set,
-    present = _Optional_present,
-)
-
-def _Value_typedef():
-    """A wrapper for a re-assignable value that always has some value.
-
-    This allows structs to have attributes whose values can be re-assigned,
-    e.g. ints, strings, bools, etc.
-
-    This is similar to Optional, except it will always have *some* value
-    as a default (e.g. None, empty string, empty list, etc) that is OK to pass
-    onto the rule(), attribute, etc function.
-
-    :::{function} get() -> object
-    :::
-    """
-
-def _Value_new(initial):
-    # buildifier: disable=uninitialized
-    self = struct(
-        # NOTE: This name is load bearing: it indicates this is a Value
-        # object; see _is_value_wrapper()
-        _Value_value = [initial],
-        get = lambda: self._Value_value[0],
-        set = lambda v: _Value_set(self, v),
-    )
-    return self
-
-def _Value_kwargs(kwargs, name, default):
-    if name in kwargs:
-        initial = kwargs[name]
-    else:
-        initial = default
-    return _Value_new(initial)
-
-def _Value_set(self, v):
-    """Sets the value.
-
-    Args:
-        v: the value to set.
-    """
-    self._Value_value[0] = v
-
-def _is_value_wrapper(obj):
-    return hasattr(obj, "_Value_value")
-
-Value = struct(
-    TYPEDEF = _Value_typedef,
-    new = _Value_new,
-    kwargs = _Value_kwargs,
-    set = _Value_set,
-)
-
-def _UniqueList_typedef():
-    """A mutable list of unique values.
-
-    Value are kept in insertion order.
-
-    :::{function} update(*others) -> None
-    :::
-
-    :::{function} build() -> list
-    """
-
-def _UniqueList_new(kwargs, name):
-    """Builder for list of unique values.
-
-    Args:
-        kwargs: {type}`dict[str, Any]` kwargs to search for `name`
-        name: {type}`str` A key in `kwargs` to initialize the value
-            to. If present, kwargs will be modified in place.
-        initial: {type}`list | None` The initial values.
-
-    Returns:
-        {type}`UniqueList`
-    """
-
-    # TODO - Use set builtin instead of dict, when available.
-    # https://bazel.build/rules/lib/core/set
-    initial = {v: None for v in kwargs_pop_list(kwargs, name)}
-
-    # buildifier: disable=uninitialized
-    self = struct(
-        _values = initial,
-        update = lambda *a, **k: _UniqueList_update(self, *a, **k),
-        build = lambda *a, **k: _UniqueList_build(self, *a, **k),
-    )
-    return self
-
-def _UniqueList_build(self):
-    """Builds the values into a list
-
-    Returns:
-        {type}`list`
-    """
-    return self._values.keys()
-
-def _UniqueList_update(self, *others):
-    """Adds values to the builder.
-
-    Args:
-        self: implicitly added
-        *others: {type}`list` values to add to the set.
-    """
-    for other in others:
-        for value in other:
-            if value not in self._values:
-                self._values[value] = None
-
-UniqueList = struct(
-    TYPEDEF = _UniqueList_typedef,
-    new = _UniqueList_new,
-)
+    existing = {v: None for v in add_to}
+    for values in others:
+        for value in values:
+            if value not in existing:
+                add_to.append(value)

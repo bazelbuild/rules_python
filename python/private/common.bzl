@@ -208,57 +208,6 @@ def create_executable_result_struct(*, extra_files_to_build, output_groups, extr
         extra_runfiles = extra_runfiles,
     )
 
-def union_attrs(*attr_dicts, allow_none = False):
-    """Helper for combining and building attriute dicts for rules.
-
-    Similar to dict.update, except:
-      * Duplicate keys raise an error if they aren't equal. This is to prevent
-        unintentionally replacing an attribute with a potentially incompatible
-        definition.
-      * None values are special: They mean the attribute is required, but the
-        value should be provided by another attribute dict (depending on the
-        `allow_none` arg).
-    Args:
-        *attr_dicts: The dicts to combine.
-        allow_none: bool, if True, then None values are allowed. If False,
-            then one of `attrs_dicts` must set a non-None value for keys
-            with a None value.
-
-    Returns:
-        dict of attributes.
-    """
-
-    # todo: probably remove this entirely? is kind of annoying logic to have.
-    result = {}
-    for other in attr_dicts:
-        result.update(other)
-    return result
-    missing = {}
-    for attr_dict in attr_dicts:
-        for attr_name, value in attr_dict.items():
-            if value == None and not allow_none:
-                if attr_name not in result:
-                    missing[attr_name] = None
-            else:
-                if attr_name in missing:
-                    missing.pop(attr_name)
-
-                if attr_name not in result or result[attr_name] == None:
-                    result[attr_name] = value
-                elif value != None and result[attr_name] != value:
-                    fail("Duplicate attribute name: '{}': existing={}, new={}".format(
-                        attr_name,
-                        result[attr_name],
-                        value,
-                    ))
-
-                # Else, they're equal, so do nothing. This allows merging dicts
-                # that both define the same key from a common place.
-
-    if missing and not allow_none:
-        fail("Required attributes missing: " + csv(missing.keys()))
-    return result
-
 def csv(values):
     """Convert a list of strings to comma separated value string."""
     return ", ".join(sorted(values))

@@ -70,14 +70,14 @@ toolchain.
     "venvs_use_declare_symlink": attrb.String(),
 }
 
-def _create_reconfig_rule(builder, is_bin = False):
+def _create_reconfig_rule(builder):
     builder.attrs.update(_RECONFIG_ATTRS)
 
     base_cfg_impl = builder.cfg.implementation()
     builder.cfg.set_implementation(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
-    builder.cfg.inputs.update(_RECONFIG_INPUTS)
-    builder.cfg.outputs.update(_RECONFIG_OUTPUTS)
-    return builder.build(debug = "reconfig")
+    builder.cfg.update_inputs(_RECONFIG_INPUTS)
+    builder.cfg.update_outputs(_RECONFIG_OUTPUTS)
+    return builder.build()
 
 _py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder(), True)
 

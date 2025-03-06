@@ -33,7 +33,6 @@ def create_binary_rule_builder():
         executable = True,
     )
     builder.attrs.update(AGNOSTIC_BINARY_ATTRS)
-    builder.attrs.get("srcs").doc.set("asdf")
     return builder
 
 py_binary = create_binary_rule_builder().build()

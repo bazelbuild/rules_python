@@ -147,45 +147,6 @@ PycCollectionAttr = enum(
     is_pyc_collection_enabled = _pyc_collection_attr_is_pyc_collection_enabled,
 )
 
-def create_stamp_attr(**kwargs):
-    return {
-        "stamp": lambda: attrb.Int(
-            values = _STAMP_VALUES,
-            doc = """
-Whether to encode build information into the binary. Possible values:
-
-* `stamp = 1`: Always stamp the build information into the binary, even in
-  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
-  remote caching for the binary and any downstream actions that depend on it.
-* `stamp = 0`: Always replace build information by constant values. This gives
-  good build result caching.
-* `stamp = -1`: Embedding of build information is controlled by the
-  `--[no]stamp` flag.
-
-Stamped binaries are not rebuilt unless their dependencies change.
-
-WARNING: Stamping can harm build performance by reducing cache hits and should
-be avoided if possible.
-""",
-            **kwargs
-        ),
-    }
-
-def create_srcs_attr(*, mandatory):
-    fail("hit")
-
-SRCS_VERSION_ALL_VALUES = []  ##["PY2", "PY2ONLY", "PY2AND3", "PY3", "PY3ONLY"]
-
-def create_srcs_version_attr(values):
-    fail("hit")
-    return {
-        "srcs_version": attr.string(
-            default = "PY2AND3",
-            values = values,
-            doc = "Defunct, unused, does nothing.",
-        ),
-    }
-
 def copy_common_binary_kwargs(kwargs):
     return {
         key: kwargs[key]
@@ -253,13 +214,13 @@ COMMON_ATTRS = dicts.add(
     # buildifier: disable=attr-licenses
     {
         # NOTE: This attribute is deprecated and slated for removal.
-        ##"distribs": attr.string_list(),
+        "distribs": attr.string_list(),
         # TODO(b/148103851): This attribute is deprecated and slated for
         # removal.
         # NOTE: The license attribute is missing in some Java integration tests,
         # so fallback to a regular string_list for that case.
         # buildifier: disable=attr-license
-        ##"licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
+        "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
     },
 )
 
@@ -397,8 +358,6 @@ as part of a runnable program (packaging rules may include them, however).
 """,
             allow_files = True,
         ),
-        # Required attribute, but details vary by rule.
-        # Use create_srcs_attr to create one.
         "srcs": lambda: attrb.LabelList(
             # Google builds change the set of allowed files.
             allow_files = SRCS_ATTR_ALLOW_FILES,
@@ -411,10 +370,6 @@ includes all your checked-in code and may include generated source files.  The
 files that may be needed at run time belong in `data`.
 """,
         ),
-        # NOTE: In Google, this attribute is deprecated, and can only
-        # effectively be PY3 or PY3ONLY. Externally, with Bazel, this attribute
-        # has a separate story.
-        ##"srcs_version": None,
         "srcs_version": lambda: attrb.String(
             doc = "Defunct, unused, does nothing.",
         ),
@@ -466,20 +421,39 @@ Specifies additional environment variables to set when the target is executed by
 `test` or `run`.
 """,
         ),
-        # The value is required, but varies by rule and/or rule type. Use
-        # create_stamp_attr to create one.
-        ##"stamp": None,
+        "stamp": lambda: attrb.Int(
+            values = _STAMP_VALUES,
+            doc = """
+Whether to encode build information into the binary. Possible values:
+
+* `stamp = 1`: Always stamp the build information into the binary, even in
+  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
+  remote caching for the binary and any downstream actions that depend on it.
+* `stamp = 0`: Always replace build information by constant values. This gives
+  good build result caching.
+* `stamp = -1`: Embedding of build information is controlled by the
+  `--[no]stamp` flag.
+
+Stamped binaries are not rebuilt unless their dependencies change.
+
+WARNING: Stamping can harm build performance by reducing cache hits and should
+be avoided if possible.
+""",
+            default = -1,
+        ),
     },
 )
 
-# Attributes specific to Python test-equivalent executable rules. Such rules may
-# not accept Python sources (e.g. some packaged-version of a py_test/py_binary),
-# but still accept Python source-agnostic settings.
-AGNOSTIC_TEST_ATTRS = dicts.add(
-    AGNOSTIC_EXECUTABLE_ATTRS,
+def _init_agnostic_test_attrs():
+    base_stamp = AGNOSTIC_EXECUTABLE_ATTRS["stamp"]
+
     # Tests have stamping disabled by default.
-    create_stamp_attr(default = 0),
-    {
+    def stamp_default_disabled():
+        b = base_stamp()
+        b.set_default(0)
+        return b
+
+    return dicts.add(AGNOSTIC_EXECUTABLE_ATTRS, {
         "env_inherit": lambda: attrb.StringList(
             doc = """\
 List of strings; optional
@@ -488,6 +462,7 @@ Specifies additional environment variables to inherit from the external
 environment when the test is executed by bazel test.
 """,
         ),
+        "stamp": stamp_default_disabled,
         # TODO(b/176993122): Remove when Bazel automatically knows to run on darwin.
         "_apple_constraints": lambda: attrb.LabelList(
             default = [
@@ -498,16 +473,17 @@ environment when the test is executed by bazel test.
                 "@platforms//os:watchos",
             ],
         ),
-    },
-)
+    })
+
+# Attributes specific to Python test-equivalent executable rules. Such rules may
+# not accept Python sources (e.g. some packaged-version of a py_test/py_binary),
+# but still accept Python source-agnostic settings.
+AGNOSTIC_TEST_ATTRS = _init_agnostic_test_attrs()
 
 # Attributes specific to Python binary-equivalent executable rules. Such rules may
 # not accept Python sources (e.g. some packaged-version of a py_test/py_binary),
 # but still accept Python source-agnostic settings.
-AGNOSTIC_BINARY_ATTRS = dicts.add(
-    AGNOSTIC_EXECUTABLE_ATTRS,
-    create_stamp_attr(default = -1),
-)
+AGNOSTIC_BINARY_ATTRS = dicts.add(AGNOSTIC_EXECUTABLE_ATTRS)
 
 # Attribute names common to all Python rules
 COMMON_ATTR_NAMES = [

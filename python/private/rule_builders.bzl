@@ -96,31 +96,25 @@ custom_foo_binary = create_custom_foo_binary()
 load("@bazel_skylib//lib:types.bzl", "types")
 load(
     ":builders_util.bzl",
-    "UniqueList",
-    "Value",
-    "common_to_kwargs_nobuilders",
-    "kwargs_pop_dict",
-    "kwargs_pop_doc",
-    "kwargs_pop_list",
-    "to_kwargs_get_pairs",
+    "kwargs_getter",
+    "kwargs_set_default_dict",
+    "kwargs_set_default_doc",
+    "kwargs_set_default_ignore_none",
+    "kwargs_set_default_list",
+    "kwargs_setter",
+    "list_add_unique",
 )
 
 def _ExecGroup_typedef():
     """Builder for {external:bzl:obj}`exec_group`
 
-    :::{field} toolchains
-    :type: list[ToolchainType]
+    :::{function} toolchains() -> list[ToolchainType]
     :::
 
-    :::{field} exec_compatible_with
-    :type: list[str]
+    :::{function} exec_compatible_with() -> list[str | Label]
     :::
 
-    :::{field} extra_kwargs
-    :type: dict[str, object]
-    :::
-
-    :::{function} build() -> exec_group
+    :::{include} /_includes/field_kwargs_doc.md
     :::
     """
 
@@ -133,32 +127,64 @@ def _ExecGroup_new(**kwargs):
     Returns:
         {type}`ExecGroup`
     """
+    kwargs_set_default_list(kwargs, "toolchains")
+    kwargs_set_default_list(kwargs, "exec_compatible_with")
+
+    for i, value in enumerate(kwargs["toolchains"]):
+        kwargs["toolchains"][i] = _ToolchainType_maybe_from(value)
+
+    # buildifier: disable=uninitialized
     self = struct(
-        toolchains = kwargs_pop_list(kwargs, "toolchains"),
-        exec_compatible_with = kwargs_pop_list(kwargs, "exec_compatible_with"),
-        extra_kwargs = kwargs,
-        build = lambda: exec_group(**common_to_kwargs_nobuilders(self)),
+        toolchains = kwargs_getter(kwargs, "toolchains"),
+        exec_compatible_with = kwargs_getter(kwargs, "exec_compatible_with"),
+        kwargs = kwargs,
+        build = lambda: _ExecGroup_build(self),
     )
     return self
 
+def _ExecGroup_maybe_from(obj):
+    if types.is_function(obj):
+        return obj()
+    else:
+        return obj
+
+def _ExecGroup_build(self):
+    kwargs = dict(self.kwargs)
+    if kwargs.get("toolchains"):
+        kwargs["toolchains"] = [
+            v.build() if hasattr(v, "build") else v
+            for v in kwargs["toolchains"]
+        ]
+    if kwargs.get("exec_compatible_with"):
+        kwargs["exec_compatible_with"] = [
+            v.build() if hasattr(v, "build") else v
+            for v in kwargs["exec_compatible_with"]
+        ]
+    return exec_group(**kwargs)
+
+# buildifier: disable=name-conventions
 ExecGroup = struct(
     TYPEDEF = _ExecGroup_typedef,
     new = _ExecGroup_new,
+    build = _ExecGroup_build,
 )
 
 def _ToolchainType_typedef():
     """Builder for {obj}`config_common.toolchain_type()`
 
-    :::{field} extra_kwargs
-    :type: dict[str, object]
+    :::{include} /_includes/field_kwargs_doc.md
     :::
 
-    :::{field} mandatory
-    :type: Value[bool]
+    :::{function} mandatory() -> bool
     :::
 
-    :::{field} name
-    :type: Value[str | Label | None]
+    :::{function} name() -> str | Label | None
+    :::
+
+    :::{function} set_name(v: str)
+    :::
+
+    :::{function} set_mandatory(v: bool)
     :::
     """
 
@@ -166,20 +192,37 @@ def _ToolchainType_new(name = None, **kwargs):
     """Creates a builder for `config_common.toolchain_type`.
 
     Args:
-        name: {type}`str | Label` the `toolchain_type` target this creates
-            a dependency to.
+        name: {type}`str | Label | None` the toolchain type target.
         **kwargs: Same as {obj}`config_common.toolchain_type`
 
     Returns:
         {type}`ToolchainType`
     """
+    kwargs["name"] = name
+    kwargs_set_default_ignore_none(kwargs, "mandatory", True)
+
+    # buildifier: disable=uninitialized
     self = struct(
+        # keep sorted
         build = lambda: _ToolchainType_build(self),
-        extra_kwargs = kwargs,
-        mandatory = Value.kwargs(kwargs, "mandatory", True),
-        name = Value.new(name),
+        kwargs = kwargs,
+        mandatory = kwargs_getter(kwargs, "mandatory"),
+        name = kwargs_getter(kwargs, "name"),
+        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        set_name = kwargs_setter(kwargs, "name"),
     )
     return self
+
+def _ToolchainType_maybe_from(obj):
+    if types.is_string(obj) or type(obj) == "Label":
+        return ToolchainType.new(name = obj)
+    elif types.is_function(obj):
+        # A lambda to create a builder
+        return obj()
+    else:
+        # For lack of another option, return it as-is.
+        # Presumably it's already a builder or other valid object.
+        return obj
 
 def _ToolchainType_build(self):
     """Builds a `config_common.toolchain_type`
@@ -190,10 +233,11 @@ def _ToolchainType_build(self):
     Returns:
         {type}`config_common.toolchain_type`
     """
-    kwargs = common_to_kwargs_nobuilders(self)
+    kwargs = dict(self.kwargs)
     name = kwargs.pop("name")  # Name must be positional
     return config_common.toolchain_type(name, **kwargs)
 
+# buildifier: disable=name-conventions
 ToolchainType = struct(
     TYPEDEF = _ToolchainType_typedef,
     new = _ToolchainType_new,
@@ -203,58 +247,97 @@ ToolchainType = struct(
 def _RuleCfg_typedef():
     """Wrapper for `rule.cfg` arg.
 
-    :::{field} extra_kwargs
-    :type: dict[str, object]
+    :::{function} implementation() -> str | callable | None | config.target | config.none
     :::
 
-    :::{field} inputs
-    :type: UniqueList[Label]
+    ::::{function} inputs() -> list[Label]
+
+    :::{seealso}
+    The {obj}`add_inputs()` and {obj}`update_inputs` methods for adding unique
+    values.
+    :::
+    ::::
+
+    :::{function} outputs() -> list[Label]
+
+    :::{seealso}
+    The {obj}`add_outputs()` and {obj}`update_outputs` methods for adding unique
+    values.
+    :::
     :::
 
-    :::{field} outputs
-    :type: UniqueList[Label]
+    :::{function} set_implementation(v: str | callable | None | config.target | config.none)
+
+    The string values "target" and "none" are supported.
     :::
     """
 
-def _RuleCfg_new(kwargs):
+def _RuleCfg_new(rule_cfg_arg):
     """Creates a builder for the `rule.cfg` arg.
 
     Args:
-        kwargs: Same args as `rule.cfg`
+        rule_cfg_arg: {type}`str | dict` The `cfg` arg passed to Rule().
 
     Returns:
         {type}`RuleCfg`
     """
-    if kwargs == None:
-        kwargs = {}
+    state = {}
+    if types.is_dict(rule_cfg_arg):
+        state.update(rule_cfg_arg)
+    else:
+        # Assume its a string, config.target, config.none, or other
+        # valid object.
+        state["implementation"] = rule_cfg_arg
 
+    kwargs_set_default_list(state, "inputs")
+    kwargs_set_default_list(state, "outputs")
+
+    # buildifier: disable=uninitialized
     self = struct(
-        _implementation = [kwargs.pop("implementation", None)],
+        add_inputs = lambda *a, **k: _RuleCfg_add_inputs(self, *a, **k),
+        add_outputs = lambda *a, **k: _RuleCfg_add_outputs(self, *a, **k),
+        _state = state,
         build = lambda: _RuleCfg_build(self),
-        extra_kwargs = kwargs,
-        implementation = lambda: _RuleCfg_implementation(self),
-        inputs = UniqueList.new(kwargs, "inputs"),
-        outputs = UniqueList.new(kwargs, "outputs"),
-        set_implementation = lambda *a, **k: _RuleCfg_set_implementation(self, *a, **k),
+        implementation = kwargs_getter(state, "implementation"),
+        inputs = kwargs_getter(state, "inputs"),
+        outputs = kwargs_getter(state, "outputs"),
+        set_implementation = kwargs_setter(state, "implementation"),
+        update_inputs = lambda *a, **k: _RuleCfg_update_inputs(self, *a, **k),
+        update_outputs = lambda *a, **k: _RuleCfg_update_outputs(self, *a, **k),
     )
     return self
 
-def _RuleCfg_set_implementation(self, value):
-    """Set the implementation method.
+def _RuleCfg_add_inputs(self, *inputs):
+    """Adds an input to the list of inputs, if not present already.
+
+    :::{seealso}
+    The {obj}`update_inputs()` method for adding a collection of
+    values.
+    :::
 
     Args:
-        self: implicitly added.
-        value: {type}`str | function` a valid `rule.cfg` argument value.
+        self: implicitly arg.
+        *inputs: {type}`Label` the inputs to add. Note that a `Label`,
+            not `str`, should be passed to ensure different apparent labels
+            can be properly de-duplicated.
     """
-    self._implementation[0] = value
+    self.update_inputs(inputs)
 
-def _RuleCfg_implementation(self):
-    """Returns the implementation name or function for the cfg transition.
+def _RuleCfg_add_outputs(self, *outputs):
+    """Adds an output to the list of outputs, if not present already.
 
-    Returns:
-        {type}`str | function`
+    :::{seealso}
+    The {obj}`update_outputs()` method for adding a collection of
+    values.
+    :::
+
+    Args:
+        self: implicitly arg.
+        *outputs: {type}`Label` the outputs to add. Note that a `Label`,
+            not `str`, should be passed to ensure different apparent labels
+            can be properly de-duplicated.
     """
-    return self._implementation[0]
+    self.update_outputs(outputs)
 
 def _RuleCfg_build(self):
     """Builds the rule cfg into the value rule.cfg arg value.
@@ -262,26 +345,61 @@ def _RuleCfg_build(self):
     Returns:
         {type}`transition` the transition object to apply to the rule.
     """
-    impl = self._implementation[0]
+    impl = self._state["implementation"]
     if impl == "target" or impl == None:
-        return config.target()
+        # config.target is Bazel 8+
+        if hasattr(config, "target"):
+            return config.target()
+        else:
+            return None
     elif impl == "none":
         return config.none()
     elif types.is_function(impl):
         return transition(
             implementation = impl,
-            inputs = self.inputs.build(),
-            outputs = self.outputs.build(),
+            # Transitions only accept unique lists of strings.
+            inputs = {str(v): None for v in self._state.get("inputs")}.keys(),
+            outputs = {str(v): None for v in self._state.get("outputs")}.keys(),
         )
     else:
+        # Assume its valid. Probably an `config.XXX` object or manually
+        # set transition object.
         return impl
 
+def _RuleCfg_update_inputs(self, *others):
+    """Add a collection of values to inputs.
+
+    Args:
+        self: implicitly added
+        *others: {type}`collection[Label]` collection of labels to add to
+            inputs. Only values not already present are added. Note that a
+            `Label`, not `str`, should be passed to ensure different apparent
+            labels can be properly de-duplicated.
+    """
+    list_add_unique(self._state["inputs"], others)
+
+def _RuleCfg_update_outputs(self, *others):
+    """Add a collection of values to outputs.
+
+    Args:
+        self: implicitly added
+        *others: {type}`collection[Label]` collection of labels to add to
+            outputs. Only values not already present are added. Note that a
+            `Label`, not `str`, should be passed to ensure different apparent
+            labels can be properly de-duplicated.
+    """
+    list_add_unique(self._state["outputs"], others)
+
+# buildifier: disable=name-conventions
 RuleCfg = struct(
     TYPEDEF = _RuleCfg_typedef,
     new = _RuleCfg_new,
-    implementation = _RuleCfg_implementation,
-    set_implementation = _RuleCfg_set_implementation,
+    # keep sorted
+    add_inputs = _RuleCfg_add_inputs,
+    add_outputs = _RuleCfg_add_outputs,
     build = _RuleCfg_build,
+    update_inputs = _RuleCfg_update_inputs,
+    update_outputs = _RuleCfg_update_outputs,
 )
 
 def _Rule_typedef():
@@ -295,73 +413,88 @@ def _Rule_typedef():
     :type: RuleCfg
     :::
 
-    :::{field} doc
-    :type: Value[str]
+    :::{function} doc() -> str
     :::
 
-    :::{field} exec_groups
-    :type: dict[str, ExecGroup]
+    :::{function} exec_groups() -> dict[str, ExecGroup]
     :::
 
-    :::{field} executable
-    :type: Value[bool]
+    :::{function} executable() -> bool
     :::
 
-    :::{field} extra_kwargs
-    :type: dict[str, Any]
-
-    Additional keyword arguments to use when constructing the rule. Their
-    values have precedence when creating the rule kwargs. This is, essentially,
-    an escape hatch for manually overriding or inserting values into
-    the args passed to `rule()`.
+    :::{include} /_includes/field_kwargs_doc.md
     :::
 
-    :::{field} fragments
-    :type: list[str]
+    :::{function} fragments() -> list[str]
     :::
 
-    :::{field} implementation
-    :type: Value[callable | None]
+    :::{function} implementation() -> callable | None
     :::
 
-    :::{field} provides
-    :type: list[Provider | list[Provider]]
+    :::{function} provides() -> list[provider | list[provider]]
     :::
 
-    :::{field} test
-    :type: Value[bool]
+    :::{function} set_doc(v: str)
     :::
 
-    :::{field} toolchains
-    :type: list[ToolchainType]
+    :::{function} set_executable(v: bool)
+    :::
+
+    :::{function} set_implementation(v: callable)
+    :::
+
+    :::{function} set_test(v: bool)
+    :::
+
+    :::{function} test() -> bool
+    :::
+
+    :::{function} toolchains() -> list[ToolchainType]
     :::
     """
 
-def _Rule_new(implementation = None, **kwargs):
+def _Rule_new(**kwargs):
     """Builder for creating rules.
 
     Args:
-        implementation: {type}`callable` The rule implementation function.
         **kwargs: The same as the `rule()` function, but using builders or
             dicts to specify sub-objects instead of the immutable Bazel
             objects.
     """
+    kwargs.setdefault("implementation", None)
+    kwargs_set_default_doc(kwargs)
+    kwargs_set_default_dict(kwargs, "exec_groups")
+    kwargs_set_default_ignore_none(kwargs, "executable", False)
+    kwargs_set_default_list(kwargs, "fragments")
+    kwargs_set_default_list(kwargs, "provides")
+    kwargs_set_default_ignore_none(kwargs, "test", False)
+    kwargs_set_default_list(kwargs, "toolchains")
+
+    for name, value in kwargs["exec_groups"].items():
+        kwargs["exec_groups"][name] = _ExecGroup_maybe_from(value)
+
+    for i, value in enumerate(kwargs["toolchains"]):
+        kwargs["toolchains"][i] = _ToolchainType_maybe_from(value)
 
     # buildifier: disable=uninitialized
     self = struct(
         attrs = _AttrsDict_new(kwargs.pop("attrs", None)),
-        cfg = _RuleCfg_new(kwargs.pop("cfg", None)),
-        doc = kwargs_pop_doc(kwargs),
-        exec_groups = kwargs_pop_dict(kwargs, "exec_groups"),
-        executable = Value.kwargs(kwargs, "executable", False),
-        fragments = kwargs_pop_list(kwargs, "fragments"),
-        implementation = Value.new(implementation),
-        extra_kwargs = kwargs,
-        provides = kwargs_pop_list(kwargs, "provides"),
-        test = Value.kwargs(kwargs, "test", False),
-        toolchains = kwargs_pop_list(kwargs, "toolchains"),
         build = lambda *a, **k: _Rule_build(self, *a, **k),
-        to_kwargs = lambda *a, **k: _Rule_to_kwargs(self, *a, **k),
+        cfg = _RuleCfg_new(kwargs.pop("cfg", None)),
+        doc = kwargs_getter(kwargs, "doc"),
+        exec_groups = kwargs_getter(kwargs, "exec_groups"),
+        executable = kwargs_getter(kwargs, "executable"),
+        fragments = kwargs_getter(kwargs, "fragments"),
+        implementation = kwargs_getter(kwargs, "implementation"),
+        kwargs = kwargs,
+        provides = kwargs_getter(kwargs, "provides"),
+        set_doc = kwargs_setter(kwargs, "doc"),
+        set_executable = kwargs_setter(kwargs, "executable"),
+        set_implementation = kwargs_setter(kwargs, "implementation"),
+        set_test = kwargs_setter(kwargs, "test"),
+        test = kwargs_getter(kwargs, "test"),
+        to_kwargs = lambda: _Rule_to_kwargs(self),
+        toolchains = kwargs_getter(kwargs, "toolchains"),
     )
     return self
 
@@ -379,7 +512,18 @@ def _Rule_build(self, debug = ""):
     if debug:
         lines = ["=" * 80, "rule kwargs: {}:".format(debug)]
         for k, v in sorted(kwargs.items()):
-            lines.append("  {}={}".format(k, v))
+            if types.is_dict(v):
+                lines.append("  %s={" % k)
+                for k2, v2 in sorted(v.items()):
+                    lines.append("    {}: {}".format(k2, v2))
+                lines.append("  }")
+            elif types.is_list(v):
+                lines.append("  {}=[".format(k))
+                for i, v2 in enumerate(v):
+                    lines.append("    [{}] {}".format(i, v2))
+                lines.append("  ]")
+            else:
+                lines.append("  {}={}".format(k, v))
         print("\n".join(lines))  # buildifier: disable=print
     return rule(**kwargs)
 
@@ -390,32 +534,29 @@ def _Rule_to_kwargs(self):
     kwarg values in case callers want to manually change them.
 
     Args:
-        self: implicitly added
+        self: implicitly added.
 
     Returns:
         {type}`dict`
     """
-
-    kwargs = dict(self.extra_kwargs)
-    if "exec_groups" not in kwargs:
-        for k, v in self.exec_groups.items():
-            if not hasattr(v, "build"):
-                fail("bad execgroup", k, v)
+    kwargs = dict(self.kwargs)
+    if "exec_groups" in kwargs:
         kwargs["exec_groups"] = {
-            k: v.build()
-            for k, v in self.exec_groups.items()
+            k: v.build() if hasattr(v, "build") else v
+            for k, v in kwargs["exec_groups"].items()
         }
-    if "toolchains" not in kwargs:
+    if "toolchains" in kwargs:
         kwargs["toolchains"] = [
-            v.build()
-            for v in self.toolchains
+            v.build() if hasattr(v, "build") else v
+            for v in kwargs["toolchains"]
         ]
-
-    for name, value in to_kwargs_get_pairs(self, kwargs):
-        value = value.build() if hasattr(value, "build") else value
-        kwargs[name] = value
+    if "attrs" not in kwargs:
+        kwargs["attrs"] = self.attrs.build()
+    if "cfg" not in kwargs:
+        kwargs["cfg"] = self.cfg.build()
     return kwargs
 
+# buildifier: disable=name-conventions
 Rule = struct(
     TYPEDEF = _Rule_typedef,
     new = _Rule_new,
@@ -426,7 +567,7 @@ Rule = struct(
 def _AttrsDict_typedef():
     """Builder for the dictionary of rule attributes.
 
-    :::{field} values
+    :::{field} map
     :type: dict[str, AttributeBuilder]
 
     The underlying dict of attributes. Directly accessible so that regular
@@ -434,11 +575,15 @@ def _AttrsDict_typedef():
     :::
 
     :::{function} get(key, default=None)
-    Get an entry from the dict. Convenience wrapper for `.values.get(...)`
+    Get an entry from the dict. Convenience wrapper for `.map.get(...)`
     :::
 
     :::{function} items() -> list[tuple[str, object]]
-    Returns a list of key-value tuples. Convenience wrapper for `.values.items()`
+    Returns a list of key-value tuples. Convenience wrapper for `.map.items()`
+    :::
+
+    :::{function} pop(key, default) -> object
+    Removes a key from the attr dict
     :::
     """
 
@@ -452,21 +597,43 @@ def _AttrsDict_new(initial):
     Returns:
         {type}`AttrsDict`
     """
+
+    # buildifier: disable=uninitialized
     self = struct(
-        values = {},
-        update = lambda *a, **k: _AttrsDict_update(self, *a, **k),
-        get = lambda *a, **k: self.values.get(*a, **k),
-        items = lambda: self.values.items(),
+        # keep sorted
         build = lambda: _AttrsDict_build(self),
+        get = lambda *a, **k: self.map.get(*a, **k),
+        items = lambda: self.map.items(),
+        map = {},
+        put = lambda key, value: _AttrsDict_put(self, key, value),
+        update = lambda *a, **k: _AttrsDict_update(self, *a, **k),
+        pop = lambda *a, **k: self.map.pop(*a, **k),
     )
     if initial:
         _AttrsDict_update(self, initial)
     return self
 
+def _AttrsDict_put(self, name, value):
+    """Sets a value in the attrs dict.
+
+    Args:
+        self: implicitly added
+        name: {type}`str` the attribute name to set in the dict
+        value: {type}`AttributeBuilder | callable` the value for the
+            attribute. If a callable, then it is treated as an
+            attribute builder factory (no-arg callable that returns an
+            attribute builder) and is called immediately.
+    """
+    if types.is_function(value):
+        # Convert factory function to builder
+        value = value()
+    self.map[name] = value
+
 def _AttrsDict_update(self, other):
     """Merge `other` into this object.
 
     Args:
+        self: implicitly added
         other: {type}`dict[str, callable | AttributeBuilder]` the values to
             merge into this object. If the value a function, it is called
             with no args and expected to return an attribute builder. This
@@ -476,9 +643,9 @@ def _AttrsDict_update(self, other):
     for k, v in other.items():
         # Handle factory functions that create builders
         if types.is_function(v):
-            self.values[k] = v()
+            self.map[k] = v()
         else:
-            self.values[k] = v
+            self.map[k] = v
 
 def _AttrsDict_build(self):
     """Build an attribute dict for passing to `rule()`.
@@ -487,10 +654,11 @@ def _AttrsDict_build(self):
         {type}`dict[str, attribute]` where the values are `attr.XXX` objects
     """
     attrs = {}
-    for k, v in self.values.items():
+    for k, v in self.map.items():
         attrs[k] = v.build() if hasattr(v, "build") else v
     return attrs
 
+# buildifier: disable=name-conventions
 AttrsDict = struct(
     TYPEDEF = _AttrsDict_typedef,
     new = _AttrsDict_new,
