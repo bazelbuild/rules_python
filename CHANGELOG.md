@@ -53,6 +53,8 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (deps) platforms 0.0.4 -> 0.0.11
+* (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
+* (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
 
 {#v0-0-0-fixed}
 ### Fixed
