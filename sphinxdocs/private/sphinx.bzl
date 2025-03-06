@@ -15,7 +15,6 @@
 """Implementation of sphinx rules."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
@@ -177,6 +176,9 @@ def sphinx_docs(
         **common_kwargs
     )
 
+    common_kwargs_with_manual_tag = dict(common_kwargs)
+    common_kwargs_with_manual_tag.setdefault("tags", []).append("manual")
+
     py_binary(
         name = name + ".serve",
         srcs = [_SPHINX_SERVE_MAIN_SRC],
@@ -185,18 +187,12 @@ def sphinx_docs(
         args = [
             "$(execpath {})".format(html_name),
         ],
-        **common_kwargs
+        **common_kwargs_with_manual_tag
     )
     sphinx_run(
         name = name + ".run",
         docs = name,
-        **common_kwargs
-    )
-
-    build_test(
-        name = name + "_build_test",
-        targets = [name],
-        **kwargs  # kwargs used to pick up target_compatible_with
+        **common_kwargs_with_manual_tag
     )
 
 def _sphinx_docs_impl(ctx):
