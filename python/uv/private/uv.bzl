@@ -177,7 +177,7 @@ def process_modules(
         hub_repo: the hub repo factory function to use.
 
     Returns:
-        A dictionary for each version of the `uv` to configure.
+        the result of the hub_repo. Mainly used for tests.
     """
     defaults = {}
     for mod in module_ctx.modules:
