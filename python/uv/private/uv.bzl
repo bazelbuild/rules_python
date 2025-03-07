@@ -209,6 +209,14 @@ def process_modules(
                 target_settings = default_attr.target_settings,
             )
 
+    for key in [
+        "version",
+        "manifest_filename",
+        "platforms",
+    ]:
+        if not defaults.get(key, None):
+            fail("defaults need to be set for '{}'".format(key))
+
     # resolved per-version configuration. The shape is something like:
     # versions = {
     #     "1.0.0": {
@@ -232,8 +240,6 @@ def process_modules(
         last_version = None
         for config_attr in mod.tags.configure:
             last_version = config_attr.version or last_version or defaults["version"]
-            if not last_version:
-                fail("version must be specified")
             specific_config = versions.setdefault(
                 last_version,
                 {

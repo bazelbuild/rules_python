@@ -146,6 +146,8 @@ def _test_only_defaults(env):
                         base_url = "https://example.org",
                         manifest_filename = "manifest.json",
                         version = "1.0.0",
+                        platform = "some_name",
+                        compatible_with = ["@platforms//:incompatible"],
                     ),
                 ],
             ),
