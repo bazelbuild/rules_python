@@ -356,6 +356,68 @@ def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename
 
     This relies on the tools using the cargo packaging to infer the actual
     sha256 values for each binary.
+
+    Example manifest url: https://github.com/astral-sh/uv/releases/download/0.6.5/dist-manifest.json
+
+    The example format is as bellow
+
+        dist_version	"0.28.0"
+        announcement_tag	"0.6.5"
+        announcement_tag_is_implicit	false
+        announcement_is_prerelease	false
+        announcement_title	"0.6.5"
+        announcement_changelog	"text"
+        announcement_github_body	"MD text"
+        releases	[
+            {
+                app_name	"uv"
+                app_version	"0.6.5"
+                env	
+                    install_dir_env_var	"UV_INSTALL_DIR"
+                    unmanaged_dir_env_var	"UV_UNMANAGED_INSTALL"
+                    disable_update_env_var	"UV_DISABLE_UPDATE"
+                    no_modify_path_env_var	"UV_NO_MODIFY_PATH"
+                    github_base_url_env_var	"UV_INSTALLER_GITHUB_BASE_URL"
+                    ghe_base_url_env_var	"UV_INSTALLER_GHE_BASE_URL"
+                display_name	"uv"
+                display	true
+            artifacts	[
+                "source.tar.gz"
+                "source.tar.gz.sha256"
+                "uv-installer.sh"
+                "uv-installer.ps1"
+                "sha256.sum"
+                "uv-aarch64-apple-darwin.tar.gz"
+                "uv-aarch64-apple-darwin.tar.gz.sha256"
+                "...
+            ]
+        artifacts	
+            uv-aarch64-apple-darwin.tar.gz	
+                name	"uv-aarch64-apple-darwin.tar.gz"
+                kind	"executable-zip"
+                target_triples	[
+                    "aarch64-apple-darwin"
+                assets	[
+                    {
+                        id	"uv-aarch64-apple-darwin-exe-uv"
+                        name	"uv"
+                        path	"uv"
+                        kind	"executable"
+                    },
+                    {
+                        id	"uv-aarch64-apple-darwin-exe-uvx"
+                        name	"uvx"
+                        path	"uvx"
+                        kind	"executable"
+                    }
+                ]
+                checksum	"uv-aarch64-apple-darwin.tar.gz.sha256"
+            uv-aarch64-apple-darwin.tar.gz.sha256	
+                name	"uv-aarch64-apple-darwin.tar.gz.sha256"
+                kind	"checksum"
+                target_triples	[
+                    "aarch64-apple-darwin"
+                ]
     """
     dist_manifest = module_ctx.path(manifest_filename)
     result = module_ctx.download(
