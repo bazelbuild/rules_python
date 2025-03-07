@@ -66,7 +66,8 @@ def _get_xcode_location_cflags(rctx):
             ],
             environment = {
                 "DEVELOPER_DIR": xcode_root,
-            }).stdout
+            },
+        ).stdout
         xcode_sdks = json.decode(xcode_sdks_json)
         potential_sdks = [
             sdk
