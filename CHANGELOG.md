@@ -65,6 +65,7 @@ Unreleased changes template.
   ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
 * (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
   Support spilling modules mapping args into a params file.
+* (coverage) Fix missing files in the coverage report if they have no tests.
 
 {#v0-0-0-added}
 ### Added
@@ -115,7 +116,6 @@ Unreleased changes template.
   {obj}`--venvs_use_declare_symlink=no` to have it not create symlinks at
   build time (they will be created at runtime instead).
   (Fixes [#2489](https://github.com/bazelbuild/rules_python/issues/2489))
-* (coverage) Fix missing files in the coverage report if they have no tests.
 
 {#v1-2-0-added}
 ### Added
