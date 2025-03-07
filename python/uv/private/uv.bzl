@@ -195,6 +195,9 @@ def process_modules(
         "version": "",
     }
     for mod in module_ctx.modules:
+        if not (mod.is_root or mod.name == "rules_python"):
+            continue
+
         for default_attr in mod.tags.default:
             _configure(
                 defaults,
@@ -223,12 +226,14 @@ def process_modules(
     # }
     versions = {}
     for mod in module_ctx.modules:
+        if not (mod.is_root or mod.name == "rules_python"):
+            continue
+
         last_version = None
         for config_attr in mod.tags.configure:
             last_version = config_attr.version or last_version or defaults["version"]
             if not last_version:
                 fail("version must be specified")
-
             specific_config = versions.setdefault(
                 last_version,
                 {
