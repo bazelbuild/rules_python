@@ -74,6 +74,9 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
+* (python) {attr}`python.toolchain.default_version_file` has been added to
+  allow users to set the default python version in the root module by reading
+  the default version number from a file.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
@@ -124,9 +127,7 @@ Unreleased changes template.
 
 {#v1-2-0-added}
 ### Added
-* (python) {attr}`python.toolchain.default_version_file` has been added to
-  allow users to set the default python version in the root module by reading
-  the default version number from a file.
+* Nothing added.
 
 {#v1-2-0-removed}
 ### Removed
