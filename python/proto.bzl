@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Python proto library.
 """
 
-load("//python/private/proto:py_proto_library.bzl", _py_proto_library = "py_proto_library")
+load("@com_google_protobuf//bazel:py_proto_library.bzl", _py_proto_library = "py_proto_library")
 
-py_proto_library = _py_proto_library
+def py_proto_library(*, deprecation = "Use py_proto_library from protobuf repository", **kwargs):
+    _py_proto_library(deprecation = deprecation, **kwargs)

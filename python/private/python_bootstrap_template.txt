@@ -89,9 +89,28 @@ def FindPythonBinary(module_space):
   """Finds the real Python binary if it's not a normal absolute path."""
   return FindBinary(module_space, PYTHON_BINARY)
 
-def PrintVerbose(*args):
-  if os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"):
-    print("bootstrap:", *args, file=sys.stderr, flush=True)
+def print_verbose(*args, mapping=None, values=None):
+    if os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"):
+        if mapping is not None:
+            for key, value in sorted((mapping or {}).items()):
+                print(
+                    "bootstrap:",
+                    *args,
+                    f"{key}={value!r}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+        elif values is not None:
+            for i, v in enumerate(values):
+                print(
+                    "bootstrap:",
+                    *args,
+                    f"[{i}] {v!r}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+        else:
+            print("bootstrap:", *args, file=sys.stderr, flush=True)
 
 def PrintVerboseCoverage(*args):
   """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
@@ -157,6 +176,12 @@ def FindModuleSpace(main_rel_path):
     return runfiles_dir
 
   stub_filename = sys.argv[0]
+  # On Windows, the path may contain both forward and backslashes.
+  # Normalize to the OS separator because the regex used later assumes
+  # the OS-specific separator.
+  if IsWindows:
+    stub_filename = stub_filename.replace("/", os.sep)
+
   if not os.path.isabs(stub_filename):
     stub_filename = os.path.join(os.getcwd(), stub_filename)
 
@@ -380,9 +405,9 @@ def _RunExecv(python_program, main_filename, args, env):
   # type: (str, str, list[str], dict[str, str]) -> ...
   """Executes the given Python file using the various environment settings."""
   os.environ.update(env)
-  PrintVerbose("RunExecv: environ:", os.environ)
+  print_verbose("RunExecv: environ:", mapping=os.environ)
   argv = [python_program, main_filename] + args
-  PrintVerbose("RunExecv: argv:", python_program, argv)
+  print_verbose("RunExecv: argv:", python_program, argv)
   os.execv(python_program, argv)
 
 def _RunForCoverage(python_program, main_filename, args, env,
@@ -453,6 +478,10 @@ relative_files = True
   return ret_code
 
 def Main():
+  print_verbose("initial argv:", values=sys.argv)
+  print_verbose("initial cwd:", os.getcwd())
+  print_verbose("initial environ:", mapping=os.environ)
+  print_verbose("initial sys.path:", values=sys.path)
   args = sys.argv[1:]
 
   new_env = {}

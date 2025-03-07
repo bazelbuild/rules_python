@@ -14,6 +14,7 @@
 
 "Implementation of py_wheel rule"
 
+load(":py_info.bzl", "PyInfo")
 load(":py_package.bzl", "py_package_lib")
 load(":py_wheel_normalize_pep440.bzl", "normalize_pep440")
 load(":stamp.bzl", "is_stamping_enabled")
@@ -319,8 +320,13 @@ def _py_wheel_impl(ctx):
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
+    direct_pyi_files = []
+    for dep in ctx.attr.deps:
+        if PyInfo in dep:
+            direct_pyi_files.extend(dep[PyInfo].direct_pyi_files.to_list())
+
     inputs_to_package = depset(
-        direct = ctx.files.deps,
+        direct = ctx.files.deps + direct_pyi_files,
     )
 
     # Inputs to this rule which are not to be packaged.
@@ -514,6 +520,9 @@ def _py_wheel_impl(ctx):
         outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
+        # The default shell env is used to better support toolchains that look
+        # up python at runtime using PATH.
+        use_default_shell_env = True,
         progress_message = "Building wheel {}".format(ctx.label),
     )
     return [

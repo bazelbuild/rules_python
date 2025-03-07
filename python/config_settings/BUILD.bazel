@@ -9,6 +9,7 @@ load(
     "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
+    "VenvsUseDeclareSymlinkFlag",
 )
 load(
     "//python/private/pypi:flags.bzl",
@@ -29,6 +30,15 @@ filegroup(
 construct_config_settings(
     name = "construct_config_settings",
     default_version = DEFAULT_PYTHON_VERSION,
+    documented_flags = [
+        ":pip_whl",
+        ":pip_whl_glibc_version",
+        ":pip_whl_muslc_version",
+        ":pip_whl_osx_arch",
+        ":pip_whl_osx_version",
+        ":py_freethreaded",
+        ":py_linux_libc",
+    ],
     minor_mapping = MINOR_MAPPING,
     versions = PYTHON_VERSIONS,
 )
@@ -103,6 +113,19 @@ string_flag(
 config_setting(
     name = "is_py_freethreaded",
     flag_values = {":py_freethreaded": FreeThreadedFlag.YES},
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_py_non_freethreaded",
+    flag_values = {":py_freethreaded": FreeThreadedFlag.NO},
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "venvs_use_declare_symlink",
+    build_setting_default = VenvsUseDeclareSymlinkFlag.YES,
+    values = VenvsUseDeclareSymlinkFlag.flag_values(),
     visibility = ["//visibility:public"],
 )
 

@@ -222,6 +222,9 @@ def whl_library_targets(
         )
 
     if hasattr(rules, "py_library"):
+        # NOTE: pyi files should probably be excluded because they're carried
+        # by the pyi_srcs attribute. However, historical behavior included
+        # them in data and some tools currently rely on that.
         _data_exclude = [
             "**/*.py",
             "**/*.pyc",
@@ -242,6 +245,10 @@ def whl_library_targets(
                 exclude = srcs_exclude,
                 # Empty sources are allowed to support wheels that don't have any
                 # pure-Python code, e.g. pymssql, which is written in Cython.
+                allow_empty = True,
+            ),
+            pyi_srcs = native.glob(
+                ["site-packages/**/*.pyi"],
                 allow_empty = True,
             ),
             data = data + native.glob(

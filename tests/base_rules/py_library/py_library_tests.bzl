@@ -3,7 +3,8 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:defs.bzl", "PyRuntimeInfo", "py_library")
+load("//python:py_library.bzl", "py_library")
+load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", pt_util = "util")
 

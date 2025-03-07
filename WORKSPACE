@@ -17,9 +17,36 @@ workspace(name = "rules_python")
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
+# Necessary so that Bazel 9 recognizes this as rules_python and doesn't try
+# to load the version Bazel itself uses by default.
+# buildifier: disable=duplicated-name
+local_repository(
+    name = "rules_python",
+    path = ".",
+)
+
 load("//:internal_dev_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+# note that the following line is what is minimally required from protobuf for the java rules
+# consider using the protobuf_deps() public API from @com_google_protobuf//:protobuf_deps.bzl
+load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
+
+proto_bazel_features(name = "proto_bazel_features")
+
+# register toolchains
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
@@ -41,12 +68,12 @@ load("//:internal_dev_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
-load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
+load("@pythons_hub//:versions.bzl", "PYTHON_VERSIONS")
 load("//python:repositories.bzl", "python_register_multi_toolchains")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-3],  # Use 3.11.10
+    default_version = "3.11",
     # Integration tests verify each version, so register all of them.
     python_versions = PYTHON_VERSIONS,
 )
@@ -138,10 +165,4 @@ http_file(
     urls = [
         "https://files.pythonhosted.org/packages/50/67/3e966d99a07d60a21a21d7ec016e9e4c2642a86fea251ec68677daf71d4d/numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
     ],
-)
-
-# rules_proto expects //external:python_headers to point at the python headers.
-bind(
-    name = "python_headers",
-    actual = "//python/cc:current_py_cc_headers",
 )

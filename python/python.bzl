@@ -14,11 +14,7 @@
 
 """Re-exports for some of the core Bazel Python rules.
 
-This file is deprecated; please use the exports in defs.bzl instead. This is to
-follow the new naming convention of putting core rules for a language
-underneath @rules_<LANG>//<LANG>:defs.bzl. The exports in this file will be
-disallowed in a future Bazel release by
-`--incompatible_load_python_rules_from_bzl`.
+This file is deprecated; please use the exports in `<name>.bzl` files instead.
 """
 
 def py_library(*args, **kwargs):

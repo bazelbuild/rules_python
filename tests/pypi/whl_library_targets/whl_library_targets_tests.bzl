@@ -68,7 +68,7 @@ def _test_platforms(env):
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
             "@platforms//cpu:aarch64": ["arm_dep"],
             "@platforms//os:windows": ["win_dep"],
-            "cp310_linux_ppc": ["py310_linux_ppc_dep"],
+            "cp310_linux_ppc64le": ["py310_linux_ppc64le_dep"],
             "cp39_anyos_aarch64": ["py39_arm_dep"],
             "cp39_linux_anyarch": ["py39_linux_dep"],
             "linux_x86_64": ["linux_intel_dep"],
@@ -82,12 +82,12 @@ def _test_platforms(env):
 
     env.expect.that_collection(calls).contains_exactly([
         {
-            "name": "is_python_3.10_linux_ppc",
+            "name": "is_python_3.10_linux_ppc64le",
             "flag_values": {
                 "@rules_python//python/config_settings:python_version_major_minor": "3.10",
             },
             "constraint_values": [
-                "@platforms//cpu:ppc",
+                "@platforms//cpu:ppc64le",
                 "@platforms//os:linux",
             ],
             "visibility": ["//visibility:private"],
@@ -195,7 +195,7 @@ def _test_whl_and_library_deps(env):
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
             "@platforms//cpu:aarch64": ["arm_dep"],
             "@platforms//os:windows": ["win_dep"],
-            "cp310_linux_ppc": ["py310_linux_ppc_dep"],
+            "cp310_linux_ppc64le": ["py310_linux_ppc64le_dep"],
             "cp39_anyos_aarch64": ["py39_arm_dep"],
             "cp39_linux_anyarch": ["py39_linux_dep"],
             "linux_x86_64": ["linux_intel_dep"],
@@ -227,7 +227,7 @@ def _test_whl_and_library_deps(env):
                     Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:whl"],
                     "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
                     "@platforms//os:windows": ["@pypi_win_dep//:whl"],
-                    ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
+                    ":is_python_3.10_linux_ppc64le": ["@pypi_py310_linux_ppc64le_dep//:whl"],
                     ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:whl"],
                     ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:whl"],
                     ":is_linux_x86_64": ["@pypi_linux_intel_dep//:whl"],
@@ -245,6 +245,7 @@ def _test_whl_and_library_deps(env):
                 exclude = [],
                 allow_empty = True,
             ),
+            "pyi_srcs": _glob(["site-packages/**/*.pyi"], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
                 exclude = [
@@ -263,7 +264,7 @@ def _test_whl_and_library_deps(env):
                     Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:pkg"],
                     "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
                     "@platforms//os:windows": ["@pypi_win_dep//:pkg"],
-                    ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
+                    ":is_python_3.10_linux_ppc64le": ["@pypi_py310_linux_ppc64le_dep//:pkg"],
                     ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:pkg"],
                     ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:pkg"],
                     ":is_linux_x86_64": ["@pypi_linux_intel_dep//:pkg"],
@@ -316,6 +317,7 @@ def _test_group(env):
         {
             "name": "_pkg",
             "srcs": _glob(["site-packages/**/*.py"], exclude = [], allow_empty = True),
+            "pyi_srcs": _glob(["site-packages/**/*.pyi"], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
                 exclude = [

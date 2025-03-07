@@ -552,7 +552,7 @@ class _MockFile:
     def __enter__(self) -> Any:
         tmpdir = os.environ.get("TEST_TMPDIR")
         self._path = os.path.join(tempfile.mkdtemp(dir=tmpdir), self._name)
-        with open(self._path, "wt") as f:
+        with open(self._path, "wt", encoding="utf-8", newline="\n") as f:
             f.writelines(l + "\n" for l in self._contents)
         return self
 

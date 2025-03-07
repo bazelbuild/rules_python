@@ -16,7 +16,7 @@
 """Implementation of the py_wheel_library rule."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//python:defs.bzl", "PyInfo")
+load("//python:py_info.bzl", "PyInfo")
 load(":providers.bzl", "PyWheelInfo")
 
 def _py_wheel_library_impl(ctx):
@@ -83,7 +83,7 @@ def _py_wheel_library_impl(ctx):
 
     # TODO: Is there a more correct way to get this runfiles-relative import path?
     imp = paths.join(
-        ctx.label.workspace_name or ctx.workspace_name,  # Default to the local workspace.
+        ctx.label.repo_name or ctx.workspace_name,  # Default to the local workspace.
         ctx.label.package,
         ctx.label.name,
         "site-packages",  # we put lib files in this subdirectory.

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_library")
+load("//python:py_library.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -21,6 +21,12 @@ licenses(["notice"])  # Apache 2.0
 py_library(
     name = "simple_module",
     srcs = ["simple_module.py"],
+)
+
+py_library(
+    name = "module_with_type_annotations",
+    srcs = ["module_with_type_annotations.py"],
+    pyi_srcs = ["module_with_type_annotations.pyi"],
 )
 
 py_library(

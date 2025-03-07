@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive", _http_file = "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
 
 def http_archive(name, **kwargs):
     maybe(
@@ -39,6 +40,7 @@ def rules_python_internal_deps():
     For dependencies needed by *users* of rules_python, see
     python/private/py_repositories.bzl.
     """
+    internal_config_repo(name = "rules_python_internal")
 
     http_archive(
         name = "bazel_skylib",
@@ -176,13 +178,6 @@ def rules_python_internal_deps():
     )
 
     http_archive(
-        name = "rules_proto",
-        sha256 = "904a8097fae42a690c8e08d805210e40cccb069f5f9a0f6727cf4faa7bed2c9c",
-        strip_prefix = "rules_proto-6.0.0-rc1",
-        url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc1/rules_proto-6.0.0-rc1.tar.gz",
-    )
-
-    http_archive(
         name = "com_google_protobuf",
         sha256 = "23082dca1ca73a1e9c6cbe40097b41e81f71f3b4d6201e36c134acc30a1b3660",
         url = "https://github.com/protocolbuffers/protobuf/releases/download/v29.0-rc2/protobuf-29.0-rc2.zip",
@@ -193,10 +188,9 @@ def rules_python_internal_deps():
     http_archive(
         name = "rules_java",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_java/releases/download/8.3.1/rules_java-8.3.1.tar.gz",
-            "https://github.com/bazelbuild/rules_java/releases/download/8.3.1/rules_java-8.3.1.tar.gz",
+            "https://github.com/bazelbuild/rules_java/releases/download/8.6.2/rules_java-8.6.2.tar.gz",
         ],
-        sha256 = "ee786b943e00da4fea7c233e70e5f5b8a01cc69b9341b3f49169f174fe0df1c5",
+        sha256 = "a64ab04616e76a448c2c2d8165d836f0d2fb0906200d0b7c7376f46dd62e59cc",
     )
 
     RULES_JVM_EXTERNAL_TAG = "5.2"

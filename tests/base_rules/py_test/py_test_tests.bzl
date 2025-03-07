@@ -15,7 +15,7 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:defs.bzl", "py_test")
+load("//python:py_test.bzl", "py_test")
 load(
     "//tests/base_rules:py_executable_base_tests.bzl",
     "create_executable_tests",

@@ -31,7 +31,7 @@ _CPU_ALIASES = {
     "arm64": "aarch64",
     "ppc": "ppc",
     "ppc64": "ppc",
-    "ppc64le": "ppc",
+    "ppc64le": "ppc64le",
     "s390x": "s390x",
     "arm": "arm",
     "armv6l": "arm",
@@ -88,6 +88,10 @@ def select_whls(*, whls, want_platforms = [], logger = None):
         _want_platforms["{}m_{}".format(abi, os_cpu)] = None
         want_abis[abi] = None
         want_abis[abi + "m"] = None
+
+        # Also add freethreaded wheels if we find them since we started supporting them
+        _want_platforms["{}t_{}".format(abi, os_cpu)] = None
+        want_abis[abi + "t"] = None
 
     want_platforms = sorted(_want_platforms)
 

@@ -101,7 +101,7 @@ def _pip_repository_impl(rctx):
         if not r:
             continue
         options = options or r.extra_pip_args
-        selected_requirements[name] = r.requirement_line
+        selected_requirements[name] = r.srcs.requirement_line
 
     bzl_packages = sorted(selected_requirements.keys())
 
@@ -178,6 +178,7 @@ def _pip_repository_impl(rctx):
             for pkg in bzl_packages or []
         },
         extra_hub_aliases = rctx.attr.extra_hub_aliases,
+        requirement_cycles = requirement_cycles,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)

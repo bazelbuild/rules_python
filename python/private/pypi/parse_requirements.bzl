@@ -74,16 +74,22 @@ def parse_requirements(
         logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
 
     Returns:
-        A tuple where the first element a dict of dicts where the first key is
-        the normalized distribution name (with underscores) and the second key
-        is the requirement_line, then value and the keys are structs with the
-        following attributes:
-         * distribution: The non-normalized distribution name.
-         * srcs: The Simple API downloadable source list.
-         * requirement_line: The original requirement line.
-         * target_platforms: The list of target platforms that this package is for.
-         * is_exposed: A boolean if the package should be exposed via the hub
+        {type}`dict[str, list[struct]]` where the key is the distribution name and the struct
+        contains the following attributes:
+         * `distribution`: {type}`str` The non-normalized distribution name.
+         * `srcs`: {type}`struct` The parsed requirement line for easier Simple
+           API downloading (see `index_sources` return value).
+         * `target_platforms`: {type}`list[str]` Target platforms that this package is for.
+             The format is `cp3{minor}_{os}_{arch}`.
+         * `is_exposed`: {type}`bool` `True` if the package should be exposed via the hub
            repository.
+         * `extra_pip_args`: {type}`list[str]` pip args to use in case we are
+           not using the bazel downloader to download the archives. This should
+           be passed to {obj}`whl_library`.
+         * `whls`: {type}`list[struct]` The list of whl entries that can be
+           downloaded using the bazel downloader.
+         * `sdist`: {type}`list[struct]` The sdist that can be downloaded using
+           the bazel downloader.
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
@@ -178,6 +184,7 @@ def parse_requirements(
                 req.distribution: None
                 for reqs in requirements_by_platform.values()
                 for req in reqs.values()
+                if req.srcs.shas
             }),
         )
 
@@ -197,6 +204,9 @@ def parse_requirements(
                 sorted(requirements),
             ))
 
+        # Return normalized names
+        ret_requirements = ret.setdefault(normalize_name(whl_name), [])
+
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
                 requirement = r,
@@ -205,11 +215,10 @@ def parse_requirements(
             )
 
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
-            ret.setdefault(whl_name, []).append(
+            ret_requirements.append(
                 struct(
                     distribution = r.distribution,
                     srcs = r.srcs,
-                    requirement_line = r.requirement_line,
                     target_platforms = sorted(target_platforms),
                     extra_pip_args = r.extra_pip_args,
                     whls = whls,

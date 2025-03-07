@@ -76,6 +76,8 @@ class WheelTest(unittest.TestCase):
                 zf.namelist(),
                 [
                     "examples/wheel/lib/module_with_data.py",
+                    "examples/wheel/lib/module_with_type_annotations.py",
+                    "examples/wheel/lib/module_with_type_annotations.pyi",
                     "examples/wheel/lib/simple_module.py",
                     "example_minimal_library-0.0.1.dist-info/WHEEL",
                     "example_minimal_library-0.0.1.dist-info/METADATA",
@@ -83,7 +85,7 @@ class WheelTest(unittest.TestCase):
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "79a4e9c1838c0631d5d8fa49a26efd6e9a364f6b38d9597c0f6df112271a0e28"
+            filename, "0cbf4ec574676015af595f570caf4ae2812f994f6338e247b002b4e496b6fbd5"
         )
 
     def test_py_package_wheel(self):
@@ -98,6 +100,8 @@ class WheelTest(unittest.TestCase):
                     "examples/wheel/lib/data,with,commas.txt",
                     "examples/wheel/lib/data.txt",
                     "examples/wheel/lib/module_with_data.py",
+                    "examples/wheel/lib/module_with_type_annotations.py",
+                    "examples/wheel/lib/module_with_type_annotations.pyi",
                     "examples/wheel/lib/simple_module.py",
                     "examples/wheel/main.py",
                     "example_minimal_package-0.0.1.dist-info/WHEEL",
@@ -106,7 +110,7 @@ class WheelTest(unittest.TestCase):
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "82370bf61310e2d3c7b1218368457dc7e161bf5dc1a280d7d45102b5e56acf43"
+            filename, "22aff90dd3c8c30c3ce2b729bb793cab0bd2668a6810de232677a0354ce79cae"
         )
 
     def test_customized_wheel(self):
@@ -121,6 +125,8 @@ class WheelTest(unittest.TestCase):
                     "examples/wheel/lib/data,with,commas.txt",
                     "examples/wheel/lib/data.txt",
                     "examples/wheel/lib/module_with_data.py",
+                    "examples/wheel/lib/module_with_type_annotations.py",
+                    "examples/wheel/lib/module_with_type_annotations.pyi",
                     "examples/wheel/lib/simple_module.py",
                     "examples/wheel/main.py",
                     "example_customized-0.0.1.dist-info/WHEEL",
@@ -145,8 +151,10 @@ class WheelTest(unittest.TestCase):
 "examples/wheel/lib/data,with,commas.txt",sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
 examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
 examples/wheel/lib/module_with_data.py,sha256=8s0Khhcqz3yVsBKv2IB5u4l4TMKh7-c_V6p65WVHPms,637
+examples/wheel/lib/module_with_type_annotations.py,sha256=MM2cFQsCBaUnzGiEGT5r07jhKSaCVRh5Paw_YLyrS-w,636
+examples/wheel/lib/module_with_type_annotations.pyi,sha256=fja3ql_WRJ1qO8jyZjWWrTTMcg1J7EpOQivOHY_8vI4,630
 examples/wheel/lib/simple_module.py,sha256=z2hwciab_XPNIBNH8B1Q5fYgnJvQTeYf0ZQJpY8yLLY,637
-examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
+examples/wheel/main.py,sha256=mFiRfzQEDwCHr-WVNQhOH26M42bw1UMF6IoqvtuDTrw,1047
 example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
 example_customized-0.0.1.dist-info/METADATA,sha256=QYQcDJFQSIqan8eiXqL67bqsUfgEAwf2hoK_Lgi1S-0,559
 example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
@@ -197,7 +205,7 @@ first = first.main:f
 second = second.main:s""",
             )
         self.assertFileSha256Equal(
-            filename, "706e8dd45884d8cb26e92869f7d29ab7ed9f683b4e2d08f06c03dbdaa12191b8"
+            filename, "657a938a6fdd6f38bf73d1d91016ffff85d68cf29ca390692a3e9d923dd0e39e"
         )
 
     def test_filename_escaping(self):
@@ -211,6 +219,8 @@ second = second.main:s""",
                     "examples/wheel/lib/data,with,commas.txt",
                     "examples/wheel/lib/data.txt",
                     "examples/wheel/lib/module_with_data.py",
+                    "examples/wheel/lib/module_with_type_annotations.py",
+                    "examples/wheel/lib/module_with_type_annotations.pyi",
                     "examples/wheel/lib/simple_module.py",
                     "examples/wheel/main.py",
                     # PEP calls for replacing only in the archive filename.
@@ -248,6 +258,8 @@ UNKNOWN
                     "wheel/lib/data,with,commas.txt",
                     "wheel/lib/data.txt",
                     "wheel/lib/module_with_data.py",
+                    "wheel/lib/module_with_type_annotations.py",
+                    "wheel/lib/module_with_type_annotations.pyi",
                     "wheel/lib/simple_module.py",
                     "wheel/main.py",
                     "examples_custom_package_root-0.0.1.dist-info/WHEEL",
@@ -265,7 +277,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "568922541703f6edf4b090a8413991f9fa625df2844e644dd30bdbe9deb660be"
+            filename, "d415edbf8f326161674c1fa260e364dd44f2a0311e2f596284320ea52d2a8bdb"
         )
 
     def test_custom_package_root_multi_prefix_wheel(self):
@@ -281,6 +293,8 @@ UNKNOWN
                     "data,with,commas.txt",
                     "data.txt",
                     "module_with_data.py",
+                    "module_with_type_annotations.py",
+                    "module_with_type_annotations.pyi",
                     "simple_module.py",
                     "main.py",
                     "example_custom_package_root_multi_prefix-0.0.1.dist-info/WHEEL",
@@ -297,7 +311,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "a8b91ce9d6f570e97b40a357a292a6f595d3470f07c479cb08550257cc9c8306"
+            filename, "6b76a1178c90996feaf3f9417f350c4a67f90f4247647fd4fd552858dc372d4b"
         )
 
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
@@ -313,6 +327,8 @@ UNKNOWN
                     "lib/data,with,commas.txt",
                     "lib/data.txt",
                     "lib/module_with_data.py",
+                    "lib/module_with_type_annotations.py",
+                    "lib/module_with_type_annotations.pyi",
                     "lib/simple_module.py",
                     "main.py",
                     "example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/WHEEL",
@@ -329,7 +345,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "8f44e940731757c186079a42cfe7ea3d43cd96b526e3fb2ca2a3ea3048a9d489"
+            filename, "f976f0bb1c7d753e8c41629d6b79fb09908c6ecd2fec006816879fc86b664f3f"
         )
 
     def test_python_requires_wheel(self):
@@ -354,7 +370,7 @@ UNKNOWN
 """,
             )
         self.assertFileSha256Equal(
-            filename, "ba32493f5e43e481346384aaab9e8fa09c23884276ad057c5f432096a0350101"
+            filename, "f3b74ce429c3324b87f8d1cc7dc33be1493f54bb88d546a7d53be7587b82c1a7"
         )
 
     def test_python_abi3_binary_wheel(self):
@@ -419,7 +435,7 @@ Tag: cp38-abi3-{os_string}_{arch}
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "ac9216bd54dcae1a6270c35fccf8a73b0be87c1b026c28e963b7c76b2f9b722b"
+            filename, "d8e874b807e5574bd11a9312c58ce7fe7055afb80412d0d0e7ed21fc9223cd53"
         )
 
     def test_rule_expands_workspace_status_keys_in_wheel_metadata(self):

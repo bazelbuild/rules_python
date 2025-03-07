@@ -100,7 +100,7 @@ _RULE_DEPS = [
 _GENERIC_WHEEL = """\
 package(default_visibility = ["//visibility:public"])
 
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:py_library.bzl", "py_library")
 load("@rules_python//python/private:glob_excludes.bzl", "glob_excludes")
 
 py_library(
@@ -124,6 +124,13 @@ py_library(
 
 # Collate all the repository names so they can be easily consumed
 all_repo_names = [name for (name, _, _) in _RULE_DEPS]
+record_files = {
+    name: Label("@{}//:{}.dist-info/RECORD".format(
+        name,
+        url.rpartition("/")[-1].partition("-py3-none")[0],
+    ))
+    for (name, url, _) in _RULE_DEPS
+}
 
 def pypi_deps():
     """
