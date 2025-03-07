@@ -179,7 +179,21 @@ def process_modules(
     Returns:
         the result of the hub_repo. Mainly used for tests.
     """
-    defaults = {}
+    # default values to apply for version specific config
+    defaults = {
+        "base_url": "",
+        "manifest_filename": "",
+        "platforms": {
+            # The structure is as follows:
+            # "platform_name": struct(
+            #     compatible_with = [],
+            #     target_settings = [],
+            # ),
+            #
+            # NOTE: urls and sha256 cannot be set in defaults
+        },
+        "version": "",
+    }
     for mod in module_ctx.modules:
         for default_attr in mod.tags.default:
             _configure(
@@ -192,6 +206,21 @@ def process_modules(
                 target_settings = default_attr.target_settings,
             )
 
+    # resolved per-version configuration. The shape is something like:
+    # versions = {
+    #     "1.0.0": {
+    #         "base_url": "",
+    #         "manifest_filename": "",
+    #         "platforms": {
+    #             "platform_name": struct(
+    #                 compatible_with = [],
+    #                 target_settings = [],
+    #                 urls = [], # can be unset
+    #                 sha256 = "", # can be unset
+    #             ),
+    #         },
+    #     },
+    # }
     versions = {}
     for mod in module_ctx.modules:
         last_version = None
