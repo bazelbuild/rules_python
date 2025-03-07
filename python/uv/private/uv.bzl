@@ -73,7 +73,8 @@ definitions.
     ),
     "version": attr.string(
         doc = """\
-The version of uv to configure the sources for.
+The version of uv to configure the sources for. If this is not specified it will be the
+last version used in the module or the default version set by `rules_python`.
 """,
     ),
 }
@@ -238,6 +239,7 @@ def process_modules(
         if not (mod.is_root or mod.name == "rules_python"):
             continue
 
+        # last_version is the last version used in the MODULE.bazel or the default
         last_version = None
         for tag in mod.tags.configure:
             last_version = tag.version or last_version or defaults["version"]
