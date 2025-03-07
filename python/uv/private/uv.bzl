@@ -262,11 +262,6 @@ def process_modules(
                 urls = tag.urls,
             )
 
-    versions = {
-        version: config
-        for version, config in versions.items()
-        if config["platforms"]
-    }
     if not versions:
         return hub_repo(
             name = hub_name,
