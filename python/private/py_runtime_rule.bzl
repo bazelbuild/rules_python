@@ -188,19 +188,21 @@ py_runtime(
 ```
 """,
     fragments = ["py"],
-    attrs = dicts.add(NATIVE_RULES_ALLOWLIST_ATTRS, {
-        "abi_flags": attr.string(
-            default = "<AUTO>",
-            doc = """
+    attrs = dicts.add(
+        {k: v().build() for k, v in NATIVE_RULES_ALLOWLIST_ATTRS.items()},
+        {
+            "abi_flags": attr.string(
+                default = "<AUTO>",
+                doc = """
 The runtime's ABI flags, i.e. `sys.abiflags`.
 
 If not set, then it will be set based on flags.
 """,
-        ),
-        "bootstrap_template": attr.label(
-            allow_single_file = True,
-            default = DEFAULT_BOOTSTRAP_TEMPLATE,
-            doc = """
+            ),
+            "bootstrap_template": attr.label(
+                allow_single_file = True,
+                default = DEFAULT_BOOTSTRAP_TEMPLATE,
+                doc = """
 The bootstrap script template file to use. Should have %python_binary%,
 %workspace_name%, %main%, and %imports%.
 
@@ -218,10 +220,10 @@ itself.
 
 See @bazel_tools//tools/python:python_bootstrap_template.txt for more variables.
 """,
-        ),
-        "coverage_tool": attr.label(
-            allow_files = False,
-            doc = """
+            ),
+            "coverage_tool": attr.label(
+                allow_files = False,
+                doc = """
 This is a target to use for collecting code coverage information from
 {rule}`py_binary` and {rule}`py_test` targets.
 
@@ -235,25 +237,25 @@ The entry point for the tool must be loadable by a Python interpreter (e.g. a
 of [`coverage.py`](https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
 """,
-        ),
-        "files": attr.label_list(
-            allow_files = True,
-            doc = """
+            ),
+            "files": attr.label_list(
+                allow_files = True,
+                doc = """
 For an in-build runtime, this is the set of files comprising this runtime.
 These files will be added to the runfiles of Python binaries that use this
 runtime. For a platform runtime this attribute must not be set.
 """,
-        ),
-        "implementation_name": attr.string(
-            doc = "The Python implementation name (`sys.implementation.name`)",
-            default = "cpython",
-        ),
-        "interpreter": attr.label(
-            # We set `allow_files = True` to allow specifying executable
-            # targets from rules that have more than one default output,
-            # e.g. sh_binary.
-            allow_files = True,
-            doc = """
+            ),
+            "implementation_name": attr.string(
+                doc = "The Python implementation name (`sys.implementation.name`)",
+                default = "cpython",
+            ),
+            "interpreter": attr.label(
+                # We set `allow_files = True` to allow specifying executable
+                # targets from rules that have more than one default output,
+                # e.g. sh_binary.
+                allow_files = True,
+                doc = """
 For an in-build runtime, this is the target to invoke as the interpreter. It
 can be either of:
 
@@ -272,13 +274,13 @@ can be either of:
 For a platform runtime (i.e. `interpreter_path` being set) this attribute must
 not be set.
 """,
-        ),
-        "interpreter_path": attr.string(doc = """
+            ),
+            "interpreter_path": attr.string(doc = """
 For a platform runtime, this is the absolute path of a Python interpreter on
 the target platform. For an in-build runtime this attribute must not be set.
 """),
-        "interpreter_version_info": attr.string_dict(
-            doc = """
+            "interpreter_version_info": attr.string_dict(
+                doc = """
 Version information about the interpreter this runtime provides.
 
 If not specified, uses {obj}`--python_version`
@@ -295,20 +297,20 @@ values are strings, most are converted to ints. The supported keys are:
 {obj}`--python_version` determines the default value.
 :::
 """,
-            mandatory = False,
-        ),
-        "pyc_tag": attr.string(
-            doc = """
+                mandatory = False,
+            ),
+            "pyc_tag": attr.string(
+                doc = """
 Optional string; the tag portion of a pyc filename, e.g. the `cpython-39` infix
 of `foo.cpython-39.pyc`. See PEP 3147. If not specified, it will be computed
 from `implementation_name` and `interpreter_version_info`. If no pyc_tag is
 available, then only source-less pyc generation will function correctly.
 """,
-        ),
-        "python_version": attr.string(
-            default = "PY3",
-            values = ["PY2", "PY3"],
-            doc = """
+            ),
+            "python_version": attr.string(
+                default = "PY3",
+                values = ["PY2", "PY3"],
+                doc = """
 Whether this runtime is for Python major version 2 or 3. Valid values are `"PY2"`
 and `"PY3"`.
 
@@ -316,32 +318,32 @@ The default value is controlled by the `--incompatible_py3_is_default` flag.
 However, in the future this attribute will be mandatory and have no default
 value.
             """,
-        ),
-        "site_init_template": attr.label(
-            allow_single_file = True,
-            default = "//python/private:site_init_template",
-            doc = """
+            ),
+            "site_init_template": attr.label(
+                allow_single_file = True,
+                default = "//python/private:site_init_template",
+                doc = """
 The template to use for the binary-specific site-init hook run by the
 interpreter at startup.
 
 :::{versionadded} 0.41.0
 :::
 """,
-        ),
-        "stage2_bootstrap_template": attr.label(
-            default = "//python/private:stage2_bootstrap_template",
-            allow_single_file = True,
-            doc = """
+            ),
+            "stage2_bootstrap_template": attr.label(
+                default = "//python/private:stage2_bootstrap_template",
+                allow_single_file = True,
+                doc = """
 The template to use when two stage bootstrapping is enabled
 
 :::{seealso}
 {obj}`PyRuntimeInfo.stage2_bootstrap_template` and {obj}`--bootstrap_impl`
 :::
 """,
-        ),
-        "stub_shebang": attr.string(
-            default = DEFAULT_STUB_SHEBANG,
-            doc = """
+            ),
+            "stub_shebang": attr.string(
+                default = DEFAULT_STUB_SHEBANG,
+                doc = """
 "Shebang" expression prepended to the bootstrapping Python stub script
 used when executing {rule}`py_binary` targets.
 
@@ -350,11 +352,11 @@ motivation.
 
 Does not apply to Windows.
 """,
-        ),
-        "zip_main_template": attr.label(
-            default = "//python/private:zip_main_template",
-            allow_single_file = True,
-            doc = """
+            ),
+            "zip_main_template": attr.label(
+                default = "//python/private:zip_main_template",
+                allow_single_file = True,
+                doc = """
 The template to use for a zip's top-level `__main__.py` file.
 
 This becomes the entry point executed when `python foo.zip` is run.
@@ -363,14 +365,15 @@ This becomes the entry point executed when `python foo.zip` is run.
 The {obj}`PyRuntimeInfo.zip_main_template` field.
 :::
 """,
-        ),
-        "_py_freethreaded_flag": attr.label(
-            default = "//python/config_settings:py_freethreaded",
-        ),
-        "_python_version_flag": attr.label(
-            default = "//python/config_settings:python_version",
-        ),
-    }),
+            ),
+            "_py_freethreaded_flag": attr.label(
+                default = "//python/config_settings:py_freethreaded",
+            ),
+            "_python_version_flag": attr.label(
+                default = "//python/config_settings:python_version",
+            ),
+        },
+    ),
 )
 
 def _is_singleton_depset(files):
