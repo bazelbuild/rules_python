@@ -1,0 +1,24 @@
+load("//python/uv/private:uv_toolchains_repo_def.bzl", "uv_toolchains_repo_def")  # buildifier: disable=bzl-visibility
+
+uv_toolchains_repo_def(
+    implementations = {
+        "bar": "//tests/uv/uv:fake_bar",
+        "foo": "//tests/uv/uv:fake_foof",
+    },
+    # We expect bar to not be effective here
+    names = [
+        "foo",
+        "bar",
+    ],
+    target_compatible_with = {
+        "bar": [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+        "foo": [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+    },
+    target_settings = {},
+)

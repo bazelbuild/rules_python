@@ -16,32 +16,30 @@
 
 load("//python/private:text_util.bzl", "render")
 
-_TOOLCHAIN_TEMPLATE = """
-toolchain(
-    name = "{name}",
-    target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "{toolchain_label}",
-    toolchain_type = "{toolchain_type}",
-)
-"""
-
 def _toolchains_repo_impl(repository_ctx):
-    build_content = ""
-    for toolchain_name in repository_ctx.attr.toolchain_names:
-        toolchain_label = repository_ctx.attr.toolchain_implementations[toolchain_name]
-        toolchain_compatible_with = repository_ctx.attr.toolchain_compatible_with[toolchain_name]
-        toolchain_target_settings = repository_ctx.attr.toolchain_target_settings.get(toolchain_name, [])
+    repository_ctx.file("BUILD.bazel", """\
+load("@rules_python//python/uv/private:uv_toolchains_repo_def.bzl", "uv_toolchains_repo_def")
 
-        build_content += _TOOLCHAIN_TEMPLATE.format(
-            name = toolchain_name,
-            toolchain_type = repository_ctx.attr.toolchain_type,
-            toolchain_label = toolchain_label,
-            compatible_with = render.list(toolchain_compatible_with),
-            target_settings = render.list(toolchain_target_settings),
-        )
-
-    repository_ctx.file("BUILD.bazel", build_content)
+uv_toolchains_repo_def(
+    target_compatible_with = {target_compatible_with},
+    implementations = {implementations},
+    names = {names},
+    target_settings = {target_settings},
+)
+""".format(
+        target_compatible_with = render.dict(
+            repository_ctx.attr.toolchain_compatible_with,
+            value_repr = render.list,
+        ),
+        names = render.list(repository_ctx.attr.toolchain_names),
+        implementations = render.dict(
+            repository_ctx.attr.toolchain_implementations,
+        ),
+        target_settings = render.dict(
+            repository_ctx.attr.toolchain_target_settings,
+            value_repr = render.list,
+        ),
+    ))
 
 uv_toolchains_repo = repository_rule(
     _toolchains_repo_impl,

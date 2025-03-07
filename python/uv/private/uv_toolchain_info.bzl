@@ -17,6 +17,11 @@
 UvToolchainInfo = provider(
     doc = "Information about how to invoke the uv executable.",
     fields = {
+        "label": """
+:type: Label
+
+The uv toolchain implementation label returned by the toolchain.
+""",
         "uv": """
 :type: Target
 

@@ -30,6 +30,7 @@ def _uv_toolchain_impl(ctx):
     uv_toolchain_info = UvToolchainInfo(
         uv = uv,
         version = ctx.attr.version,
+        label = ctx.label,
     )
 
     # Export all the providers inside our ToolchainInfo
