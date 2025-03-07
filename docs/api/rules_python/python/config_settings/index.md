@@ -212,6 +212,7 @@ Values:
 :::
 ::::
 
+
 ::::{bzl:flag} bootstrap_impl
 Determine how programs implement their startup process.
 
@@ -239,4 +240,45 @@ instead.
 :::{versionadded} 0.33.0
 :::
 
+::::
+
+::::{bzl:flag} current_config
+Fail the build if the current build configuration does not match the
+{obj}`pip.parse` defined wheels.
+
+Values:
+* `fail`: Will fail in the build action ensuring that we get the error
+  message no matter the action cache.
+* ``: (empty string) The default value, that will just print a warning.
+
+:::{seealso}
+{obj}`pip.parse`
+:::
+
+:::{versionadded} 1.1.0
+:::
+
+::::
+
+::::{bzl:flag} venvs_use_declare_symlink
+
+Determines if relative symlinks are created using `declare_symlink()` at build
+time.
+
+This is only intended to work around
+[#2489](https://github.com/bazelbuild/rules_python/issues/2489), where some
+packaging rules don't support `declare_symlink()` artifacts.
+
+Values:
+* `yes`: Use `declare_symlink()` and create relative symlinks at build time.
+* `no`: Do not use `declare_symlink()`. Instead, the venv will be created at
+  runtime.
+
+:::{seealso}
+{envvar}`RULES_PYTHON_EXTRACT_ROOT` for customizing where the runtime venv
+is created.
+:::
+
+:::{versionadded} 1.2.0
+:::
 ::::

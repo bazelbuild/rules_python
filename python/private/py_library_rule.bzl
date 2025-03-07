@@ -13,8 +13,8 @@
 # limitations under the License.
 """Implementation of py_library rule."""
 
-load(":common.bzl", "create_library_semantics_struct")
-load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
+load(":common.bzl", "collect_cc_info", "create_library_semantics_struct", "get_imports")
+load(":precompile.bzl", "maybe_precompile")
 load(":py_library.bzl", "create_py_library_rule", "py_library_impl")
 
 def _py_library_impl_with_semantics(ctx):

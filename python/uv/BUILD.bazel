@@ -27,9 +27,6 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
-# For stardoc to reference the files
-exports_files(["defs.bzl"])
-
 toolchain_type(
     name = "uv_toolchain_type",
     visibility = ["//visibility:public"],
@@ -48,34 +45,33 @@ current_toolchain(
 )
 
 bzl_library(
-    name = "defs",
-    srcs = ["defs.bzl"],
+    name = "lock_bzl",
+    srcs = ["lock.bzl"],
     # EXPERIMENTAL: Visibility is restricted to allow for changes.
     visibility = ["//:__subpackages__"],
+    deps = ["//python/uv/private:lock_bzl"],
 )
 
 bzl_library(
-    name = "extensions",
-    srcs = ["extensions.bzl"],
+    name = "uv_bzl",
+    srcs = ["uv.bzl"],
     # EXPERIMENTAL: Visibility is restricted to allow for changes.
     visibility = ["//:__subpackages__"],
-    deps = [":repositories"],
+    deps = ["//python/uv/private:uv_bzl"],
 )
 
 bzl_library(
-    name = "repositories",
-    srcs = ["repositories.bzl"],
+    name = "uv_toolchain_bzl",
+    srcs = ["uv_toolchain.bzl"],
     # EXPERIMENTAL: Visibility is restricted to allow for changes.
     visibility = ["//:__subpackages__"],
-    deps = [
-        "//python/uv/private:toolchains_repo",
-        "//python/uv/private:versions",
-    ],
+    deps = ["//python/uv/private:uv_toolchain_bzl"],
 )
 
 bzl_library(
-    name = "toolchain",
-    srcs = ["toolchain.bzl"],
+    name = "uv_toolchain_info_bzl",
+    srcs = ["uv_toolchain_info.bzl"],
     # EXPERIMENTAL: Visibility is restricted to allow for changes.
     visibility = ["//:__subpackages__"],
+    deps = ["//python/uv/private:uv_toolchain_info_bzl"],
 )

@@ -654,8 +654,7 @@ code into a separate script without a `main` line. Gazelle will then create a
 
 ## Developer Notes
 
-Gazelle extensions are written in Go. This gazelle plugin is a hybrid, as it uses Go to execute a
-Python interpreter as a subprocess to parse Python source files.
+Gazelle extensions are written in Go.
 See the gazelle documentation https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.md
 for more information on extending Gazelle.
 

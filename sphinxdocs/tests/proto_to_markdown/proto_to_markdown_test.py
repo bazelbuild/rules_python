@@ -82,6 +82,14 @@ module_extension_info: {
       default_value: "[BZLMOD_EXT_TAG_A_ATTRIBUTE_1_DEFAULT_VALUE]"
     }
   }
+  tag_class: {
+    tag_name: "bzlmod_ext_tag_no_doc"
+    attribute: {
+      name: "bzlmod_ext_tag_a_attribute_2",
+      type: STRING_LIST
+      default_value: "[BZLMOD_EXT_TAG_A_ATTRIBUTE_2_DEFAULT_VALUE]"
+    }
+  }
 }
 repository_rule_info: {
   rule_name: "repository_rule",
@@ -151,6 +159,9 @@ class ProtoToMarkdownTest(absltest.TestCase):
         self.assertRegex(actual, "bzlmod_ext_tag_a_attribute_1")
         self.assertRegex(actual, "BZLMOD_EXT_TAG_A_ATTRIBUTE_1_DOC_STRING")
         self.assertRegex(actual, "BZLMOD_EXT_TAG_A_ATTRIBUTE_1_DEFAULT_VALUE")
+        self.assertRegex(actual, "{bzl:tag-class} bzlmod_ext_tag_no_doc")
+        self.assertRegex(actual, "bzlmod_ext_tag_a_attribute_2")
+        self.assertRegex(actual, "BZLMOD_EXT_TAG_A_ATTRIBUTE_2_DEFAULT_VALUE")
 
         self.assertRegex(actual, "{bzl:repo-rule} repository_rule")
         self.assertRegex(actual, "REPOSITORY_RULE_DOC_STRING")

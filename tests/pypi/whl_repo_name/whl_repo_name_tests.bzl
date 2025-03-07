@@ -20,26 +20,25 @@ load("//python/private/pypi:whl_repo_name.bzl", "whl_repo_name")  # buildifier: 
 _tests = []
 
 def _test_simple(env):
-    got = whl_repo_name("prefix", "foo-1.2.3-py3-none-any.whl", "deadbeef")
-    env.expect.that_str(got).equals("prefix_foo_py3_none_any_deadbeef")
+    got = whl_repo_name("foo-1.2.3-py3-none-any.whl", "deadbeef")
+    env.expect.that_str(got).equals("foo_py3_none_any_deadbeef")
 
 _tests.append(_test_simple)
 
 def _test_sdist(env):
-    got = whl_repo_name("prefix", "foo-1.2.3.tar.gz", "deadbeef000deadbeef")
-    env.expect.that_str(got).equals("prefix_foo_sdist_deadbeef")
+    got = whl_repo_name("foo-1.2.3.tar.gz", "deadbeef000deadbeef")
+    env.expect.that_str(got).equals("foo_sdist_deadbeef")
 
 _tests.append(_test_sdist)
 
 def _test_platform_whl(env):
     got = whl_repo_name(
-        "prefix",
         "foo-1.2.3-cp39.cp310-abi3-manylinux1_x86_64.manylinux_2_17_x86_64.whl",
         "deadbeef000deadbeef",
     )
 
     # We only need the first segment of each
-    env.expect.that_str(got).equals("prefix_foo_cp39_abi3_manylinux_2_5_x86_64_deadbeef")
+    env.expect.that_str(got).equals("foo_cp39_abi3_manylinux_2_5_x86_64_deadbeef")
 
 _tests.append(_test_platform_whl)
 

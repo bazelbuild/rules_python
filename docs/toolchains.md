@@ -116,9 +116,9 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(python_version = "3.12")
 
 # BUILD.bazel
-load("@python_versions//3.12:defs.bzl", "py_binary")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
-py_binary(...)
+py_binary(..., python_version="3.12")
 ```
 
 ### Pinning to a Python version
@@ -132,21 +132,59 @@ is most useful for two cases:
    typically in a mono-repo situation.
 
 To configure a submodule with the version-aware rules, request the particular
-version you need, then use the `@python_versions` repo to use the rules that
-force specific versions:
+version you need when defining the toolchain:
 
 ```starlark
+# MODULE.bazel
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(
     python_version = "3.11",
 )
-use_repo(python, "python_versions")
+use_repo(python)
 ```
 
-Then use e.g. `load("@python_versions//3.11:defs.bzl", "py_binary")` to use
-the rules that force that particular version. Multiple versions can be specified
-and use within a single build.
+Then use the `@rules_python` repo in your BUILD file to explicity pin the Python version when calling the rule:
+
+```starlark
+# BUILD.bazel
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+py_binary(..., python_version = "3.11")
+py_test(..., python_version = "3.11")
+```
+
+Multiple versions can be specified and used within a single build.
+
+```starlark
+# MODULE.bazel
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+python.toolchain(
+    python_version = "3.11",
+    is_default = True,
+)
+
+python.toolchain(
+    python_version = "3.12",
+)
+
+# BUILD.bazel
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+# Defaults to 3.11
+py_binary(...)
+py_test(...)
+
+# Explicitly use Python 3.11
+py_binary(..., python_version = "3.11")
+py_test(..., python_version = "3.11")
+
+# Explicitly use Python 3.12
+py_binary(..., python_version = "3.12")
+py_test(..., python_version = "3.12")
+```
 
 For more documentation, see the bzlmod examples under the {gh-path}`examples`
 folder.  Look for the examples that contain a `MODULE.bazel` file.
@@ -158,6 +196,16 @@ The `python.toolchain()` call makes its contents available under a repo named
 `python.toolchain(python_version="3.11")` creates the repo `@python_3_11`.
 Remember to call `use_repo()` to make repos visible to your module:
 `use_repo(python, "python_3_11")`
+
+
+:::{deprecated} 1.1.0
+The toolchain specific `py_binary` and `py_test` symbols are aliases to the regular rules. 
+i.e. Deprecated `load("@python_versions//3.11:defs.bzl", "py_binary")` & `load("@python_versions//3.11:defs.bzl", "py_test")`
+
+Usages of them should be changed to load the regular rules directly; 
+i.e.  Use `load("@rules_python//python:py_binary.bzl", "py_binary")` & `load("@rules_python//python:py_test.bzl", "py_test")` and then specify the `python_version` when using the rules corresponding to the python version you defined in your toolchain. {ref}`Library modules with version constraints`
+:::
+
 
 #### Toolchain usage in other rules
 
@@ -183,6 +231,43 @@ existing attributes:
   {attr}`python.single_version_platform_override.coverage_tool`.
 * Adding additional Python versions via {bzl:obj}`python.single_version_override` or
   {bzl:obj}`python.single_version_platform_override`.
+
+### Using defined toolchains from WORKSPACE
+
+It is possible to use toolchains defined in `MODULE.bazel` in `WORKSPACE`. For example
+the following `MODULE.bazel` and `WORKSPACE` provides a working {bzl:obj}`pip_parse` setup:
+```starlark
+# File: WORKSPACE
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "third_party",
+    requirements_lock = "//:requirements.txt",
+    python_interpreter_target = "@python_3_10_host//:python",
+)
+
+load("@third_party//:requirements.bzl", "install_deps")
+
+install_deps()
+
+# File: MODULE.bazel
+bazel_dep(name = "rules_python", version = "0.40.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+python.toolchain(is_default = True, python_version = "3.10")
+
+use_repo(python, "python_3_10", "python_3_10_host")
+```
+
+Note, the user has to import the `*_host` repository to use the python interpreter in the
+{bzl:obj}`pip_parse` and {bzl:obj}`whl_library` repository rules and once that is done
+users should be able to ensure the setting of the default toolchain even during the
+transition period when some of the code is still defined in `WORKSPACE`.
 
 ## Workspace configuration
 
@@ -229,13 +314,11 @@ python_register_toolchains(
     python_version = "3.11",
 )
 
-load("@python_3_11//:defs.bzl", "interpreter")
-
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     ...
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python_3_11_host//:python",
     ...
 )
 ```
@@ -313,7 +396,7 @@ provide `Python.h`.
 
 This is typically implemented using {obj}`py_cc_toolchain()`, which provides
 {obj}`ToolchainInfo` with the field `py_cc_toolchain` set, which is a
-{obj}`PyCcToolchainInfo` provider instance. 
+{obj}`PyCcToolchainInfo` provider instance.
 
 This toolchain type is intended to hold only _target configuration_ values
 relating to the C/C++ information for the Python runtime. As such, when defining
@@ -376,7 +459,10 @@ Here, we show an example for a semi-complicated toolchain suite, one that is:
 Defining toolchains for this might look something like this:
 
 ```
-# File: toolchain_impls/BUILD
+# -------------------------------------------------------
+# File: toolchain_impl/BUILD
+# Contains the tool definitions (runtime, headers, libs).
+# -------------------------------------------------------
 load("@rules_python//python:py_cc_toolchain.bzl", "py_cc_toolchain")
 load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
@@ -418,9 +504,11 @@ cc_binary(name = "python3.12", ...)
 cc_library(name = "headers", ...)
 cc_library(name = "libs", ...)
 
+# ------------------------------------------------------------------
 # File: toolchains/BUILD
 # Putting toolchain() calls in a separate package from the toolchain
-# implementations minimizes Bazel loading overhead
+# implementations minimizes Bazel loading overhead.
+# ------------------------------------------------------------------
 
 toolchain(
     name = "runtime_toolchain",
@@ -445,8 +533,10 @@ toolchain(
     exec_comaptible_with = ["@platforms/os:linux"]
 )
 
+# -----------------------------------------------
 # File: MODULE.bazel or WORKSPACE.bazel
-# These toolchains will considered before others
+# These toolchains will considered before others.
+# -----------------------------------------------
 register_toolchains("//toolchains:all")
 ```
 
@@ -467,3 +557,44 @@ Currently the following flags are used to influence toolchain selection:
 * {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
 * {obj}`--@rules_python//python/config_settings:py_freethreaded` for selecting
   the freethreaded experimental Python builds available from `3.13.0` onwards.
+
+## Running the underlying interpreter
+
+To run the interpreter that Bazel will use, you can use the
+`@rules_python//python/bin:python` target. This is a binary target with
+the executable pointing at the `python3` binary plus its relevent runfiles.
+
+```console
+$ bazel run @rules_python//python/bin:python
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+$ bazel run @rules_python//python/bin:python --@rules_python//python/config_settings:python_version=3.12
+Python 3.12.0 (main, Oct  3 2023, 01:27:23) [Clang 17.0.1 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+You can also access a specific binary's interpreter this way by using the
+`@rules_python//python/bin:python_src` target. In the example below, it is
+assumed that the `@rules_python//tools/publish:twine` binary is fixed at Python
+3.11.
+
+```console
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+$ bazel run @rules_python//python/bin:python --@rules_python//python/bin:interpreter_src=@rules_python//tools/publish:twine --@rules_python//python/config_settings:python_version=3.12
+Python 3.11.1 (main, Jan 16 2023, 22:41:20) [Clang 15.0.7 ] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+Despite setting the Python version explicitly to 3.12 in the example above, the
+interpreter comes from the `@rules_python//tools/publish:twine` binary. That is
+a fixed version.
+
+:::{note}
+The `python` target does not provide access to any modules from `py_*`
+targets on its own. Please file a feature request if this is desired.
+:::

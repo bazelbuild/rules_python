@@ -17,6 +17,7 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:py_info.bzl", "PyInfo")
+load("//python:py_library.bzl", "py_library")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:util.bzl", pt_util = "util")
 load("//tests/support:py_info_subject.bzl", "py_info_subject")
@@ -57,6 +58,50 @@ def _not_produces_py_info_impl(ctx):
 _not_produces_py_info = rule(
     implementation = _not_produces_py_info_impl,
 )
+
+def _test_py_info_populated(name, config):
+    rt_util.helper_target(
+        config.base_test_rule,
+        name = name + "_subject",
+        srcs = [name + "_subject.py"],
+        pyi_srcs = ["subject.pyi"],
+        pyi_deps = [name + "_lib2"],
+    )
+    rt_util.helper_target(
+        py_library,
+        name = name + "_lib2",
+        srcs = ["lib2.py"],
+        pyi_srcs = ["lib2.pyi"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_py_info_populated_impl,
+    )
+
+def _test_py_info_populated_impl(env, target):
+    info = env.expect.that_target(target).provider(
+        PyInfo,
+        factory = py_info_subject,
+    )
+    info.direct_original_sources().contains_exactly([
+        "{package}/test_py_info_populated_subject.py",
+    ])
+    info.transitive_original_sources().contains_exactly([
+        "{package}/test_py_info_populated_subject.py",
+        "{package}/lib2.py",
+    ])
+
+    info.direct_pyi_files().contains_exactly([
+        "{package}/subject.pyi",
+    ])
+    info.transitive_pyi_files().contains_exactly([
+        "{package}/lib2.pyi",
+        "{package}/subject.pyi",
+    ])
+
+_tests.append(_test_py_info_populated)
 
 def _py_info_propagation_setup(name, config, produce_py_info_rule, test_impl):
     rt_util.helper_target(

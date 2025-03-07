@@ -38,7 +38,11 @@ def _PyInfo_init(
         direct_pyc_files = depset(),
         transitive_pyc_files = depset(),
         transitive_implicit_pyc_files = depset(),
-        transitive_implicit_pyc_source_files = depset()):
+        transitive_implicit_pyc_source_files = depset(),
+        direct_original_sources = depset(),
+        transitive_original_sources = depset(),
+        direct_pyi_files = depset(),
+        transitive_pyi_files = depset()):
     _check_arg_type("transitive_sources", "depset", transitive_sources)
 
     # Verify it's postorder compatible, but retain is original ordering.
@@ -53,14 +57,24 @@ def _PyInfo_init(
 
     _check_arg_type("transitive_implicit_pyc_files", "depset", transitive_pyc_files)
     _check_arg_type("transitive_implicit_pyc_source_files", "depset", transitive_pyc_files)
+
+    _check_arg_type("direct_original_sources", "depset", direct_original_sources)
+    _check_arg_type("transitive_original_sources", "depset", transitive_original_sources)
+
+    _check_arg_type("direct_pyi_files", "depset", direct_pyi_files)
+    _check_arg_type("transitive_pyi_files", "depset", transitive_pyi_files)
     return {
+        "direct_original_sources": direct_original_sources,
         "direct_pyc_files": direct_pyc_files,
+        "direct_pyi_files": direct_pyi_files,
         "has_py2_only_sources": has_py2_only_sources,
         "has_py3_only_sources": has_py2_only_sources,
         "imports": imports,
         "transitive_implicit_pyc_files": transitive_implicit_pyc_files,
         "transitive_implicit_pyc_source_files": transitive_implicit_pyc_source_files,
+        "transitive_original_sources": transitive_original_sources,
         "transitive_pyc_files": transitive_pyc_files,
+        "transitive_pyi_files": transitive_pyi_files,
         "transitive_sources": transitive_sources,
         "uses_shared_libraries": uses_shared_libraries,
     }
@@ -69,6 +83,18 @@ PyInfo, _unused_raw_py_info_ctor = define_bazel_6_provider(
     doc = "Encapsulates information provided by the Python rules.",
     init = _PyInfo_init,
     fields = {
+        "direct_original_sources": """
+:type: depset[File]
+
+The `.py` source files (if any) that are considered directly provided by
+the target. This field is intended so that static analysis tools can recover the
+original Python source files, regardless of any build settings (e.g.
+precompiling), so they can analyze source code. The values are typically the
+`.py` files in the `srcs` attribute (or equivalent).
+
+::::{versionadded} 1.1.0
+::::
+""",
         "direct_pyc_files": """
 :type: depset[File]
 
@@ -78,6 +104,24 @@ by the target and **must be included**.
 These files usually come from, e.g., a library setting {attr}`precompile=enabled`
 to forcibly enable precompiling for itself. Downstream binaries are expected
 to always include these files, as the originating target expects them to exist.
+""",
+        "direct_pyi_files": """
+:type: depset[File]
+
+Type definition files (usually `.pyi` files) for the Python modules provided by
+this target. Usually they describe the source files listed in
+`direct_original_sources`. This field is primarily for static analysis tools.
+
+These files are _usually_ build-time only and not included as part of a runnable
+program.
+
+:::{note}
+This may contain implementation-specific file types specific to a particular
+type checker.
+:::
+
+::::{versionadded} 1.1.0
+::::
 """,
         "has_py2_only_sources": """
 :type: bool
@@ -117,6 +161,21 @@ then {obj}`transitive_implicit_pyc_files` should be included instead.
 ::::{versionadded} 0.37.0
 ::::
 """,
+        "transitive_original_sources": """
+:type: depset[File]
+
+The transitive set of `.py` source files (if any) that are considered the
+original sources for this target and its transitive dependencies. This field is
+intended so that static analysis tools can recover the original Python source
+files, regardless of any build settings (e.g. precompiling), so they can analyze
+source code. The values are typically the `.py` files in the `srcs` attribute
+(or equivalent).
+
+This is superset of `direct_original_sources`.
+
+::::{versionadded} 1.1.0
+::::
+""",
         "transitive_pyc_files": """
 :type: depset[File]
 
@@ -125,6 +184,25 @@ The transitive set of precompiled files that must be included.
 These files usually come from, e.g., a library setting {attr}`precompile=enabled`
 to forcibly enable precompiling for itself. Downstream binaries are expected
 to always include these files, as the originating target expects them to exist.
+""",
+        "transitive_pyi_files": """
+:type: depset[File]
+
+The transitive set of type definition files (usually `.pyi` files) for the
+Python modules for this target and its transitive dependencies. this target.
+Usually they describe the source files listed in `transitive_original_sources`.
+This field is primarily for static analysis tools.
+
+These files are _usually_ build-time only and not included as part of a runnable
+program.
+
+:::{note}
+This may contain implementation-specific file types specific to a particular
+type checker.
+:::
+
+::::{versionadded} 1.1.0
+::::
 """,
         "transitive_sources": """\
 :type: depset[File]
@@ -165,7 +243,9 @@ def PyInfoBuilder():
         _uses_shared_libraries = [False],
         build = lambda *a, **k: _PyInfoBuilder_build(self, *a, **k),
         build_builtin_py_info = lambda *a, **k: _PyInfoBuilder_build_builtin_py_info(self, *a, **k),
+        direct_original_sources = builders.DepsetBuilder(),
         direct_pyc_files = builders.DepsetBuilder(),
+        direct_pyi_files = builders.DepsetBuilder(),
         get_has_py2_only_sources = lambda *a, **k: _PyInfoBuilder_get_has_py2_only_sources(self, *a, **k),
         get_has_py3_only_sources = lambda *a, **k: _PyInfoBuilder_get_has_py3_only_sources(self, *a, **k),
         get_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_get_uses_shared_libraries(self, *a, **k),
@@ -182,7 +262,9 @@ def PyInfoBuilder():
         set_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_set_uses_shared_libraries(self, *a, **k),
         transitive_implicit_pyc_files = builders.DepsetBuilder(),
         transitive_implicit_pyc_source_files = builders.DepsetBuilder(),
+        transitive_original_sources = builders.DepsetBuilder(),
         transitive_pyc_files = builders.DepsetBuilder(),
+        transitive_pyi_files = builders.DepsetBuilder(),
         transitive_sources = builders.DepsetBuilder(),
     )
     return self
@@ -221,13 +303,39 @@ def _PyInfoBuilder_set_uses_shared_libraries(self, value):
     return self
 
 def _PyInfoBuilder_merge(self, *infos, direct = []):
+    """Merge other PyInfos into this PyInfo.
+
+    Args:
+        self: implicitly added.
+        *infos: {type}`PyInfo` objects to merge in, but only merge in their
+            information into this object's transitive fields.
+        direct: {type}`list[PyInfo]` objects to merge in, but also merge their
+            direct fields into this object's direct fields.
+
+    Returns:
+        {type}`PyInfoBuilder` the current object
+    """
     return self.merge_all(list(infos), direct = direct)
 
 def _PyInfoBuilder_merge_all(self, transitive, *, direct = []):
+    """Merge other PyInfos into this PyInfo.
+
+    Args:
+        self: implicitly added.
+        transitive: {type}`list[PyInfo]` objects to merge in, but only merge in
+            their information into this object's transitive fields.
+        direct: {type}`list[PyInfo]` objects to merge in, but also merge their
+            direct fields into this object's direct fields.
+
+    Returns:
+        {type}`PyInfoBuilder` the current object
+    """
     for info in direct:
         # BuiltinPyInfo doesn't have this field
         if hasattr(info, "direct_pyc_files"):
+            self.direct_original_sources.add(info.direct_original_sources)
             self.direct_pyc_files.add(info.direct_pyc_files)
+            self.direct_pyi_files.add(info.direct_pyi_files)
 
     for info in direct + transitive:
         self.imports.add(info.imports)
@@ -240,11 +348,24 @@ def _PyInfoBuilder_merge_all(self, transitive, *, direct = []):
         if hasattr(info, "transitive_pyc_files"):
             self.transitive_implicit_pyc_files.add(info.transitive_implicit_pyc_files)
             self.transitive_implicit_pyc_source_files.add(info.transitive_implicit_pyc_source_files)
+            self.transitive_original_sources.add(info.transitive_original_sources)
             self.transitive_pyc_files.add(info.transitive_pyc_files)
+            self.transitive_pyi_files.add(info.transitive_pyi_files)
 
     return self
 
 def _PyInfoBuilder_merge_target(self, target):
+    """Merge a target's Python information in this object.
+
+    Args:
+        self: implicitly added.
+        target: {type}`Target` targets that provide PyInfo, or other relevant
+        providers, will be merged into this object. If a target doesn't provide
+        any relevant providers, it is ignored.
+
+    Returns:
+        {type}`PyInfoBuilder` the current object.
+    """
     if PyInfo in target:
         self.merge(target[PyInfo])
     elif BuiltinPyInfo != None and BuiltinPyInfo in target:
@@ -252,6 +373,18 @@ def _PyInfoBuilder_merge_target(self, target):
     return self
 
 def _PyInfoBuilder_merge_targets(self, targets):
+    """Merge multiple targets into this object.
+
+    Args:
+        self: implicitly added.
+        targets: {type}`list[Target]`
+        targets that provide PyInfo, or other relevant
+        providers, will be merged into this object. If a target doesn't provide
+        any relevant providers, it is ignored.
+
+    Returns:
+        {type}`PyInfoBuilder` the current object.
+    """
     for t in targets:
         self.merge_target(t)
     return self
@@ -259,10 +392,14 @@ def _PyInfoBuilder_merge_targets(self, targets):
 def _PyInfoBuilder_build(self):
     if config.enable_pystar:
         kwargs = dict(
+            direct_original_sources = self.direct_original_sources.build(),
             direct_pyc_files = self.direct_pyc_files.build(),
-            transitive_pyc_files = self.transitive_pyc_files.build(),
+            direct_pyi_files = self.direct_pyi_files.build(),
             transitive_implicit_pyc_files = self.transitive_implicit_pyc_files.build(),
             transitive_implicit_pyc_source_files = self.transitive_implicit_pyc_source_files.build(),
+            transitive_original_sources = self.transitive_original_sources.build(),
+            transitive_pyc_files = self.transitive_pyc_files.build(),
+            transitive_pyi_files = self.transitive_pyi_files.build(),
         )
     else:
         kwargs = {}
