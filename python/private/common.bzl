@@ -543,3 +543,20 @@ def target_platform_has_any_constraint(ctx, constraints):
         if ctx.target_platform_has_constraint(constraint_value):
             return True
     return False
+
+def runfiles_root_path(ctx, short_path):
+    """Compute a runfiles-root relative path from `File.short_path`
+
+    Args:
+        ctx: current target ctx
+        short_path: str, a main-repo relative path from `File.short_path`
+
+    Returns:
+        {type}`str`, a runflies-root relative path
+    """
+
+    # The ../ comes from short_path is for files in other repos.
+    if short_path.startswith("../"):
+        return short_path[3:]
+    else:
+        return "{}/{}".format(ctx.workspace_name, short_path)

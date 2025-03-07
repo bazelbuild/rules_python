@@ -72,9 +72,9 @@ def parse_modules(*, module_ctx, _fail = fail):
     logger = repo_utils.logger(module_ctx, "python")
 
     # if the root module does not register any toolchain then the
-    # ignore_root_user_error takes its default value: False
+    # ignore_root_user_error takes its default value: True
     if not module_ctx.modules[0].tags.toolchain:
-        ignore_root_user_error = False
+        ignore_root_user_error = True
 
     config = _get_toolchain_config(modules = module_ctx.modules, _fail = _fail)
 
@@ -565,7 +565,7 @@ def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolcha
         is_default = is_default,
         python_version = python_version if python_version else tag.python_version,
         configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
-        ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
+        ignore_root_user_error = getattr(tag, "ignore_root_user_error", True),
         default_version_file = getattr(tag, "default_version_file", None),
     )
 
@@ -655,16 +655,18 @@ If this attribute is set, the {attr}`is_default` attribute is ignored.
 """,
         ),
         "ignore_root_user_error": attr.bool(
-            default = False,
+            default = True,
             doc = """\
-If `False`, the Python runtime installation will be made read only. This improves
-the ability for Bazel to cache it, but prevents the interpreter from creating
-`.pyc` files for the standard library dynamically at runtime as they are loaded.
+The Python runtime installation is made read only. This improves the ability for
+Bazel to cache it by preventing the interpreter from creating `.pyc` files for
+the standard library dynamically at runtime as they are loaded (this often leads
+to spurious cache misses or build failures).
 
-If `True`, the Python runtime installation is read-write. This allows the
-interpreter to create `.pyc` files for the standard library, but, because they are
-created as needed, it adversely affects Bazel's ability to cache the runtime and
-can result in spurious build failures.
+However, if the user is running Bazel as root, this read-onlyness is not
+respected. Bazel will print a warning message when it detects that the runtime
+installation is writable despite being made read only (i.e. it's running with
+root access). If this attribute is set to `False`, Bazel will make it a hard
+error to run with root access instead.
 """,
             mandatory = False,
         ),
@@ -715,17 +717,8 @@ dependencies are introduced.
             default = DEFAULT_RELEASE_BASE_URL,
         ),
         "ignore_root_user_error": attr.bool(
-            default = False,
-            doc = """\
-If `False`, the Python runtime installation will be made read only. This improves
-the ability for Bazel to cache it, but prevents the interpreter from creating
-`.pyc` files for the standard library dynamically at runtime as they are loaded.
-
-If `True`, the Python runtime installation is read-write. This allows the
-interpreter to create `.pyc` files for the standard library, but, because they are
-created as needed, it adversely affects Bazel's ability to cache the runtime and
-can result in spurious build failures.
-""",
+            default = True,
+            doc = """Deprecated; do not use. This attribute has no effect.""",
             mandatory = False,
         ),
         "minor_mapping": attr.string_dict(

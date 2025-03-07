@@ -52,6 +52,46 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* (deps) platforms 0.0.4 -> 0.0.11
+* (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
+* (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
+
+{#v0-0-0-fixed}
+### Fixed
+* (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
+* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in 
+  `file` generation mode. Fixed in [#2619](https://github.com/bazelbuild/rules_python/pull/2619).
+* (bzlmod) Running as root is no longer an error. `ignore_root_user_error=True`
+  is now the default. Note that running as root may still cause spurious
+  Bazel cache invalidation
+  ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
+* (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
+  Support spilling modules mapping args into a params file.
+* (pypi) From now on `python` invocations in repository and module extension
+  evaluation contexts will invoke Python interpreter with `-B` to avoid
+  creating `.pyc` files.
+* (deps) doublestar 4.7.1 (required for recent Gazelle versions)
+
+{#v0-0-0-added}
+### Added
+* {obj}`//python/bin:python`: convenience target for directly running an
+  interpreter. {obj}`--//python/bin:python_src` can be used to specify a
+  binary whose interpreter to use.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v1-2-0}
+## [1.2.0] - 2025-02-21
+
+[1.2.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.2.0
+
+{#v1-2-0-changed}
+### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (pypi) {obj}`pip.override` will now be ignored instead of raising an error,
   fixes [#2550](https://github.com/bazelbuild/rules_python/issues/2550).
 * (rules) deprecation warnings for deprecated symbols have been turned off by
@@ -60,8 +100,11 @@ Unreleased changes template.
 * (pypi) Downgraded versions of packages: `pip` from `24.3.2` to `24.0.0` and
   `packaging` from `24.2` to `24.0`.
 
-{#v0-0-0-fixed}
+{#v1-2-0-fixed}
 ### Fixed
+* (rules) `python_zip_file` output with `--bootstrap_impl=script` works again
+  ([#2596](https://github.com/bazelbuild/rules_python/issues/2596)).
+* (docs) Using `python_version` attribute for specifying python versions introduced in `v1.1.0`
 * (gazelle) Providing multiple input requirements files to `gazelle_python_manifest` now works correctly.
 * (pypi) Handle trailing slashes in pip index URLs in environment variables,
   fixes [#2554](https://github.com/bazelbuild/rules_python/issues/2554).
@@ -74,14 +117,18 @@ Unreleased changes template.
   The related issue is [#908](https://github.com/bazelbuild/rules_python/issue/908).
 * (sphinxdocs) Do not crash when `tag_class` does not have a populated `doc` value.
   Fixes ([#2579](https://github.com/bazelbuild/rules_python/issues/2579)).
+* (binaries/tests) Fix packaging when using `--bootstrap_impl=script`: set
+  {obj}`--venvs_use_declare_symlink=no` to have it not create symlinks at
+  build time (they will be created at runtime instead).
+  (Fixes [#2489](https://github.com/bazelbuild/rules_python/issues/2489))
 
-{#v0-0-0-added}
+{#v1-2-0-added}
 ### Added
 * (python) {attr}`python.toolchain.default_version_file` has been added to
   allow users to set the default python version in the root module by reading
   the default version number from a file.
 
-{#v0-0-0-removed}
+{#v1-2-0-removed}
 ### Removed
 * Nothing removed.
 
