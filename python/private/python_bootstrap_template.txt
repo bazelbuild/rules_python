@@ -425,12 +425,21 @@ def _RunForCoverage(python_program, main_filename, args, env,
         directory under the runfiles tree, and will recursively delete the
         runfiles directory if set.
   """
+  instrumented_files = [abs_path for abs_path, _ in InstrumentedFilePaths()]
+  unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+  source = "\n\t".join(unique_dirs)
+
+  PrintVerboseCoverage("[coveragepy] Instrumented Files:\n" + "\n".join(instrumented_files))
+  PrintVerboseCoverage("[coveragepy] Sources:\n" + "\n".join(unique_dirs))
+
   # We need for coveragepy to use relative paths.  This can only be configured
   unique_id = uuid.uuid4()
   rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], ".coveragerc_{}".format(unique_id))
   with open(rcfile_name, "w") as rcfile:
-    rcfile.write('''[run]
+    rcfile.write(f'''[run]
 relative_files = True
+source =
+\t{source}
 ''')
   PrintVerboseCoverage('Coverage entrypoint:', coverage_entrypoint)
   # First run the target Python file via coveragepy to create a .coverage
