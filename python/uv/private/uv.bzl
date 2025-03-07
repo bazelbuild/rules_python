@@ -88,10 +88,12 @@ Set the uv configuration defaults.
 
 configure = tag_class(
     doc = """\
-Build the UV toolchain configuration appending configuration to the last version configuration or starting a new version configuration if {attr}`version` is passed.
+Build the `uv` toolchain configuration by appending the provided configuration.
+The information is appended to the version configuration that is specified by
+{attr}`version` attribute, or if the version is unspecified, the version of the
+last {obj}`uv.configure` call or the version from the defaults is used.
 
-In addition to the very basic configuration pattern outlined above you can customize
-the configuration:
+Configuration examples:
 ```starlark
 # Configure the base_url for the specified version.
 uv.configure(base_url = "my_mirror")
