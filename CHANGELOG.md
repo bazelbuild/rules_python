@@ -55,6 +55,7 @@ Unreleased changes template.
 * (deps) platforms 0.0.4 -> 0.0.11
 * (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
 * (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
+* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
 
 {#v0-0-0-fixed}
 ### Fixed

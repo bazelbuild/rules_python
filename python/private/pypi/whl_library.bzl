@@ -30,7 +30,7 @@ _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
-def _get_xcode_location_cflags(rctx):
+def _get_xcode_location_cflags(rctx, logger = None):
     """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
@@ -46,6 +46,7 @@ def _get_xcode_location_cflags(rctx):
         rctx,
         op = "GetXcodeLocation",
         arguments = [repo_utils.which_checked(rctx, "xcode-select"), "--print-path"],
+        logger = logger,
     )
     if xcode_sdk_location.return_code != 0:
         return []
@@ -55,9 +56,37 @@ def _get_xcode_location_cflags(rctx):
         # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
         # so we need to change the path to to the macos specific tools which are in a different relative
         # path than xcode installed command line tools.
-        xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+        xcode_sdks_json = repo_utils.execute_checked(
+            rctx,
+            op = "LocateXCodeSDKs",
+            arguments = [
+                repo_utils.which_checked(rctx, "xcrun"),
+                "xcodebuild",
+                "-showsdks",
+                "-json",
+            ],
+            environment = {
+                "DEVELOPER_DIR": xcode_root,
+            },
+            logger = logger,
+        ).stdout
+        xcode_sdks = json.decode(xcode_sdks_json)
+        potential_sdks = [
+            sdk
+            for sdk in xcode_sdks
+            if "productName" in sdk and
+               sdk["productName"] == "macOS" and
+               "darwinos" not in sdk["canonicalName"]
+        ]
+
+        # Now we'll get two entries here (one for internal and another one for public)
+        # It shouldn't matter which one we pick.
+        xcode_sdk_path = potential_sdks[0]["sdkPath"]
+    else:
+        xcode_sdk_path = "{}/SDKs/MacOSX.sdk".format(xcode_root)
+
     return [
-        "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
+        "-isysroot {}".format(xcode_sdk_path),
     ]
 
 def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
@@ -84,6 +113,7 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
             "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
         ],
         srcs = [],
+        logger = logger,
     )
     _python_version = stdout
     include_path = "{}/include/python{}".format(
@@ -176,19 +206,23 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
 
-    # Gather any available CPPFLAGS values
-    cppflags = []
-    cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
-
     env = {
         "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
             rctx,
             entries = rctx.attr._python_path_entries,
         ),
-        _CPPFLAGS: " ".join(cppflags),
     }
 
+    # Gather any available CPPFLAGS values
+    #
+    # We may want to build in an environment without a cc toolchain.
+    # In those cases, we're limited to --download-only, but we should respect that here.
+    is_wheel = rctx.attr.filename and rctx.attr.filename.endswith(".whl")
+    if not (rctx.attr.download_only or is_wheel):
+        cppflags = []
+        cppflags.extend(_get_xcode_location_cflags(rctx, logger = logger))
+        cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
+        env[_CPPFLAGS] = " ".join(cppflags)
     return env
 
 def _whl_library_impl(rctx):
