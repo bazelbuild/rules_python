@@ -14,13 +14,14 @@
 
 """A simple function that evaluates markers using a python interpreter."""
 
+load(":deps.bzl", "record_files")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
 # Used as a default value in a rule to ensure we fetch the dependencies.
 SRCS = [
     # When the version, or any of the files in `packaging` package changes,
     # this file will change as well.
-    Label("@pypi__packaging//:packaging-24.0.dist-info/RECORD"),
+    record_files["pypi__packaging"],
     Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
     Label("//python/private/pypi/whl_installer:platform.py"),
 ]
@@ -54,12 +55,12 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
     pypi_repo_utils.execute_checked(
         mrctx,
         op = "ResolveRequirementEnvMarkers({})".format(in_file),
+        python = pypi_repo_utils.resolve_python_interpreter(
+            mrctx,
+            python_interpreter = python_interpreter,
+            python_interpreter_target = python_interpreter_target,
+        ),
         arguments = [
-            pypi_repo_utils.resolve_python_interpreter(
-                mrctx,
-                python_interpreter = python_interpreter,
-                python_interpreter_target = python_interpreter_target,
-            ),
             "-m",
             "python.private.pypi.requirements_parser.resolve_target_platforms",
             in_file,

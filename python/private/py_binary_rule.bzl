@@ -13,15 +13,14 @@
 # limitations under the License.
 """Rule implementation of py_binary for Bazel."""
 
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
 load(
-    ":py_executable_bazel.bzl",
-    "create_executable_rule",
-    "py_executable_bazel_impl",
+    ":py_executable.bzl",
+    "create_executable_rule_builder",
+    "py_executable_impl",
 )
 
-_PY_TEST_ATTRS = {
+_COVERAGE_ATTRS = {
     # Magic attribute to help C++ coverage work. There's no
     # docs about this; see TestActionBuilder.java
     "_collect_cc_coverage": attr.label(
@@ -39,14 +38,19 @@ _PY_TEST_ATTRS = {
 }
 
 def _py_binary_impl(ctx):
-    return py_executable_bazel_impl(
+    return py_executable_impl(
         ctx = ctx,
         is_test = False,
         inherited_environment = [],
     )
 
-py_binary = create_executable_rule(
-    implementation = _py_binary_impl,
-    attrs = dicts.add(AGNOSTIC_BINARY_ATTRS, _PY_TEST_ATTRS),
-    executable = True,
-)
+def create_binary_rule_builder():
+    builder = create_executable_rule_builder(
+        implementation = _py_binary_impl,
+        executable = True,
+    )
+    builder.attrs.update(AGNOSTIC_BINARY_ATTRS)
+    builder.attrs.update(_COVERAGE_ATTRS)
+    return builder
+
+py_binary = create_binary_rule_builder().build()

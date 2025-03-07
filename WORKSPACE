@@ -68,12 +68,12 @@ load("//:internal_dev_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
-load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
+load("@pythons_hub//:versions.bzl", "PYTHON_VERSIONS")
 load("//python:repositories.bzl", "python_register_multi_toolchains")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-3],  # Use 3.11.10
+    default_version = "3.11",
     # Integration tests verify each version, so register all of them.
     python_versions = PYTHON_VERSIONS,
 )
@@ -165,10 +165,4 @@ http_file(
     urls = [
         "https://files.pythonhosted.org/packages/50/67/3e966d99a07d60a21a21d7ec016e9e4c2642a86fea251ec68677daf71d4d/numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
     ],
-)
-
-# rules_proto expects //external:python_headers to point at the python headers.
-bind(
-    name = "python_headers",
-    actual = "//python/cc:current_py_cc_headers",
 )

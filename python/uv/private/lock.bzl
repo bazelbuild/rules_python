@@ -17,7 +17,6 @@
 
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
-load("//python/config_settings:transition.bzl", transition_py_binary = "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 visibility(["//..."])
@@ -27,8 +26,13 @@ _REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
     "//conditions:default": [],
 }) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
-def lock(*, name, srcs, out, upgrade = False, universal = True, python_version = None, args = [], **kwargs):
+def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwargs):
     """Pin the requirements based on the src files.
+
+    Differences with the current {obj}`compile_pip_requirements` rule:
+    - This is implemented in shell and uv.
+    - This does not error out if the output file does not exist yet.
+    - Supports transitions out of the box.
 
     Args:
         name: The name of the target to run for updating the requirements.
@@ -37,15 +41,8 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
         upgrade: Tell `uv` to always upgrade the dependencies instead of
             keeping them as they are.
         universal: Tell `uv` to generate a universal lock file.
-        python_version: Tell `rules_python` to use a particular version.
-            Defaults to the default py toolchain.
-        args: Extra args to pass to the rule.
-        **kwargs: Extra kwargs passed to the binary rule.
-
-    Differences with the current pip-compile rule:
-    - This is implemented in shell and uv.
-    - This does not error out if the output file does not exist yet.
-    - Supports transitions out of the box.
+        args: Extra args to pass to `uv`.
+        **kwargs: Extra kwargs passed to the {obj}`py_binary` rule.
     """
     pkg = native.package_name()
     update_target = name + ".update"
@@ -93,10 +90,6 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
             Label("//python:current_py_toolchain"),
         ],
     )
-    if python_version:
-        py_binary_rule = lambda *args, **kwargs: transition_py_binary(python_version = python_version, *args, **kwargs)
-    else:
-        py_binary_rule = py_binary
 
     # Write a script that can be used for updating the in-tree version of the
     # requirements file
@@ -117,7 +110,7 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
         ],
     )
 
-    py_binary_rule(
+    py_binary(
         name = update_target,
         srcs = [update_target + ".py"],
         main = update_target + ".py",

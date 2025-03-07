@@ -4,6 +4,9 @@ load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "python_ignore_files_directive",
-    srcs = ["__init__.py"],
+    srcs = [
+        "__init__.py",
+        "setup.py",
+    ],
     visibility = ["//:__subpackages__"],
 )

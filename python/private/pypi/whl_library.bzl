@@ -19,7 +19,7 @@ load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:is_standalone_interpreter.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
-load(":deps.bzl", "all_repo_names")
+load(":deps.bzl", "all_repo_names", "record_files")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
@@ -75,14 +75,15 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     if not is_standalone_interpreter(rctx, python_interpreter, logger = logger):
         return []
 
-    stdout = repo_utils.execute_checked_stdout(
+    stdout = pypi_repo_utils.execute_checked_stdout(
         rctx,
         op = "GetPythonVersionForUnixCflags",
+        python = python_interpreter,
         arguments = [
-            python_interpreter,
             "-c",
             "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
         ],
+        srcs = [],
     )
     _python_version = stdout
     include_path = "{}/include/python{}".format(
@@ -181,7 +182,6 @@ def _whl_library_impl(rctx):
         python_interpreter_target = rctx.attr.python_interpreter_target,
     )
     args = [
-        python_interpreter,
         "-m",
         "python.private.pypi.whl_installer.wheel_installer",
         "--requirement",
@@ -242,14 +242,16 @@ def _whl_library_impl(rctx):
         else:
             op_tmpl = "whl_library.ResolveRequirement({name}, {requirement})"
 
-        repo_utils.execute_checked(
+        pypi_repo_utils.execute_checked(
             rctx,
             # truncate the requirement value when logging it / reporting
             # progress since it may contain several ' --hash=sha256:...
             # --hash=sha256:...' substrings that fill up the console
+            python = python_interpreter,
             op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement.split(" ", 1)[0]),
             arguments = args,
             environment = environment,
+            srcs = rctx.attr._python_srcs,
             quiet = rctx.attr.quiet,
             timeout = rctx.attr.timeout,
             logger = logger,
@@ -291,13 +293,15 @@ def _whl_library_impl(rctx):
                 )
             ]
 
-    repo_utils.execute_checked(
+    pypi_repo_utils.execute_checked(
         rctx,
         op = "whl_library.ExtractWheel({}, {})".format(rctx.attr.name, whl_path),
+        python = python_interpreter,
         arguments = args + [
             "--whl-file",
             whl_path,
         ] + ["--platform={}".format(p) for p in target_platforms],
+        srcs = rctx.attr._python_srcs,
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
@@ -449,6 +453,16 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
             Label("@" + repo + "//:BUILD.bazel")
             for repo in all_repo_names
         ],
+    ),
+    "_python_srcs": attr.label_list(
+        # Used as a default value in a rule to ensure we fetch the dependencies.
+        default = [
+            Label("//python/private/pypi/whl_installer:platform.py"),
+            Label("//python/private/pypi/whl_installer:wheel.py"),
+            Label("//python/private/pypi/whl_installer:wheel_installer.py"),
+            Label("//python/private/pypi/whl_installer:arguments.py"),
+            Label("//python/private/pypi/whl_installer:namespace_pkgs.py"),
+        ] + record_files.values(),
     ),
     "_rule_name": attr.string(default = "whl_library"),
 }, **ATTRS)

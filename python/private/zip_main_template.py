@@ -286,10 +286,10 @@ def main():
     # The bin/ directory may not exist if it is empty.
     os.makedirs(os.path.dirname(python_program), exist_ok=True)
     try:
-        os.symlink(_PYTHON_BINARY_ACTUAL, python_program)
+        os.symlink(symlink_to, python_program)
     except OSError as e:
         raise Exception(
-            f"Unable to create venv python interpreter symlink: {python_program} -> {PYTHON_BINARY_ACTUAL}"
+            f"Unable to create venv python interpreter symlink: {python_program} -> {symlink_to}"
         ) from e
 
     # Some older Python versions on macOS (namely Python 3.7) may unintentionally

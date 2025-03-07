@@ -13,13 +13,12 @@
 # limitations under the License.
 """Implementation of py_test rule."""
 
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
 load(
-    ":py_executable_bazel.bzl",
-    "create_executable_rule",
-    "py_executable_bazel_impl",
+    ":py_executable.bzl",
+    "create_executable_rule_builder",
+    "py_executable_impl",
 )
 
 _BAZEL_PY_TEST_ATTRS = {
@@ -40,7 +39,7 @@ _BAZEL_PY_TEST_ATTRS = {
 }
 
 def _py_test_impl(ctx):
-    providers = py_executable_bazel_impl(
+    providers = py_executable_impl(
         ctx = ctx,
         is_test = True,
         inherited_environment = ctx.attr.env_inherit,
@@ -48,8 +47,13 @@ def _py_test_impl(ctx):
     maybe_add_test_execution_info(providers, ctx)
     return providers
 
-py_test = create_executable_rule(
-    implementation = _py_test_impl,
-    attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
-    test = True,
-)
+def create_test_rule_builder():
+    builder = create_executable_rule_builder(
+        implementation = _py_test_impl,
+        test = True,
+    )
+    builder.attrs.update(AGNOSTIC_TEST_ATTRS)
+    builder.attrs.update(_BAZEL_PY_TEST_ATTRS)
+    return builder
+
+py_test = create_test_rule_builder().build()

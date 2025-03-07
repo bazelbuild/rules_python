@@ -31,11 +31,15 @@ def py_info_subject(info, *, meta):
     # buildifier: disable=uninitialized
     public = struct(
         # go/keep-sorted start
+        direct_original_sources = lambda *a, **k: _py_info_subject_direct_original_sources(self, *a, **k),
         direct_pyc_files = lambda *a, **k: _py_info_subject_direct_pyc_files(self, *a, **k),
+        direct_pyi_files = lambda *a, **k: _py_info_subject_direct_pyi_files(self, *a, **k),
         has_py2_only_sources = lambda *a, **k: _py_info_subject_has_py2_only_sources(self, *a, **k),
         has_py3_only_sources = lambda *a, **k: _py_info_subject_has_py3_only_sources(self, *a, **k),
         imports = lambda *a, **k: _py_info_subject_imports(self, *a, **k),
+        transitive_original_sources = lambda *a, **k: _py_info_subject_transitive_original_sources(self, *a, **k),
         transitive_pyc_files = lambda *a, **k: _py_info_subject_transitive_pyc_files(self, *a, **k),
+        transitive_pyi_files = lambda *a, **k: _py_info_subject_transitive_pyi_files(self, *a, **k),
         transitive_sources = lambda *a, **k: _py_info_subject_transitive_sources(self, *a, **k),
         uses_shared_libraries = lambda *a, **k: _py_info_subject_uses_shared_libraries(self, *a, **k),
         # go/keep-sorted end
@@ -46,6 +50,14 @@ def py_info_subject(info, *, meta):
     )
     return public
 
+def _py_info_subject_direct_original_sources(self):
+    """Returns a `DepsetFileSubject` for the `direct_original_sources` attribute.
+    """
+    return subjects.depset_file(
+        self.actual.direct_original_sources,
+        meta = self.meta.derive("direct_original_sources()"),
+    )
+
 def _py_info_subject_direct_pyc_files(self):
     """Returns a `DepsetFileSubject` for the `direct_pyc_files` attribute.
 
@@ -54,6 +66,14 @@ def _py_info_subject_direct_pyc_files(self):
     return subjects.depset_file(
         self.actual.direct_pyc_files,
         meta = self.meta.derive("direct_pyc_files()"),
+    )
+
+def _py_info_subject_direct_pyi_files(self):
+    """Returns a `DepsetFileSubject` for the `direct_pyi_files` attribute.
+    """
+    return subjects.depset_file(
+        self.actual.direct_pyi_files,
+        meta = self.meta.derive("direct_pyi_files()"),
     )
 
 def _py_info_subject_has_py2_only_sources(self):
@@ -86,6 +106,16 @@ def _py_info_subject_imports(self):
         meta = self.meta.derive("imports()"),
     )
 
+def _py_info_subject_transitive_original_sources(self):
+    """Returns a `DepsetFileSubject` for the `transitive_original_sources` attribute.
+
+    Method: PyInfoSubject.transitive_original_sources
+    """
+    return subjects.depset_file(
+        self.actual.transitive_original_sources,
+        meta = self.meta.derive("transitive_original_sources()"),
+    )
+
 def _py_info_subject_transitive_pyc_files(self):
     """Returns a `DepsetFileSubject` for the `transitive_pyc_files` attribute.
 
@@ -94,6 +124,14 @@ def _py_info_subject_transitive_pyc_files(self):
     return subjects.depset_file(
         self.actual.transitive_pyc_files,
         meta = self.meta.derive("transitive_pyc_files()"),
+    )
+
+def _py_info_subject_transitive_pyi_files(self):
+    """Returns a `DepsetFileSubject` for the `transitive_pyi_files` attribute.
+    """
+    return subjects.depset_file(
+        self.actual.transitive_pyi_files,
+        meta = self.meta.derive("transitive_pyi_files()"),
     )
 
 def _py_info_subject_transitive_sources(self):

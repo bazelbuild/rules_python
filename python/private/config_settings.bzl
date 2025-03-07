@@ -17,12 +17,21 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//python/private:text_util.bzl", "render")
 load(":semver.bzl", "semver")
 
 _PYTHON_VERSION_FLAG = Label("//python/config_settings:python_version")
 _PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:python_version_major_minor")
 
-def construct_config_settings(*, name, default_version, versions, minor_mapping):  # buildifier: disable=function-docstring
+_DEBUG_ENV_MESSAGE_TEMPLATE = """\
+The current configuration rules_python config flags is:
+    {flags}
+
+If the value is missing, then the default value is being used, see documentation:
+{docs_url}/python/config_settings
+"""
+
+def construct_config_settings(*, name, default_version, versions, minor_mapping, documented_flags):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.
 
     This mainly includes the targets that are used in the toolchain and pip hub
@@ -33,6 +42,8 @@ def construct_config_settings(*, name, default_version, versions, minor_mapping)
         default_version: {type}`str` the default value for the `python_version` flag.
         versions: {type}`list[str]` A list of versions to build constraint settings for.
         minor_mapping: {type}`dict[str, str]` A mapping from `X.Y` to `X.Y.Z` python versions.
+        documented_flags: {type}`list[str]` The labels of the documented settings
+            that affect build configuration.
     """
     _ = name  # @unused
     _python_version_flag(
@@ -101,6 +112,25 @@ def construct_config_settings(*, name, default_version, versions, minor_mapping)
             visibility = ["//visibility:public"],
         )
 
+    _current_config(
+        name = "current_config",
+        build_setting_default = "",
+        settings = documented_flags + [_PYTHON_VERSION_FLAG.name],
+        visibility = ["//visibility:private"],
+    )
+    native.config_setting(
+        name = "is_not_matching_current_config",
+        # We use the rule above instead of @platforms//:incompatible so that the
+        # printing of the current env always happens when the _current_config rule
+        # is executed.
+        #
+        # NOTE: This should in practise only happen if there is a missing compatible
+        # `whl_library` in the hub repo created by `pip.parse`.
+        flag_values = {"current_config": "will-never-match"},
+        # Only public so that PyPI hub repo can access it
+        visibility = ["//visibility:public"],
+    )
+
 def _python_version_flag_impl(ctx):
     value = ctx.build_setting_value
     return [
@@ -122,7 +152,7 @@ _python_version_flag = rule(
 )
 
 def _python_version_major_minor_flag_impl(ctx):
-    input = ctx.attr._python_version_flag[config_common.FeatureFlagInfo].value
+    input = _flag_value(ctx.attr._python_version_flag)
     if input:
         version = semver(input)
         value = "{}.{}".format(version.major, version.minor)
@@ -138,5 +168,44 @@ _python_version_major_minor_flag = rule(
         "_python_version_flag": attr.label(
             default = _PYTHON_VERSION_FLAG,
         ),
+    },
+)
+
+def _flag_value(s):
+    if config_common.FeatureFlagInfo in s:
+        return s[config_common.FeatureFlagInfo].value
+    else:
+        return s[BuildSettingInfo].value
+
+def _print_current_config_impl(ctx):
+    flags = "\n".join([
+        "{}: \"{}\"".format(k, v)
+        for k, v in sorted({
+            str(setting.label): _flag_value(setting)
+            for setting in ctx.attr.settings
+        }.items())
+    ])
+
+    msg = ctx.attr._template.format(
+        docs_url = "https://rules-python.readthedocs.io/en/latest/api/rules_python",
+        flags = render.indent(flags).lstrip(),
+    )
+    if ctx.build_setting_value and ctx.build_setting_value != "fail":
+        fail("Only 'fail' and empty build setting values are allowed for {}".format(
+            str(ctx.label),
+        ))
+    elif ctx.build_setting_value:
+        fail(msg)
+    else:
+        print(msg)  # buildifier: disable=print
+
+    return [config_common.FeatureFlagInfo(value = "")]
+
+_current_config = rule(
+    implementation = _print_current_config_impl,
+    build_setting = config.string(flag = True),
+    attrs = {
+        "settings": attr.label_list(mandatory = True),
+        "_template": attr.string(default = _DEBUG_ENV_MESSAGE_TEMPLATE),
     },
 )

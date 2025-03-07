@@ -13,9 +13,12 @@
 # limitations under the License.
 """Implementation of macro-half of py_test rule."""
 
-load(":common_bazel.bzl", "convert_legacy_create_init_to_int")
+load(":py_executable.bzl", "convert_legacy_create_init_to_int")
 load(":py_test_rule.bzl", py_test_rule = "py_test")
 
 def py_test(**kwargs):
+    py_test_macro(py_test_rule, **kwargs)
+
+def py_test_macro(py_rule, **kwargs):
     convert_legacy_create_init_to_int(kwargs)
-    py_test_rule(**kwargs)
+    py_rule(**kwargs)

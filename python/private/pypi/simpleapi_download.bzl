@@ -17,12 +17,21 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python/private:auth.bzl", "get_auth")
+load("//python/private:auth.bzl", _get_auth = "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 load(":parse_simpleapi_html.bzl", "parse_simpleapi_html")
 
-def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
+def simpleapi_download(
+        ctx,
+        *,
+        attr,
+        cache,
+        parallel_download = True,
+        read_simpleapi = None,
+        get_auth = None,
+        _fail = fail):
     """Download Simple API HTML.
 
     Args:
@@ -49,6 +58,10 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
             reflected when re-evaluating the extension unless we do
             `bazel clean --expunge`.
         parallel_download: A boolean to enable usage of bazel 7.1 non-blocking downloads.
+        read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
+            Used in tests.
+        get_auth: A function to get auth information passed to read_simpleapi. Used in tests.
+        _fail: a function to print a failure. Used in tests.
 
     Returns:
         dict of pkg name to the parsed HTML contents - a list of structs.
@@ -64,15 +77,22 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
 
     # NOTE @aignas 2024-03-31: we are not merging results from multiple indexes
     # to replicate how `pip` would handle this case.
-    async_downloads = {}
     contents = {}
     index_urls = [attr.index_url] + attr.extra_index_urls
-    for pkg in attr.sources:
-        pkg_normalized = normalize_name(pkg)
+    read_simpleapi = read_simpleapi or _read_simpleapi
 
-        success = False
-        for index_url in index_urls:
-            result = _read_simpleapi(
+    found_on_index = {}
+    warn_overrides = False
+    for i, index_url in enumerate(index_urls):
+        if i != 0:
+            # Warn the user about a potential fix for the overrides
+            warn_overrides = True
+
+        async_downloads = {}
+        sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
+        for pkg in sources:
+            pkg_normalized = normalize_name(pkg)
+            result = read_simpleapi(
                 ctx = ctx,
                 url = "{}/{}/".format(
                     index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
@@ -80,50 +100,54 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
                 ),
                 attr = attr,
                 cache = cache,
+                get_auth = get_auth,
                 **download_kwargs
             )
             if hasattr(result, "wait"):
                 # We will process it in a separate loop:
-                async_downloads.setdefault(pkg_normalized, []).append(
-                    struct(
-                        pkg_normalized = pkg_normalized,
-                        wait = result.wait,
-                    ),
+                async_downloads[pkg] = struct(
+                    pkg_normalized = pkg_normalized,
+                    wait = result.wait,
                 )
-                continue
-
-            if result.success:
+            elif result.success:
                 contents[pkg_normalized] = result.output
-                success = True
-                break
+                found_on_index[pkg] = index_url
 
-        if not async_downloads and not success:
-            fail("Failed to download metadata from urls: {}".format(
-                ", ".join(index_urls),
-            ))
+        if not async_downloads:
+            continue
 
-    if not async_downloads:
-        return contents
-
-    # If we use `block` == False, then we need to have a second loop that is
-    # collecting all of the results as they were being downloaded in parallel.
-    for pkg, downloads in async_downloads.items():
-        success = False
-        for download in downloads:
+        # If we use `block` == False, then we need to have a second loop that is
+        # collecting all of the results as they were being downloaded in parallel.
+        for pkg, download in async_downloads.items():
             result = download.wait()
 
-            if result.success and download.pkg_normalized not in contents:
+            if result.success:
                 contents[download.pkg_normalized] = result.output
-                success = True
+                found_on_index[pkg] = index_url
 
-        if not success:
-            fail("Failed to download metadata from urls: {}".format(
-                ", ".join(index_urls),
-            ))
+    failed_sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
+    if failed_sources:
+        _fail("Failed to download metadata for {} for from urls: {}".format(
+            failed_sources,
+            index_urls,
+        ))
+        return None
+
+    if warn_overrides:
+        index_url_overrides = {
+            pkg: found_on_index[pkg]
+            for pkg in attr.sources
+            if found_on_index[pkg] != attr.index_url
+        }
+
+        # buildifier: disable=print
+        print("You can use the following `index_url_overrides` to avoid the 404 warnings:\n{}".format(
+            render.dict(index_url_overrides),
+        ))
 
     return contents
 
-def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
+def _read_simpleapi(ctx, url, attr, cache, get_auth = None, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
@@ -136,6 +160,7 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
         cache: A dict for storing the results.
+        get_auth: A function to get auth information. Used in tests.
         **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
@@ -148,11 +173,11 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     # them to ctx.download if we want to correctly handle the relative URLs.
     # TODO: Add a test that env subbed index urls do not leak into the lock file.
 
-    real_url = envsubst(
+    real_url = strip_empty_path_segments(envsubst(
         url,
         attr.envsubst,
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
-    )
+    ))
 
     cache_key = real_url
     if cache_key in cache:
@@ -173,6 +198,8 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
 
     output = ctx.path(output_str.strip("_").lower() + ".html")
 
+    get_auth = get_auth or _get_auth
+
     # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
@@ -189,6 +216,27 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
         )
 
     return _read_index_result(ctx, download, output, real_url, cache, cache_key)
+
+def strip_empty_path_segments(url):
+    """Removes empty path segments from a URL. Does nothing for urls with no scheme.
+
+    Public only for testing.
+
+    Args:
+        url: The url to remove empty path segments from
+
+    Returns:
+        The url with empty path segments removed and any trailing slash preserved.
+        If the url had no scheme it is returned unchanged.
+    """
+    scheme, _, rest = url.partition("://")
+    if rest == "":
+        return url
+    stripped = "/".join([p for p in rest.split("/") if p])
+    if url.endswith("/"):
+        return "{}://{}/".format(scheme, stripped)
+    else:
+        return "{}://{}".format(scheme, stripped)
 
 def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:

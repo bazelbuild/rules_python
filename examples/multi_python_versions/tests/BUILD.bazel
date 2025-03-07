@@ -1,10 +1,6 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
-load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
-load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_python//python:py_test.bzl", "py_test")
@@ -26,28 +22,32 @@ py_binary(
     srcs = ["version_default.py"],
 )
 
-py_binary_3_8(
+py_binary(
     name = "version_3_8",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.8",
 )
 
-py_binary_3_9(
+py_binary(
     name = "version_3_9",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.9",
 )
 
-py_binary_3_10(
+py_binary(
     name = "version_3_10",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.10",
 )
 
-py_binary_3_11(
+py_binary(
     name = "version_3_11",
     srcs = ["version.py"],
     main = "version.py",
+    python_version = "3.11",
 )
 
 py_test(
@@ -57,31 +57,35 @@ py_test(
     deps = ["//libs/my_lib"],
 )
 
-py_test_3_8(
+py_test(
     name = "my_lib_3_8_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.8",
     deps = ["//libs/my_lib"],
 )
 
-py_test_3_9(
+py_test(
     name = "my_lib_3_9_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.9",
     deps = ["//libs/my_lib"],
 )
 
-py_test_3_10(
+py_test(
     name = "my_lib_3_10_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.10",
     deps = ["//libs/my_lib"],
 )
 
-py_test_3_11(
+py_test(
     name = "my_lib_3_11_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
+    python_version = "3.11",
     deps = ["//libs/my_lib"],
 )
 
@@ -98,32 +102,36 @@ py_test(
     env = {"VERSION_CHECK": "3.9"},  # The default defined in the WORKSPACE.
 )
 
-py_test_3_8(
+py_test(
     name = "version_3_8_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.8"},
     main = "version_test.py",
+    python_version = "3.8",
 )
 
-py_test_3_9(
+py_test(
     name = "version_3_9_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.9"},
     main = "version_test.py",
+    python_version = "3.9",
 )
 
-py_test_3_10(
+py_test(
     name = "version_3_10_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.10"},
     main = "version_test.py",
+    python_version = "3.10",
 )
 
-py_test_3_11(
+py_test(
     name = "version_3_11_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.11"},
     main = "version_test.py",
+    python_version = "3.11",
 )
 
 py_test(
@@ -138,7 +146,7 @@ py_test(
     main = "cross_version_test.py",
 )
 
-py_test_3_10(
+py_test(
     name = "version_3_10_takes_3_9_subprocess_test",
     srcs = ["cross_version_test.py"],
     data = [":version_3_9"],
@@ -148,6 +156,7 @@ py_test_3_10(
         "VERSION_CHECK": "3.10",
     },
     main = "cross_version_test.py",
+    python_version = "3.10",
 )
 
 sh_test(
