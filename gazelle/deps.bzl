@@ -14,10 +14,7 @@
 
 "This file managed by `bazel run //:gazelle_update_repos`"
 
-load(
-    "@bazel_gazelle//:deps.bzl",
-    _go_repository = "go_repository",
-)
+load("@bazel_gazelle//:deps.bzl", _go_repository = "go_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def go_repository(name, **kwargs):
@@ -70,8 +67,8 @@ def go_deps():
     go_repository(
         name = "com_github_bmatcuk_doublestar_v4",
         importpath = "github.com/bmatcuk/doublestar/v4",
-        sum = "h1:FH9SifrbvJhnlQpztAx++wlkk70QBf0iBWDwNy7PA4I=",
-        version = "v4.6.1",
+        sum = "h1:fdDeAqgT47acgwd9bd9HxJRDmc9UAmPpc+2m0CXv75Q=",
+        version = "v4.7.1",
     )
 
     go_repository(
