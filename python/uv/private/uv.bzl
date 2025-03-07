@@ -179,6 +179,7 @@ def process_modules(
     Returns:
         the result of the hub_repo. Mainly used for tests.
     """
+
     # default values to apply for version specific config
     defaults = {
         "base_url": "",
@@ -340,8 +341,9 @@ def process_modules(
     )
 
 def _uv_toolchain_extension(module_ctx):
-    toolchain = process_modules(
+    process_modules(
         module_ctx,
+        hub_name = "uv",
     )
 
 def _overlap(first_collection, second_collection):
