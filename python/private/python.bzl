@@ -104,12 +104,11 @@ def parse_modules(*, module_ctx, _fail = fail):
                 # * rules_python needs to set a soft default in case the root module doesn't,
                 #   e.g. if the root module doesn't use Python itself.
                 # * The root module is allowed to override the rules_python default.
-                if toolchain_attr.default_version_file == None:
-                    is_default = toolchain_attr.is_default
+                if toolchain_attr.default_version_file:
+                    version_from_file = module_ctx.read(toolchain_attr.default_version_file).strip()
+                    is_default = version_from_file == toolchain_version
                 else:
-                    is_default = (
-                        module_ctx.read(toolchain_attr.default_version_file) == toolchain_version
-                    )
+                    is_default = toolchain_attr.is_default
                     if toolchain_attr.is_default and not is_default:
                         fail("The 'is_default' attribute doesn't work if you set 'default_version_file'.")
 
