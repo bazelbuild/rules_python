@@ -30,7 +30,7 @@ _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
-def _get_xcode_location_cflags(rctx):
+def _get_xcode_location_cflags(rctx, logger = None):
     """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
@@ -46,6 +46,7 @@ def _get_xcode_location_cflags(rctx):
         rctx,
         op = "GetXcodeLocation",
         arguments = [repo_utils.which_checked(rctx, "xcode-select"), "--print-path"],
+        logger = logger,
     )
     if xcode_sdk_location.return_code != 0:
         return []
@@ -67,6 +68,7 @@ def _get_xcode_location_cflags(rctx):
             environment = {
                 "DEVELOPER_DIR": xcode_root,
             },
+            logger = logger,
         ).stdout
         xcode_sdks = json.decode(xcode_sdks_json)
         potential_sdks = [
@@ -110,6 +112,7 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
             "-c",
             "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
         ],
+        logger = logger,
     )
     _python_version = stdout
     include_path = "{}/include/python{}".format(
@@ -199,8 +202,8 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
     is_wheel = rctx.attr.filename and rctx.attr.filename.endswith(".whl")
     if not (rctx.attr.download_only or is_wheel):
         cppflags = []
-        cppflags.extend(_get_xcode_location_cflags(rctx))
-        cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
+        cppflags.extend(_get_xcode_location_cflags(rctx, logger = logger))
+        cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
         env[_CPPFLAGS] = " ".join(cppflags)
     return env
 
