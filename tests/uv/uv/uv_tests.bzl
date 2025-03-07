@@ -16,7 +16,7 @@
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
-load("//python/uv/private:uv.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
+load("//python/uv/private:uv.bzl", "process_modules")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -96,9 +96,16 @@ def _mod(*, name = None, default = [], configure = [], is_root = True):
         is_root = is_root,
     )
 
-def _parse_modules(env, **kwargs):
+def _process_modules(env, **kwargs):
+    result = process_modules(hub_repo = struct, **kwargs)
+
     return env.expect.that_struct(
-        parse_modules(**kwargs),
+        struct(
+            names = result.toolchain_names,
+            labels = result.toolchain_labels,
+            compatible_with = result.toolchain_compatible_with,
+            target_settings = result.toolchain_target_settings,
+        ),
         attrs = dict(
             names = subjects.collection,
             labels = subjects.dict,
@@ -130,7 +137,7 @@ def _configure(urls = None, sha256 = None, **kwargs):
     return _default(sha256 = sha256, urls = urls, **kwargs)
 
 def _test_only_defaults(env):
-    uv = _parse_modules(
+    uv = _process_modules(
         env,
         module_ctx = _mock_mctx(
             _mod(
@@ -161,7 +168,7 @@ _tests.append(_test_only_defaults)
 
 def _test_manual_url_spec(env):
     calls = []
-    uv = _parse_modules(
+    uv = _process_modules(
         env,
         module_ctx = _mock_mctx(
             _mod(
@@ -220,7 +227,7 @@ _tests.append(_test_manual_url_spec)
 
 def _test_defaults(env):
     calls = []
-    uv = _parse_modules(
+    uv = _process_modules(
         env,
         module_ctx = _mock_mctx(
             _mod(
@@ -268,7 +275,7 @@ _tests.append(_test_defaults)
 
 def _test_default_building(env):
     calls = []
-    uv = _parse_modules(
+    uv = _process_modules(
         env,
         module_ctx = _mock_mctx(
             _mod(
@@ -333,7 +340,7 @@ _tests.append(_test_default_building)
 
 def _test_complex_configuring(env):
     calls = []
-    uv = _parse_modules(
+    uv = _process_modules(
         env,
         module_ctx = _mock_mctx(
             _mod(

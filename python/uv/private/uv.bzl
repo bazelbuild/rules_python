@@ -161,12 +161,20 @@ def _configure(config, *, platform, compatible_with, target_settings, urls = [],
     elif compatible_with or target_settings:
         fail("`platform` name must be specified when specifying `compatible_with` or `target_settings`")
 
-def parse_modules(module_ctx, uv_repository = None):
+def process_modules(
+        module_ctx,
+        hub_name = "uv",
+        uv_repository = None,
+        toolchain_type = str(UV_TOOLCHAIN_TYPE),
+        hub_repo = uv_toolchains_repo):
     """Parse the modules to get the config for 'uv' toolchains.
 
     Args:
         module_ctx: the context.
+        hub_name: the name of the hub repository.
         uv_repository: the rule to create a uv_repository override.
+        toolchain_type: the toolchain type to use here.
+        hub_repo: the hub repo factory function to use.
 
     Returns:
         A dictionary for each version of the `uv` to configure.
@@ -218,16 +226,18 @@ def parse_modules(module_ctx, uv_repository = None):
         if config["platforms"]
     }
     if not versions:
-        return struct(
-            names = ["none"],
-            labels = {
+        return hub_repo(
+            name = hub_name,
+            toolchain_type = toolchain_type,
+            toolchain_names = ["none"],
+            toolchain_labels = {
                 # NOTE @aignas 2025-02-24: the label to the toolchain can be anything
                 "none": str(Label("//python:none")),
             },
-            compatible_with = {
+            toolchain_compatible_with = {
                 "none": ["@platforms//:incompatible"],
             },
-            target_settings = {},
+            toolchain_target_settings = {},
         )
 
     toolchain_names = []
@@ -283,25 +293,18 @@ def parse_modules(module_ctx, uv_repository = None):
                 for label in platform.target_settings
             ]
 
-    return struct(
-        names = toolchain_names,
-        labels = toolchain_labels_by_toolchain,
-        compatible_with = toolchain_compatible_with_by_toolchain,
-        target_settings = toolchain_target_settings,
+    return hub_repo(
+        name = hub_name,
+        toolchain_type = toolchain_type,
+        toolchain_names = toolchain_names,
+        toolchain_labels = toolchain_labels_by_toolchain,
+        toolchain_compatible_with = toolchain_compatible_with_by_toolchain,
+        toolchain_target_settings = toolchain_target_settings,
     )
 
 def _uv_toolchain_extension(module_ctx):
-    toolchain = parse_modules(
+    toolchain = process_modules(
         module_ctx,
-    )
-
-    uv_toolchains_repo(
-        name = "uv",
-        toolchain_type = str(UV_TOOLCHAIN_TYPE),
-        toolchain_names = toolchain.names,
-        toolchain_labels = toolchain.labels,
-        toolchain_compatible_with = toolchain.compatible_with,
-        toolchain_target_settings = toolchain.target_settings,
     )
 
 def _overlap(first_collection, second_collection):
