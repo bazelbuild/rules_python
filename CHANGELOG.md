@@ -68,6 +68,10 @@ Unreleased changes template.
   ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
 * (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
   Support spilling modules mapping args into a params file.
+* (pypi) From now on `python` invocations in repository and module extension
+  evaluation contexts will invoke Python interpreter with `-B` to avoid
+  creating `.pyc` files.
+* (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 
 {#v0-0-0-added}
 ### Added
