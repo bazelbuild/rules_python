@@ -198,15 +198,15 @@ def process_modules(
         if not (mod.is_root or mod.name == "rules_python"):
             continue
 
-        for default_attr in mod.tags.default:
+        for tag in mod.tags.default:
             _configure(
                 defaults,
-                version = default_attr.version,
-                base_url = default_attr.base_url,
-                manifest_filename = default_attr.manifest_filename,
-                platform = default_attr.platform,
-                compatible_with = default_attr.compatible_with,
-                target_settings = default_attr.target_settings,
+                version = tag.version,
+                base_url = tag.base_url,
+                manifest_filename = tag.manifest_filename,
+                platform = tag.platform,
+                compatible_with = tag.compatible_with,
+                target_settings = tag.target_settings,
             )
 
     for key in [
@@ -238,8 +238,8 @@ def process_modules(
             continue
 
         last_version = None
-        for config_attr in mod.tags.configure:
-            last_version = config_attr.version or last_version or defaults["version"]
+        for tag in mod.tags.configure:
+            last_version = tag.version or last_version or defaults["version"]
             specific_config = versions.setdefault(
                 last_version,
                 {
@@ -253,13 +253,13 @@ def process_modules(
 
             _configure(
                 specific_config,
-                base_url = config_attr.base_url,
-                manifest_filename = config_attr.manifest_filename,
-                platform = config_attr.platform,
-                compatible_with = config_attr.compatible_with,
-                target_settings = config_attr.target_settings,
-                sha256 = config_attr.sha256,
-                urls = config_attr.urls,
+                base_url = tag.base_url,
+                manifest_filename = tag.manifest_filename,
+                platform = tag.platform,
+                compatible_with = tag.compatible_with,
+                target_settings = tag.target_settings,
+                sha256 = tag.sha256,
+                urls = tag.urls,
             )
 
     versions = {
