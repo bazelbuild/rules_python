@@ -14,6 +14,8 @@ class WheelRecordTest(unittest.TestCase):
             "examples/wheel/lib/data,with,commas.txt",
             "examples/wheel/lib/data.txt",
             "examples/wheel/lib/module_with_data.py",
+            "examples/wheel/lib/module_with_type_annotations.py",
+            "examples/wheel/lib/module_with_type_annotations.pyi",
             "examples/wheel/lib/simple_module.py",
             "examples/wheel/main.py",
             "example_minimal_package-0.0.1.dist-info/WHEEL",
