@@ -93,9 +93,9 @@ The information is appended to the version configuration that is specified by
 {attr}`version` attribute, or if the version is unspecified, the version of the
 last {obj}`uv.configure` call or the version from the defaults is used.
 
-Configuration examples:
+Complex configuration example:
 ```starlark
-# Configure the base_url for the specified version.
+# Configure the base_url for the default version.
 uv.configure(base_url = "my_mirror")
 
 # Add an extra platform that can be used with your version.
@@ -113,12 +113,6 @@ uv.configure(
     sha256 = "deadbeef",
 )
 ```
-
-::::tip
-The configuration is additive for each version. This means that if you need to set
-defaults for all versions, use the {attr}`default` for all of the configuration,
-similarly how `rules_python` is doing it itself.
-::::
 """,
     attrs = _DEFAULT_ATTRS | {
         "sha256": attr.string(
