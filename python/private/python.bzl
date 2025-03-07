@@ -672,8 +672,12 @@ can result in spurious build failures.
         "is_default": attr.bool(
             mandatory = False,
             doc = """\
-Whether the toolchain is the default version. Ignored if `default_version_file`
-is set.""",
+Whether the toolchain is the default version. 
+
+:::{versionchanged} VERSION_NEXT_FEATURE
+This setting is ignored if {attr}`default_version_file` is set.
+:::
+""",
         ),
         "python_version": attr.string(
             mandatory = True,
