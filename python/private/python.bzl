@@ -648,8 +648,8 @@ Then the python interpreter will be available as `my_python_name`.
             allow_single_file = True,
             doc = """\
 File saying what the default Python version should be. If the contents of the
-file match the `python_version` attribute, this toolchain is the default version.
-If this attribute is set, the `is_default` attribute is ignored.
+file match the {attr}`python_version` attribute, this toolchain is the default version.
+If this attribute is set, the {attr}`is_default` attribute is ignored.
 
 :::{versionadded} VERSION_NEXT_FEATURE
 :::
