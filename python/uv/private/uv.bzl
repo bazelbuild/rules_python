@@ -268,7 +268,7 @@ def process_modules(
             name = hub_name,
             toolchain_type = toolchain_type,
             toolchain_names = ["none"],
-            toolchain_labels = {
+            toolchain_implementations = {
                 # NOTE @aignas 2025-02-24: the label to the toolchain can be anything
                 "none": str(Label("//python:none")),
             },
@@ -335,7 +335,7 @@ def process_modules(
         name = hub_name,
         toolchain_type = toolchain_type,
         toolchain_names = toolchain_names,
-        toolchain_labels = toolchain_labels_by_toolchain,
+        toolchain_implementations = toolchain_labels_by_toolchain,
         toolchain_compatible_with = toolchain_compatible_with_by_toolchain,
         toolchain_target_settings = toolchain_target_settings,
     )

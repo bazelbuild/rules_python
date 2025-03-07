@@ -29,7 +29,7 @@ toolchain(
 def _toolchains_repo_impl(repository_ctx):
     build_content = ""
     for toolchain_name in repository_ctx.attr.toolchain_names:
-        toolchain_label = repository_ctx.attr.toolchain_labels[toolchain_name]
+        toolchain_label = repository_ctx.attr.toolchain_implementations[toolchain_name]
         toolchain_compatible_with = repository_ctx.attr.toolchain_compatible_with[toolchain_name]
         toolchain_target_settings = repository_ctx.attr.toolchain_target_settings.get(toolchain_name, [])
 
@@ -48,7 +48,7 @@ uv_toolchains_repo = repository_rule(
     doc = "Generates a toolchain hub repository",
     attrs = {
         "toolchain_compatible_with": attr.string_list_dict(doc = "A list of platform constraints for this toolchain, keyed by toolchain name.", mandatory = True),
-        "toolchain_labels": attr.string_dict(doc = "The name of the toolchain implementation target, keyed by toolchain name.", mandatory = True),
+        "toolchain_implementations": attr.string_dict(doc = "The name of the toolchain implementation target, keyed by toolchain name.", mandatory = True),
         "toolchain_names": attr.string_list(doc = "List of toolchain names", mandatory = True),
         "toolchain_target_settings": attr.string_list_dict(doc = "A list of target_settings constraints for this toolchain, keyed by toolchain name.", mandatory = True),
         "toolchain_type": attr.string(doc = "The toolchain type of the toolchains", mandatory = True),
