@@ -19,7 +19,7 @@ A module extension for working with uv.
 """
 
 load(":toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
-load(":uv_repositories.bzl", "uv_repositories")
+load(":uv_repository.bzl", "uv_repository")
 load(":uv_toolchains_repo.bzl", "uv_toolchains_repo")
 
 _DOC = """\
@@ -165,7 +165,7 @@ def _configure(config, *, platform, compatible_with, target_settings, urls = [],
 def process_modules(
         module_ctx,
         hub_name = "uv",
-        uv_repository = None,
+        uv_repository = uv_repository,
         toolchain_type = str(UV_TOOLCHAIN_TYPE),
         hub_repo = uv_toolchains_repo):
     """Parse the modules to get the config for 'uv' toolchains.
@@ -281,7 +281,7 @@ def process_modules(
         )
 
     toolchain_names = []
-    toolchain_labels_by_toolchain = {}
+    toolchain_implementations = {}
     toolchain_compatible_with_by_toolchain = {}
     toolchain_target_settings = {}
     for version, config in versions.items():
@@ -307,28 +307,27 @@ def process_modules(
                 platforms = sorted(platforms),
             )
 
-        result = uv_repositories(
-            name = "uv",
-            platforms = [
-                platform_name
-                for platform_name in platforms
-                if platform_name in urls
-            ],
-            urls = urls,
-            version = version,
-            uv_repository = uv_repository,
-        )
+        for platform_name, platform in platforms.items():
+            if platform_name not in urls:
+                continue
 
-        for name in result.names:
-            platform = platforms[result.platforms[name]]
+            uv_repository_name = "{}_{}_{}".format(hub_name, version.replace(".", "_"), platform_name.lower().replace("-", "_"))
+            uv_repository(
+                name = uv_repository_name,
+                version = version,
+                platform = platform_name,
+                urls = urls[platform_name].urls,
+                sha256 = urls[platform_name].sha256,
+            )
 
-            toolchain_names.append(name)
-            toolchain_labels_by_toolchain[name] = result.labels[name]
-            toolchain_compatible_with_by_toolchain[name] = [
+            toolchain_name = uv_repository_name + "_toolchain"
+            toolchain_names.append(toolchain_name)
+            toolchain_implementations[toolchain_name] = "@{}//:uv_toolchain".format(uv_repository_name)
+            toolchain_compatible_with_by_toolchain[toolchain_name] = [
                 str(label)
                 for label in platform.compatible_with
             ]
-            toolchain_target_settings[name] = [
+            toolchain_target_settings[toolchain_name] = [
                 str(label)
                 for label in platform.target_settings
             ]
@@ -337,7 +336,7 @@ def process_modules(
         name = hub_name,
         toolchain_type = toolchain_type,
         toolchain_names = toolchain_names,
-        toolchain_implementations = toolchain_labels_by_toolchain,
+        toolchain_implementations = toolchain_implementations,
         toolchain_compatible_with = toolchain_compatible_with_by_toolchain,
         toolchain_target_settings = toolchain_target_settings,
     )

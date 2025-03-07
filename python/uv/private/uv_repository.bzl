@@ -62,7 +62,7 @@ def _uv_repo_impl(repository_ctx):
         "version": repository_ctx.attr.version,
     }
 
-_uv_repository = repository_rule(
+uv_repository = repository_rule(
     _uv_repo_impl,
     doc = "Fetch external tools needed for uv toolchain",
     attrs = {
@@ -72,47 +72,3 @@ _uv_repository = repository_rule(
         "version": attr.string(mandatory = True),
     },
 )
-
-def uv_repositories(*, name, version, platforms, urls, uv_repository = None):
-    """Convenience macro which does typical toolchain setup
-
-    Skip this macro if you need more control over the toolchain setup.
-
-    Args:
-        name: The name of the toolchains repo,
-        version: The uv toolchain version to download.
-        platforms: The platforms to register uv for.
-        urls: The urls with sha256 values to register uv for.
-        uv_repository: The rule function for creating a uv_repository.
-
-    Returns:
-        A struct with names, labels and platforms that were created for this invocation.
-    """
-    uv_repository = uv_repository or _uv_repository
-    if not version:
-        fail("version is required")
-
-    toolchain_names = []
-    toolchain_labels_by_toolchain = {}
-    platform_names_by_toolchain = {}
-
-    for platform in platforms:
-        uv_repository_name = "{}_{}_{}".format(name, version.replace(".", "_"), platform.lower().replace("-", "_"))
-        uv_repository(
-            name = uv_repository_name,
-            version = version,
-            platform = platform,
-            urls = urls[platform].urls,
-            sha256 = urls[platform].sha256,
-        )
-
-        toolchain_name = uv_repository_name + "_toolchain"
-        toolchain_names.append(toolchain_name)
-        toolchain_labels_by_toolchain[toolchain_name] = "@{}//:uv_toolchain".format(uv_repository_name)
-        platform_names_by_toolchain[toolchain_name] = platform
-
-    return struct(
-        names = toolchain_names,
-        labels = toolchain_labels_by_toolchain,
-        platforms = platform_names_by_toolchain,
-    )

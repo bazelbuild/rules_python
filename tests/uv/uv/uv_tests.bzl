@@ -102,13 +102,13 @@ def _process_modules(env, **kwargs):
     return env.expect.that_struct(
         struct(
             names = result.toolchain_names,
-            labels = result.toolchain_labels,
+            implementations = result.toolchain_implementations,
             compatible_with = result.toolchain_compatible_with,
             target_settings = result.toolchain_target_settings,
         ),
         attrs = dict(
             names = subjects.collection,
-            labels = subjects.dict,
+            implementations = subjects.dict,
             compatible_with = subjects.dict,
             target_settings = subjects.dict,
         ),
@@ -158,7 +158,7 @@ def _test_only_defaults(env):
     uv.names().contains_exactly([
         "none",
     ])
-    uv.labels().contains_exactly({
+    uv.implementations().contains_exactly({
         "none": str(Label("//python:none")),
     })
     uv.compatible_with().contains_exactly({
@@ -206,7 +206,7 @@ def _test_manual_url_spec(env):
     uv.names().contains_exactly([
         "uv_1_0_0_linux_toolchain",
     ])
-    uv.labels().contains_exactly({
+    uv.implementations().contains_exactly({
         "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
@@ -254,7 +254,7 @@ def _test_defaults(env):
     uv.names().contains_exactly([
         "uv_1_0_0_linux_toolchain",
     ])
-    uv.labels().contains_exactly({
+    uv.implementations().contains_exactly({
         "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
@@ -309,7 +309,7 @@ def _test_default_building(env):
         "uv_1_0_0_linux_toolchain",
         "uv_1_0_0_osx_toolchain",
     ])
-    uv.labels().contains_exactly({
+    uv.implementations().contains_exactly({
         "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
         "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
     })
@@ -389,7 +389,7 @@ def _test_complex_configuring(env):
         "uv_1_0_2_osx_toolchain",
         "uv_1_0_3_linux_toolchain",
     ])
-    uv.labels().contains_exactly({
+    uv.implementations().contains_exactly({
         "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
         "uv_1_0_1_osx_toolchain": "@uv_1_0_1_osx//:uv_toolchain",
         "uv_1_0_2_osx_toolchain": "@uv_1_0_2_osx//:uv_toolchain",

@@ -47,17 +47,13 @@ bzl_library(
     name = "uv_bzl",
     srcs = ["uv.bzl"],
     visibility = ["//python/uv:__subpackages__"],
-    deps = [":uv_repositories_bzl"],
+    deps = [":uv_repository_bzl"],
 )
 
 bzl_library(
-    name = "uv_repositories_bzl",
-    srcs = ["uv_repositories.bzl"],
+    name = "uv_repository_bzl",
+    srcs = ["uv_repository.bzl"],
     visibility = ["//python/uv:__subpackages__"],
-    deps = [
-        ":toolchain_types_bzl",
-        ":uv_toolchains_repo_bzl",
-    ],
 )
 
 bzl_library(
