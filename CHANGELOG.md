@@ -77,7 +77,9 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (python) {attr}`python.toolchain.default_version_file` has been added to
+  allow users to set the default python version in the root module by reading
+  the default version number from a file.
 
 {#v0-0-0-removed}
 ### Removed
