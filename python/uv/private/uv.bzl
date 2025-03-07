@@ -243,9 +243,11 @@ def process_modules(
             specific_config = versions.setdefault(
                 last_version,
                 {
-                    "base_url": defaults.get("base_url", ""),
+                    "base_url": defaults["base_url"],
                     "manifest_filename": defaults["manifest_filename"],
-                    "platforms": dict(defaults["platforms"]),  # copy
+                    # shallow copy is enough as the values are structs and will
+                    # be replaced on modification
+                    "platforms": dict(defaults["platforms"]),
                 },
             )
 
