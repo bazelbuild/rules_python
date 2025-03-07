@@ -306,11 +306,11 @@ def process_modules(
 
         result = uv_repositories(
             name = "uv",
-            platforms = {
-                platform_name: platform
-                for platform_name, platform in platforms.items()
+            platforms = [
+                platform_name
+                for platform_name in platforms
                 if platform_name in urls
-            },
+            ],
             urls = urls,
             version = version,
             uv_repository = uv_repository,
