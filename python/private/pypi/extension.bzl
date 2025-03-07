@@ -203,6 +203,7 @@ def _create_whl_repos(
         )
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
+            add_libdir_to_library_search_path = pip_attr.add_libdir_to_library_search_path,
             annotation = whl_modifications.get(whl_name),
             download_only = pip_attr.download_only,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,

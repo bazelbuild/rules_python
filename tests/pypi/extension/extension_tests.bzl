@@ -77,6 +77,7 @@ def _parse(
         hub_name,
         python_version,
         _evaluate_markers_srcs = [],
+        add_libdir_to_library_search_path = False,
         auth_patterns = {},
         download_only = False,
         enable_implicit_namespace_pkgs = False,
@@ -105,6 +106,7 @@ def _parse(
     return struct(
         _evaluate_markers_srcs = _evaluate_markers_srcs,
         auth_patterns = auth_patterns,
+        add_libdir_to_library_search_path = add_libdir_to_library_search_path,
         download_only = download_only,
         enable_implicit_namespace_pkgs = enable_implicit_namespace_pkgs,
         environment = environment,

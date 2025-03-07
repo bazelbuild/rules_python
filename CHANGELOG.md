@@ -77,6 +77,8 @@ Unreleased changes template.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
+* (pypi) An extra argument to add the interpreter lib dir to `LDFLAGS` when
+  building wheels from `sdist`.
 
 {#v0-0-0-removed}
 ### Removed
