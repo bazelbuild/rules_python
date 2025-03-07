@@ -18,7 +18,10 @@ ATTRS = {
     "add_libdir_to_library_search_path": attr.bool(
         default = False,
         doc = """
-If true, add the lib dir of the bundled interpreter to the library search path via LDFLAGS.
+If true, add the lib dir of the bundled interpreter to the library search path via `LDFLAGS`.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
 """,
     ),
     "download_only": attr.bool(
