@@ -20,6 +20,7 @@ _TOOLCHAIN_TEMPLATE = """
 toolchain(
     name = "{name}",
     target_compatible_with = {compatible_with},
+    target_settings = {target_settings},
     toolchain = "{toolchain_label}",
     toolchain_type = "{toolchain_type}",
 )
@@ -30,12 +31,14 @@ def _toolchains_repo_impl(repository_ctx):
     for toolchain_name in repository_ctx.attr.toolchain_names:
         toolchain_label = repository_ctx.attr.toolchain_labels[toolchain_name]
         toolchain_compatible_with = repository_ctx.attr.toolchain_compatible_with[toolchain_name]
+        toolchain_target_settings = repository_ctx.attr.toolchain_target_settings.get(toolchain_name, [])
 
         build_content += _TOOLCHAIN_TEMPLATE.format(
             name = toolchain_name,
             toolchain_type = repository_ctx.attr.toolchain_type,
             toolchain_label = toolchain_label,
             compatible_with = render.list(toolchain_compatible_with),
+            target_settings = render.list(toolchain_target_settings),
         )
 
     repository_ctx.file("BUILD.bazel", build_content)
@@ -47,6 +50,7 @@ uv_toolchains_repo = repository_rule(
         "toolchain_compatible_with": attr.string_list_dict(doc = "A list of platform constraints for this toolchain, keyed by toolchain name.", mandatory = True),
         "toolchain_labels": attr.string_dict(doc = "The name of the toolchain implementation target, keyed by toolchain name.", mandatory = True),
         "toolchain_names": attr.string_list(doc = "List of toolchain names", mandatory = True),
+        "toolchain_target_settings": attr.string_list_dict(doc = "A list of target_settings constraints for this toolchain, keyed by toolchain name.", mandatory = True),
         "toolchain_type": attr.string(doc = "The toolchain type of the toolchains", mandatory = True),
     },
 )
