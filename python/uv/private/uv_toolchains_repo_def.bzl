@@ -14,7 +14,16 @@
 
 """A macro used from the uv_toolchain hub repo."""
 
-def uv_toolchains_repo_def(*, name = None, names, implementations, target_compatible_with, target_settings):  # @unnamed-macro
+load(":toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
+
+def uv_toolchains_repo_def(
+        *,
+        name = None,
+        names,
+        implementations,
+        target_compatible_with,
+        target_settings):
+    # @unnamed-macro
     """Define the toolchains so that the lexicographical order registration is deterministic.
 
     Args:
@@ -37,5 +46,5 @@ def uv_toolchains_repo_def(*, name = None, names, implementations, target_compat
             target_compatible_with = target_compatible_with.get(name, []),
             target_settings = target_settings.get(name, []),
             toolchain = implementations[name],
-            toolchain_type = Label("//python/uv:uv_toolchain_type"),
+            toolchain_type = UV_TOOLCHAIN_TYPE,
         )

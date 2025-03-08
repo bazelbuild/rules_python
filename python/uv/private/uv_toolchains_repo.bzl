@@ -16,30 +16,34 @@
 
 load("//python/private:text_util.bzl", "render")
 
-def _toolchains_repo_impl(repository_ctx):
-    repository_ctx.file("BUILD.bazel", """\
+_TEMPLATE = """\
 load("@rules_python//python/uv/private:uv_toolchains_repo_def.bzl", "uv_toolchains_repo_def")
 
-uv_toolchains_repo_def(
-    target_compatible_with = {target_compatible_with},
-    implementations = {implementations},
-    names = {names},
-    target_settings = {target_settings},
-)
-""".format(
-        target_compatible_with = render.dict(
-            repository_ctx.attr.toolchain_compatible_with,
-            value_repr = render.list,
+{}
+"""
+
+def _non_empty(d):
+    return {k: v for k, v in d.items() if v}
+
+def _toolchains_repo_impl(repository_ctx):
+    contents = _TEMPLATE.format(
+        render.call(
+            "uv_toolchains_repo_def",
+            names = render.list(repository_ctx.attr.toolchain_names),
+            implementations = render.dict(
+                repository_ctx.attr.toolchain_implementations,
+            ),
+            target_compatible_with = render.dict(
+                repository_ctx.attr.toolchain_compatible_with,
+                value_repr = render.list,
+            ),
+            target_settings = render.dict(
+                _non_empty(repository_ctx.attr.toolchain_target_settings),
+                value_repr = render.list,
+            ),
         ),
-        names = render.list(repository_ctx.attr.toolchain_names),
-        implementations = render.dict(
-            repository_ctx.attr.toolchain_implementations,
-        ),
-        target_settings = render.dict(
-            repository_ctx.attr.toolchain_target_settings,
-            value_repr = render.list,
-        ),
-    ))
+    )
+    repository_ctx.file("BUILD.bazel", contents)
 
 uv_toolchains_repo = repository_rule(
     _toolchains_repo_impl,

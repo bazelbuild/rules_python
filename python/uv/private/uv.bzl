@@ -307,7 +307,8 @@ def process_modules(
             if platform_name not in urls:
                 continue
 
-            uv_repository_name = "{}_{}_{}".format(hub_name, version.replace(".", "_"), platform_name.lower().replace("-", "_"))
+            toolchain_name = "{}_{}".format(version.replace(".", "_"), platform_name.lower().replace("-", "_"))
+            uv_repository_name = "{}_{}".format(hub_name, toolchain_name)
             uv_repository(
                 name = uv_repository_name,
                 version = version,
@@ -316,7 +317,6 @@ def process_modules(
                 sha256 = urls[platform_name].sha256,
             )
 
-            toolchain_name = uv_repository_name + "_toolchain"
             toolchain_names.append(toolchain_name)
             toolchain_implementations[toolchain_name] = "@{}//:uv_toolchain".format(uv_repository_name)
             toolchain_compatible_with_by_toolchain[toolchain_name] = [
