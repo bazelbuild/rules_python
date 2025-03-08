@@ -91,6 +91,7 @@ Unreleased changes template.
 * (pypi) Direct HTTP urls for wheels and sdists are now supported when using
   {obj}`experimental_index_url` (bazel downloader).
   Partially fixes [#2363](https://github.com/bazelbuild/rules_python/issues/2363).
+* (rules) Added env-var to allow additional interpreter args for stage1 bootstrap
 
 {#v0-0-0-removed}
 ### Removed
