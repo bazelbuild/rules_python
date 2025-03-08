@@ -24,27 +24,45 @@ def _test_no_simple_api_sources(env):
         "foo==0.0.1": struct(
             requirement = "foo==0.0.1",
             marker = "",
+            url = "",
+            filename = "",
         ),
         "foo==0.0.1 @ https://someurl.org": struct(
             requirement = "foo==0.0.1 @ https://someurl.org",
             marker = "",
+            url = "https://someurl.org",
+            filename = "someurl.org",
         ),
-        "foo==0.0.1 @ https://someurl.org --hash=sha256:deadbeef": struct(
-            requirement = "foo==0.0.1 @ https://someurl.org --hash=sha256:deadbeef",
+        "foo==0.0.1 @ https://someurl.org/package.whl": struct(
+            requirement = "foo==0.0.1 @ https://someurl.org/package.whl",
             marker = "",
+            url = "https://someurl.org/package.whl",
+            filename = "package.whl",
         ),
-        "foo==0.0.1 @ https://someurl.org; python_version < \"2.7\"\\    --hash=sha256:deadbeef": struct(
-            requirement = "foo==0.0.1 @ https://someurl.org --hash=sha256:deadbeef",
+        "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef": struct(
+            requirement = "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef",
+            marker = "",
+            url = "https://someurl.org/package.whl",
+            filename = "package.whl",
+            shas = ["deadbeef"],
+        ),
+        "foo==0.0.1 @ https://someurl.org/package.whl; python_version < \"2.7\"\\    --hash=sha256:deadbeef": struct(
+            requirement = "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef",
             marker = "python_version < \"2.7\"",
+            url = "https://someurl.org/package.whl",
+            filename = "package.whl",
+            shas = ["deadbeef"],
         ),
     }
     for input, want in inputs.items():
         got = index_sources(input)
-        env.expect.that_collection(got.shas).contains_exactly([])
+        env.expect.that_collection(got.shas).contains_exactly(want.shas if hasattr(want, "shas") else [])
         env.expect.that_str(got.version).equals("0.0.1")
         env.expect.that_str(got.requirement).equals(want.requirement)
         env.expect.that_str(got.requirement_line).equals(got.requirement)
         env.expect.that_str(got.marker).equals(want.marker)
+        env.expect.that_str(got.url).equals(want.url)
+        env.expect.that_str(got.filename).equals(want.filename)
 
 _tests.append(_test_no_simple_api_sources)
 
