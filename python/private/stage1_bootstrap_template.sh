@@ -197,6 +197,7 @@ stage2_bootstrap="$RUNFILES_DIR/$STAGE2_BOOTSTRAP"
 
 declare -a interpreter_env
 declare -a interpreter_args
+declare -a additional_interpreter_args
 
 # Don't prepend a potentially unsafe path to sys.path
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
@@ -213,6 +214,11 @@ fi
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
+fi
+
+if [[ -n "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}" ]]; then
+  read -a additional_interpreter_args <<< "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}"
+  interpreter_args+=("${additional_interpreter_args[@]}")
 fi
 
 export RUNFILES_DIR

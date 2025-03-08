@@ -79,6 +79,7 @@ Unreleased changes template.
   binary whose interpreter to use.
 * (pypi) An extra argument to add the interpreter lib dir to `LDFLAGS` when
   building wheels from `sdist`.
+* (rules) Added env-var to allow additional interpreter args for stage1 bootstrap
 
 {#v0-0-0-removed}
 ### Removed
