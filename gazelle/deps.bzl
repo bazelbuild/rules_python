@@ -185,8 +185,8 @@ def go_deps():
     go_repository(
         name = "com_github_smacker_go_tree_sitter",
         importpath = "github.com/smacker/go-tree-sitter",
-        sum = "h1:7QZKUmQfnxncZIJGyvX8M8YeMfn8kM10j3J/2KwVTN4=",
-        version = "v0.0.0-20240422154435-0628b34cbf9c",
+        sum = "h1:6C8qej6f1bStuePVkLSFxoU22XBS165D3klxlzRg8F4=",
+        version = "v0.0.0-20240827094217-dd81d9e9be82",
     )
     go_repository(
         name = "com_github_stretchr_objx",
