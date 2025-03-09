@@ -30,7 +30,8 @@ def toolchains_hub(
 
     Args:
         name: Unused.
-        names: The names for toolchain targets.
+        names: The names for toolchain targets. The later occurring items take
+            precedence over the previous items if they match the target platform.
         implementations: The name to label mapping.
         target_compatible_with: The name to target_compatible_with list mapping.
         target_settings: The name to target_settings list mapping.
@@ -50,7 +51,11 @@ def toolchains_hub(
     prefix_len = len(str(len(names)))
     prefix = "0" * (prefix_len - 1)
 
-    for i, name in sorted(enumerate(names), key = lambda x: -x[0]):
+    # reverse the names list so that the later items override earlier toolchain
+    # registrations.
+    names = [n for _, n in sorted(enumerate(names), key = lambda x: -x[0])]
+
+    for i, name in enumerate(names):
         # prefix with a prefix and then truncate the string.
         number_prefix = "{}{}".format(prefix, i)[-prefix_len:]
 

@@ -5,10 +5,10 @@ toolchains_hub(
         "bar": "//tests/uv/uv:fake_bar",
         "foo": "//tests/uv/uv:fake_foof",
     },
-    # We expect bar to not be effective here
+    # We expect foo to take precedence over bar
     names = [
-        "foo",
         "bar",
+        "foo",
     ],
     target_compatible_with = {
         "bar": [
