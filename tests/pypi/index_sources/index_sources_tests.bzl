@@ -24,8 +24,6 @@ def _test_no_simple_api_sources(env):
         "foo==0.0.1": struct(
             requirement = "foo==0.0.1",
             marker = "",
-            url = "",
-            filename = "",
         ),
         "foo==0.0.1 @ https://someurl.org": struct(
             requirement = "foo==0.0.1 @ https://someurl.org",
@@ -61,8 +59,10 @@ def _test_no_simple_api_sources(env):
         env.expect.that_str(got.requirement).equals(want.requirement)
         env.expect.that_str(got.requirement_line).equals(got.requirement)
         env.expect.that_str(got.marker).equals(want.marker)
-        env.expect.that_str(got.url).equals(want.url)
-        env.expect.that_str(got.filename).equals(want.filename)
+        if hasattr(want, "url"):
+            env.expect.that_str(got.url).equals(want.url)
+        if hasattr(want, "filename"):
+            env.expect.that_str(got.filename).equals(want.filename)
 
 _tests.append(_test_no_simple_api_sources)
 

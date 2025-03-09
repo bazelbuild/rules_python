@@ -59,17 +59,25 @@ def index_sources(line):
     ).strip()
 
     # Extract URL if present
-    url = ""
-    filename = ""
     if "@" in head:
         requirement = requirement_line
         # Extract URL from direct URL format
-        url = requirement.split("@")[1].split("#")[0].strip()
+        url = requirement.partition("@")[2].strip().partition(" ")[0].strip()
         # Extract filename from URL
         if url:
             filename = url.rpartition("/")[2]
             if not filename:
                 filename = url.rpartition("/")[0].rpartition("/")[2]
+
+            return struct(
+                requirement = requirement,
+                requirement_line = requirement_line,
+                version = version,
+                shas = sorted(shas),
+                marker = marker,
+                url = url,
+                filename = filename,
+            )
 
     return struct(
         requirement = requirement,
@@ -77,6 +85,4 @@ def index_sources(line):
         version = version,
         shas = sorted(shas),
         marker = marker,
-        url = url,
-        filename = filename,
     )
