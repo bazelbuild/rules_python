@@ -292,6 +292,7 @@ def _add_dists(*, requirement, index_urls, logger = None):
         index_urls: The result of simpleapi_download.
         logger: A logger for printing diagnostic info.
     """
+
     # Handle direct URLs in requirements
     if hasattr(requirement.srcs, "url"):
         # Create a struct that matches the expected format for direct URLs
