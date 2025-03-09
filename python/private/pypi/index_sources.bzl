@@ -62,7 +62,8 @@ def index_sources(line):
     if "@" in head:
         requirement = requirement_line
         # Extract URL from direct URL format
-        url = requirement.partition("@")[2].strip().partition(" ")[0].strip()
+        _, _, url_and_rest = requirement.partition("@")
+        url = url_and_rest.strip().partition(" ")[0].strip()
         # Extract filename from URL
         if url:
             filename = url.rpartition("/")[2]
