@@ -26,6 +26,8 @@ def toolchains_hub(
     # @unnamed-macro
     """Define the toolchains so that the lexicographical order registration is deterministic.
 
+    TODO @aignas 2025-03-09: see if this can be reused in the python toolchains.
+
     Args:
         name: Unused.
         names: The names for toolchain targets.
@@ -36,11 +38,21 @@ def toolchains_hub(
     if len(names) != len(implementations):
         fail("Each name must have an implementation")
 
-    padding = len(str(len(names)))  # get the number of digits
+    # We are setting the order of the toolchains so that the later coming
+    # toolchains override the previous definitions using the toolchain
+    # resolution properties:
+    # * the toolchains are matched by target settings and target_compatible_with
+    # * the first toolchain satisfying the above wins
+    #
+    # this means we need to register the toolchains prefixed with a number of
+    # format 00xy, where x and y are some digits and the leading zeros to
+    # ensure lexicographical sorting.
+    prefix_len = len(str(len(names)))
+    prefix = "0" * (prefix_len - 1)
+
     for i, name in sorted(enumerate(names), key = lambda x: -x[0]):
-        # poor mans implementation leading 0
-        number_prefix = ("0" * padding) + "{}".format(i)
-        number_prefix = number_prefix[-padding:]
+        # prefix with a prefix and then truncate the string.
+        number_prefix = "{}{}".format(prefix, i)[-prefix_len:]
 
         native.toolchain(
             name = "{}_{}".format(number_prefix, name),
