@@ -208,17 +208,15 @@ def _test_manual_url_spec(env):
     )
 
     uv.names().contains_exactly([
-        "uv_1_0_0_linux_toolchain",
+        "1_0_0_linux",
     ])
     uv.implementations().contains_exactly({
-        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
+        "1_0_0_linux": "@uv_1_0_0_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
-        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
+        "1_0_0_linux": ["@platforms//os:linux"],
     })
-    uv.target_settings().contains_exactly({
-        "uv_1_0_0_linux_toolchain": [],
-    })
+    uv.target_settings().contains_exactly({})
     env.expect.that_collection(calls).contains_exactly([
         {
             "name": "uv_1_0_0_linux",
@@ -256,16 +254,16 @@ def _test_defaults(env):
     )
 
     uv.names().contains_exactly([
-        "uv_1_0_0_linux_toolchain",
+        "1_0_0_linux",
     ])
     uv.implementations().contains_exactly({
-        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
+        "1_0_0_linux": "@uv_1_0_0_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
-        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
+        "1_0_0_linux": ["@platforms//os:linux"],
     })
     uv.target_settings().contains_exactly({
-        "uv_1_0_0_linux_toolchain": ["//:my_flag"],
+        "1_0_0_linux": ["//:my_flag"],
     })
     env.expect.that_collection(calls).contains_exactly([
         {
@@ -310,20 +308,19 @@ def _test_default_building(env):
     )
 
     uv.names().contains_exactly([
-        "uv_1_0_0_linux_toolchain",
-        "uv_1_0_0_osx_toolchain",
+        "1_0_0_linux",
+        "1_0_0_osx",
     ])
     uv.implementations().contains_exactly({
-        "uv_1_0_0_linux_toolchain": "@uv_1_0_0_linux//:uv_toolchain",
-        "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
+        "1_0_0_linux": "@uv_1_0_0_linux//:uv_toolchain",
+        "1_0_0_osx": "@uv_1_0_0_osx//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
-        "uv_1_0_0_linux_toolchain": ["@platforms//os:linux"],
-        "uv_1_0_0_osx_toolchain": ["@platforms//os:osx"],
+        "1_0_0_linux": ["@platforms//os:linux"],
+        "1_0_0_osx": ["@platforms//os:osx"],
     })
     uv.target_settings().contains_exactly({
-        "uv_1_0_0_linux_toolchain": ["//:my_flag"],
-        "uv_1_0_0_osx_toolchain": [],
+        "1_0_0_linux": ["//:my_flag"],
     })
     env.expect.that_collection(calls).contains_exactly([
         {
@@ -388,29 +385,24 @@ def _test_complex_configuring(env):
     )
 
     uv.names().contains_exactly([
-        "uv_1_0_0_osx_toolchain",
-        "uv_1_0_1_osx_toolchain",
-        "uv_1_0_2_osx_toolchain",
-        "uv_1_0_3_linux_toolchain",
+        "1_0_0_osx",
+        "1_0_1_osx",
+        "1_0_2_osx",
+        "1_0_3_linux",
     ])
     uv.implementations().contains_exactly({
-        "uv_1_0_0_osx_toolchain": "@uv_1_0_0_osx//:uv_toolchain",
-        "uv_1_0_1_osx_toolchain": "@uv_1_0_1_osx//:uv_toolchain",
-        "uv_1_0_2_osx_toolchain": "@uv_1_0_2_osx//:uv_toolchain",
-        "uv_1_0_3_linux_toolchain": "@uv_1_0_3_linux//:uv_toolchain",
+        "1_0_0_osx": "@uv_1_0_0_osx//:uv_toolchain",
+        "1_0_1_osx": "@uv_1_0_1_osx//:uv_toolchain",
+        "1_0_2_osx": "@uv_1_0_2_osx//:uv_toolchain",
+        "1_0_3_linux": "@uv_1_0_3_linux//:uv_toolchain",
     })
     uv.compatible_with().contains_exactly({
-        "uv_1_0_0_osx_toolchain": ["@platforms//os:os"],
-        "uv_1_0_1_osx_toolchain": ["@platforms//os:os"],
-        "uv_1_0_2_osx_toolchain": ["@platforms//os:different"],
-        "uv_1_0_3_linux_toolchain": ["@platforms//os:linux"],
+        "1_0_0_osx": ["@platforms//os:os"],
+        "1_0_1_osx": ["@platforms//os:os"],
+        "1_0_2_osx": ["@platforms//os:different"],
+        "1_0_3_linux": ["@platforms//os:linux"],
     })
-    uv.target_settings().contains_exactly({
-        "uv_1_0_0_osx_toolchain": [],
-        "uv_1_0_1_osx_toolchain": [],
-        "uv_1_0_2_osx_toolchain": [],
-        "uv_1_0_3_linux_toolchain": [],
-    })
+    uv.target_settings().contains_exactly({})
     env.expect.that_collection(calls).contains_exactly([
         {
             "name": "uv_1_0_0_osx",

@@ -16,7 +16,7 @@
 
 load(":toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
-def uv_toolchains_repo_def(
+def toolchains_hub(
         *,
         name = None,
         names,
@@ -36,10 +36,11 @@ def uv_toolchains_repo_def(
     if len(names) != len(implementations):
         fail("Each name must have an implementation")
 
-    for i, name in enumerate(names):
+    padding = len(str(len(names)))  # get the number of digits
+    for i, name in sorted(enumerate(names), key = lambda x: -x[0]):
         # poor mans implementation leading 0
-        number_prefix = "000{}".format(i)
-        number_prefix = number_prefix[-3:]
+        number_prefix = ("0" * padding) + "{}".format(i)
+        number_prefix = number_prefix[-padding:]
 
         native.toolchain(
             name = "{}_{}".format(number_prefix, name),

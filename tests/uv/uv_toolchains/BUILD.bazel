@@ -1,6 +1,6 @@
-load("//python/uv/private:uv_toolchains_repo_def.bzl", "uv_toolchains_repo_def")  # buildifier: disable=bzl-visibility
+load("//python/uv/private:toolchains_hub.bzl", "toolchains_hub")  # buildifier: disable=bzl-visibility
 
-uv_toolchains_repo_def(
+toolchains_hub(
     implementations = {
         "bar": "//tests/uv/uv:fake_bar",
         "foo": "//tests/uv/uv:fake_foof",

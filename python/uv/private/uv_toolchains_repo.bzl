@@ -17,7 +17,7 @@
 load("//python/private:text_util.bzl", "render")
 
 _TEMPLATE = """\
-load("@rules_python//python/uv/private:uv_toolchains_repo_def.bzl", "uv_toolchains_repo_def")
+load("@rules_python//python/uv/private:toolchains_hub.bzl", "toolchains_hub")
 
 {}
 """
@@ -28,7 +28,7 @@ def _non_empty(d):
 def _toolchains_repo_impl(repository_ctx):
     contents = _TEMPLATE.format(
         render.call(
-            "uv_toolchains_repo_def",
+            "toolchains_hub",
             names = render.list(repository_ctx.attr.toolchain_names),
             implementations = render.dict(
                 repository_ctx.attr.toolchain_implementations,

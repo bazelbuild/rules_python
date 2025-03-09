@@ -323,10 +323,11 @@ def process_modules(
                 str(label)
                 for label in platform.compatible_with
             ]
-            toolchain_target_settings[toolchain_name] = [
-                str(label)
-                for label in platform.target_settings
-            ]
+            if platform.target_settings:
+                toolchain_target_settings[toolchain_name] = [
+                    str(label)
+                    for label in platform.target_settings
+                ]
 
     return hub_repo(
         name = hub_name,
