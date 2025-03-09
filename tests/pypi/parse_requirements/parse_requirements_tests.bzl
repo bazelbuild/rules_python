@@ -182,7 +182,7 @@ def _test_direct_urls(env):
                 )],
             ),
         ],
-       "foo": [
+        "foo": [
             struct(
                 distribution = "foo",
                 extra_pip_args = [],
@@ -205,7 +205,8 @@ def _test_direct_urls(env):
                     yanked = False,
                 )],
             ),
-        ],    })
+        ],
+    })
 
 _tests.append(_test_direct_urls)
 
