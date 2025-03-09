@@ -134,30 +134,6 @@ def _test_direct_urls(env):
         },
     )
     env.expect.that_dict(got).contains_exactly({
-        "foo": [
-            struct(
-                distribution = "foo",
-                extra_pip_args = [],
-                sdist = None,
-                is_exposed = True,
-                srcs = struct(
-                    marker = "",
-                    requirement = "foo[extra] @ https://some-url/package.whl",
-                    requirement_line = "foo[extra] @ https://some-url/package.whl",
-                    shas = [],
-                    version = "",
-                    url = "https://some-url/package.whl",
-                    filename = "package.whl",
-                ),
-                target_platforms = ["linux_x86_64"],
-                whls = [struct(
-                    url = "https://some-url/package.whl",
-                    filename = "package.whl",
-                    sha256 = "",
-                    yanked = False,
-                )],
-            ),
-        ],
         "bar": [
             struct(
                 distribution = "bar",
@@ -206,7 +182,30 @@ def _test_direct_urls(env):
                 )],
             ),
         ],
-    })
+       "foo": [
+            struct(
+                distribution = "foo",
+                extra_pip_args = [],
+                sdist = None,
+                is_exposed = True,
+                srcs = struct(
+                    marker = "",
+                    requirement = "foo[extra] @ https://some-url/package.whl",
+                    requirement_line = "foo[extra] @ https://some-url/package.whl",
+                    shas = [],
+                    version = "",
+                    url = "https://some-url/package.whl",
+                    filename = "package.whl",
+                ),
+                target_platforms = ["linux_x86_64"],
+                whls = [struct(
+                    url = "https://some-url/package.whl",
+                    filename = "package.whl",
+                    sha256 = "",
+                    yanked = False,
+                )],
+            ),
+        ],    })
 
 _tests.append(_test_direct_urls)
 
