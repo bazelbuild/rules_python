@@ -147,7 +147,6 @@ def _test_direct_urls(env):
                     shas = ["deadbeef"],
                     version = "",
                     url = "https://example.org/bar-1.0.whl",
-                    filename = "bar-1.0.whl",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [struct(
@@ -171,7 +170,6 @@ def _test_direct_urls(env):
                     shas = ["deadb00f"],
                     version = "",
                     url = "https://test.com/baz-2.0.whl",
-                    filename = "baz-2.0.whl",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [struct(
@@ -195,7 +193,6 @@ def _test_direct_urls(env):
                     shas = [],
                     version = "",
                     url = "https://some-url/package.whl",
-                    filename = "package.whl",
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [struct(

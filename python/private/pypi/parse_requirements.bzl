@@ -295,14 +295,16 @@ def _add_dists(*, requirement, index_urls, logger = None):
 
     # Handle direct URLs in requirements
     if hasattr(requirement.srcs, "url"):
-        # Create a struct that matches the expected format for direct URLs
+        url = requirement.srcs.url
+        _, _, filename = url.rpartition("/")
         direct_url_dist = struct(
-            url = requirement.srcs.url,
-            filename = requirement.srcs.filename,
-            # TODO: if more than one hash is present, we should use all of them
-            sha256 = requirement.srcs.shas[0] if requirement.srcs.shas else "",  # Use hash if provided
+            url = url,
+            filename = filename,
+            sha256 = requirement.srcs.shas[0] if requirement.srcs.shas else "",
             yanked = False,
         )
+
+        # TODO should be able to handle sdist by checking the filename extension
         return [direct_url_dist], None
 
     if not index_urls:

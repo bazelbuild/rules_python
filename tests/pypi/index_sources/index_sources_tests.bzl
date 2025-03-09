@@ -29,26 +29,22 @@ def _test_no_simple_api_sources(env):
             requirement = "foo==0.0.1 @ https://someurl.org",
             marker = "",
             url = "https://someurl.org",
-            filename = "someurl.org",
         ),
         "foo==0.0.1 @ https://someurl.org/package.whl": struct(
             requirement = "foo==0.0.1 @ https://someurl.org/package.whl",
             marker = "",
             url = "https://someurl.org/package.whl",
-            filename = "package.whl",
         ),
         "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef": struct(
             requirement = "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef",
             marker = "",
             url = "https://someurl.org/package.whl",
-            filename = "package.whl",
             shas = ["deadbeef"],
         ),
         "foo==0.0.1 @ https://someurl.org/package.whl; python_version < \"2.7\"\\    --hash=sha256:deadbeef": struct(
             requirement = "foo==0.0.1 @ https://someurl.org/package.whl --hash=sha256:deadbeef",
             marker = "python_version < \"2.7\"",
             url = "https://someurl.org/package.whl",
-            filename = "package.whl",
             shas = ["deadbeef"],
         ),
     }
@@ -61,8 +57,6 @@ def _test_no_simple_api_sources(env):
         env.expect.that_str(got.marker).equals(want.marker)
         if hasattr(want, "url"):
             env.expect.that_str(got.url).equals(want.url)
-        if hasattr(want, "filename"):
-            env.expect.that_str(got.filename).equals(want.filename)
 
 _tests.append(_test_no_simple_api_sources)
 
