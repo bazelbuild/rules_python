@@ -16,7 +16,6 @@
 """
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
@@ -124,8 +123,8 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         "--no-cache",
     ]
     args += user_args
-    run_args = []
 
+    run_args = []
     existing_outputs = _glob(out)
     if existing_outputs:
         # This means that the output file already exists and it should be used
@@ -186,29 +185,18 @@ def lock(*, name, srcs, out, args = [], **kwargs):
 
     # Write a script that can be used for updating the in-tree version of the
     # requirements file
-    write_file(
+    expand_template(
         name = update_target + "_gen",
         out = update_target + ".py",
-        content = [
-            "from os import environ",
-            "from pathlib import Path",
-            "from sys import stderr",
-            "",
-            'src = Path(environ["REQUIREMENTS_FILE"])',
-            'assert src.exists(), f"the {src} file does not exist"',
-            'dst = "{}/{}"'.format(pkg, out),
-            'print(f"cp <bazel-sandbox>/{src}\\n    -> <workspace>/{dst}", file=stderr)',
-            'build_workspace = Path(environ["BUILD_WORKSPACE_DIRECTORY"])',
-            "dst = build_workspace / dst",
-            "dst.write_text(src.read_text())",
-            'print("Success!", file=stderr)',
-        ],
+        template = "//python/uv/private:copy.py",
+        substitutions = {
+            'dst = ""': 'dst = "{}/{}"'.format(pkg, out),
+        },
     )
 
     py_binary(
         name = update_target,
         srcs = [update_target + ".py"],
-        main = update_target + ".py",
         data = [name],
         env = {
             "REQUIREMENTS_FILE": "$(rootpath {})".format(name),

@@ -16,7 +16,10 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python:py_binary.bzl", "py_binary")
 
 exports_files(
-    srcs = ["pip_compile.py"],
+    srcs = [
+        "copy.py",
+        "pip_compile.py",
+    ],
     # only because this is used from a macro to template
     visibility = ["//visibility:public"],
 )
