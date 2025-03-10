@@ -56,7 +56,8 @@ Unreleased changes template.
 * (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
 * (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
 * (gazelle) The generated manifest file (default: `gazelle_python.yaml`) will now include the
-  YAML document start `---` line. Implemented in [#x[().
+  YAML document start `---` line. Implemented in
+  [#2656](https://github.com/bazelbuild/rules_python/pull/2656).
 
 {#v0-0-0-fixed}
 ### Fixed
