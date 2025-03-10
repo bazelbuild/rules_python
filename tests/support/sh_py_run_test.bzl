@@ -79,7 +79,7 @@ def _create_reconfig_rule(builder):
     builder.cfg.update_outputs(_RECONFIG_OUTPUTS)
     return builder.build()
 
-_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder(), True)
+_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())
 
 _py_reconfig_test = _create_reconfig_rule(create_test_rule_builder())
 
