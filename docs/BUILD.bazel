@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@dev_pip//:requirements.bzl", "requirement")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
@@ -75,6 +76,11 @@ sphinx_docs(
         ":py_runtime_pair",
         "//sphinxdocs/docs:docs_lib",
     ],
+)
+
+build_test(
+    name = "docs_build_test",
+    targets = [":docs"],
 )
 
 sphinx_stardocs(
