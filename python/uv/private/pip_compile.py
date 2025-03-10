@@ -18,7 +18,8 @@ def _run() -> None:
 
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
-    args = sys.argv[1:]
+    args = []
+    args += sys.argv[1:]
 
     src_out = args[1] if args[0] == "--src-out" else None
     if src_out:
