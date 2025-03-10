@@ -152,6 +152,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="generator",
         description="Generates the modules mapping used by the Gazelle manifest.",
+        # Automatically read parameters from a file. Note, the '@' is the same prefix
+        # as set in the 'args.use_param_file' in the bazel rule.
+        fromfile_prefix_chars="@",
     )
     parser.add_argument("--output_file", type=str)
     parser.add_argument("--include_stub_packages", action="store_true")

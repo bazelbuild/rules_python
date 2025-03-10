@@ -75,14 +75,15 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     if not is_standalone_interpreter(rctx, python_interpreter, logger = logger):
         return []
 
-    stdout = repo_utils.execute_checked_stdout(
+    stdout = pypi_repo_utils.execute_checked_stdout(
         rctx,
         op = "GetPythonVersionForUnixCflags",
+        python = python_interpreter,
         arguments = [
-            python_interpreter,
             "-c",
             "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
         ],
+        srcs = [],
     )
     _python_version = stdout
     include_path = "{}/include/python{}".format(
@@ -139,11 +140,28 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
 
+    env = {}
     if rctx.attr.environment != None:
-        args += [
-            "--environment",
-            json.encode(struct(arg = rctx.attr.environment)),
-        ]
+        for key, value in rctx.attr.environment.items():
+            env[key] = value
+
+    # This is super hacky, but working out something nice is tricky.
+    # This is in particular needed for psycopg2 which attempts to link libpython.a,
+    # in order to point the linker at the correct python intepreter.
+    if rctx.attr.add_libdir_to_library_search_path:
+        if "LDFLAGS" in env:
+            fail("Can't set both environment LDFLAGS and add_libdir_to_library_search_path")
+        command = [pypi_repo_utils.resolve_python_interpreter(rctx), "-c", "import sys ; sys.stdout.write('{}/lib'.format(sys.exec_prefix))"]
+        result = rctx.execute(command)
+        if result.return_code != 0:
+            fail("Failed to get LDFLAGS path: command: {}, exit code: {}, stdout: {}, stderr: {}".format(command, result.return_code, result.stdout, result.stderr))
+        libdir = result.stdout
+        env["LDFLAGS"] = "-L{}".format(libdir)
+
+    args += [
+        "--environment",
+        json.encode(struct(arg = env)),
+    ]
 
     return args
 
@@ -181,7 +199,6 @@ def _whl_library_impl(rctx):
         python_interpreter_target = rctx.attr.python_interpreter_target,
     )
     args = [
-        python_interpreter,
         "-m",
         "python.private.pypi.whl_installer.wheel_installer",
         "--requirement",
@@ -247,6 +264,7 @@ def _whl_library_impl(rctx):
             # truncate the requirement value when logging it / reporting
             # progress since it may contain several ' --hash=sha256:...
             # --hash=sha256:...' substrings that fill up the console
+            python = python_interpreter,
             op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement.split(" ", 1)[0]),
             arguments = args,
             environment = environment,
@@ -295,6 +313,7 @@ def _whl_library_impl(rctx):
     pypi_repo_utils.execute_checked(
         rctx,
         op = "whl_library.ExtractWheel({}, {})".format(rctx.attr.name, whl_path),
+        python = python_interpreter,
         arguments = args + [
             "--whl-file",
             whl_path,

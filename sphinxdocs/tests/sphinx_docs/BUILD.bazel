@@ -40,6 +40,6 @@ sphinx_build_binary(
 )
 
 build_test(
-    name = "build_tests",
+    name = "docs_build_test",
     targets = [":docs"],
 )

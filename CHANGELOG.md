@@ -53,18 +53,32 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (deps) platforms 0.0.4 -> 0.0.11
+* (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
+* (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
 
 {#v0-0-0-fixed}
 ### Fixed
 * (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 * (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in 
   `file` generation mode. Fixed in [#2619](https://github.com/bazelbuild/rules_python/pull/2619).
+* (bzlmod) Running as root is no longer an error. `ignore_root_user_error=True`
+  is now the default. Note that running as root may still cause spurious
+  Bazel cache invalidation
+  ([#1169](https://github.com/bazelbuild/rules_python/issues/1169)).
+* (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
+  Support spilling modules mapping args into a params file.
+* (pypi) From now on `python` invocations in repository and module extension
+  evaluation contexts will invoke Python interpreter with `-B` to avoid
+  creating `.pyc` files.
+* (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 
 {#v0-0-0-added}
 ### Added
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
+* (pypi) An extra argument to add the interpreter lib dir to `LDFLAGS` when
+  building wheels from `sdist`.
 
 {#v0-0-0-removed}
 ### Removed

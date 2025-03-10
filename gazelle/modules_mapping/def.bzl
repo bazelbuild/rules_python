@@ -25,18 +25,25 @@ module name doesn't match the wheel distribution name.
 
 def _modules_mapping_impl(ctx):
     modules_mapping = ctx.actions.declare_file(ctx.attr.modules_mapping_name)
-    args = ctx.actions.args()
     all_wheels = depset(
         [whl for whl in ctx.files.wheels],
         transitive = [dep[DefaultInfo].files for dep in ctx.attr.wheels] + [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.wheels],
     )
-    args.add("--output_file", modules_mapping.path)
+
+    args = ctx.actions.args()
+
+    # Spill parameters to a file prefixed with '@'. Note, the '@' prefix is the same
+    # prefix as used in the `generator.py` in `fromfile_prefix_chars` attribute.
+    args.use_param_file(param_file_arg = "@%s")
+    args.set_param_file_format(format = "multiline")
     if ctx.attr.include_stub_packages:
         args.add("--include_stub_packages")
+    args.add("--output_file", modules_mapping)
     args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
-    args.add_all("--wheels", [whl.path for whl in all_wheels.to_list()])
+    args.add_all("--wheels", all_wheels)
+
     ctx.actions.run(
-        inputs = all_wheels.to_list(),
+        inputs = all_wheels,
         outputs = [modules_mapping],
         executable = ctx.executable._generator,
         arguments = [args],
