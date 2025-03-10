@@ -24,6 +24,12 @@ py_library(
 )
 
 py_library(
+    name = "module_with_type_annotations",
+    srcs = ["module_with_type_annotations.py"],
+    pyi_srcs = ["module_with_type_annotations.pyi"],
+)
+
+py_library(
     name = "module_with_data",
     srcs = ["module_with_data.py"],
     data = [

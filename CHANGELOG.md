@@ -53,6 +53,8 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (deps) platforms 0.0.4 -> 0.0.11
+* (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
+* (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -66,12 +68,18 @@ Unreleased changes template.
 * (gazelle) Don't collapse depsets to a list or into args when generating the modules mapping file.
   Support spilling modules mapping args into a params file.
 * (coverage) Fix missing files in the coverage report if they have no tests.
+* (pypi) From now on `python` invocations in repository and module extension
+  evaluation contexts will invoke Python interpreter with `-B` to avoid
+  creating `.pyc` files.
+* (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 
 {#v0-0-0-added}
 ### Added
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
+* (pypi) An extra argument to add the interpreter lib dir to `LDFLAGS` when
+  building wheels from `sdist`.
 
 {#v0-0-0-removed}
 ### Removed
