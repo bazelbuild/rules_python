@@ -19,7 +19,6 @@ load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
-load("//python/private:text_util.bzl", "render")  # buildifier: disable=bzl-visibility
 
 visibility(["//..."])
 
@@ -28,11 +27,10 @@ _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:
 _LockRunInfo = provider(
     doc = "Information about source tree for Sphinx to build.",
     fields = {
-        "args": """
-:type: Args
-
-TODO
-""",
+        "args": "",
+        "cmd": "",
+        "cmd_file": "",
+        "srcs": "",
     },
 )
 
@@ -45,24 +43,42 @@ def _lock_impl(ctx):
         ])
     args.add("--output-file", ctx.outputs.out)
     args.add_all(ctx.files.srcs)
-    args.use_param_file("--file=%s", use_always = True)
 
+    # We use a manual param file so that we can forward it to the debug executable rule
+    param_file = ctx.actions.declare_file(ctx.label.name + ".params.txt")
+    ctx.actions.write(
+        output = param_file,
+        content = args,
+    )
+
+    run_args = [param_file.path]
+    args = ctx.actions.args()
+    args.add_all(run_args)
+
+    cmd = ctx.executable.cmd
+
+    srcs = ctx.files.srcs + ctx.files.maybe_out + [param_file]
     ctx.actions.run(
         executable = ctx.executable.cmd,
         mnemonic = "RulesPythonLock",
-        inputs = ctx.files.srcs + ctx.files.maybe_out,
-        outputs = [
-            ctx.outputs.out,
-        ],
+        inputs = srcs,
+        outputs = [ctx.outputs.out],
         arguments = [args],
-        tools = [ctx.executable.cmd],
+        tools = [cmd],
         progress_message = "Locking requirements using uv",
         env = ctx.attr.env,
     )
 
     return [
-        DefaultInfo(files = depset([ctx.outputs.out])),
-        _LockRunInfo(args = args),
+        DefaultInfo(
+            files = depset([ctx.outputs.out]),
+        ),
+        _LockRunInfo(
+            cmd = ctx.attr.cmd,
+            cmd_file = ctx.executable.cmd,
+            args = run_args,
+            srcs = srcs,
+        ),
     ]
 
 _lock = rule(
@@ -84,18 +100,23 @@ _lock = rule(
 )
 
 def _run_lock_impl(ctx):
-    provider = ctx.attr.lock[_LockRunInfo]
-
-    executable = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.expand_template(
-        template = ctx.file._template,
+    run_info = ctx.attr.lock[_LockRunInfo]
+    executable = ctx.actions.declare_file(ctx.label.name + ".exe")
+    ctx.actions.symlink(
         output = executable,
-        substitutions = {
-            "    args = []": "    args = " + render.indent(render.list(provider.args)),
-        },
+        target_file = run_info.cmd_file,
         is_executable = True,
     )
-    fail(provider)
+
+    runfiles = ctx.runfiles(
+        files = run_info.srcs,
+        transitive_files = run_info.cmd[DefaultInfo].files,
+    ).merge(run_info.cmd[DefaultInfo].default_runfiles)
+
+    return DefaultInfo(
+        executable = executable,
+        runfiles = runfiles,
+    )
 
 _run_lock = rule(
     implementation = _run_lock_impl,

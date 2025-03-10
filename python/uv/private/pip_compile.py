@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import sys
 from pathlib import Path
@@ -19,14 +20,14 @@ def _run() -> None:
     uv = os.fsdecode(uv_path)
     env = os.environ.copy()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file", type=Path)
+    args = parser.parse_args()
+    sys_args = args.file.read_text().strip().split("\n")
+
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
     args = []
-    sys_args = sys.argv[1:]
-    if sys_args[0].startswith("--file"):
-        # TODO @aignas 2025-03-10: use argparse.ArgumentParser instead
-        sys_args = Path(sys_args[0].partition("=")[-1]).read_text().strip().split("\n")
-
     src_out = sys_args[1] if sys_args[0] == "--src-out" else None
     if src_out:
         sys_args = sys_args[2:]
