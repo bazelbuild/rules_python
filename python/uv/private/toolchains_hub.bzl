@@ -19,7 +19,7 @@ load(":toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 def toolchains_hub(
         *,
         name = None,
-        names,
+        toolchains,
         implementations,
         target_compatible_with,
         target_settings):
@@ -29,40 +29,38 @@ def toolchains_hub(
     TODO @aignas 2025-03-09: see if this can be reused in the python toolchains.
 
     Args:
-        name: Unused.
-        names: The names for toolchain targets. The later occurring items take
-            precedence over the previous items if they match the target platform.
+        name: The prefix to all of the targets, which goes after a numeric prefix.
+        toolchains: The toolchain names for the targets defined by this macro.
+            The earlier occurring items take precedence over the later items if
+            they match the target platform and target settings.
         implementations: The name to label mapping.
         target_compatible_with: The name to target_compatible_with list mapping.
         target_settings: The name to target_settings list mapping.
     """
-    if len(names) != len(implementations):
+    if len(toolchains) != len(implementations):
         fail("Each name must have an implementation")
 
-    # We are setting the order of the toolchains so that the later coming
-    # toolchains override the previous definitions using the toolchain
-    # resolution properties:
+    # We are defining the toolchains so that the order of toolchain matching is
+    # the same as the order of the toolchains, because:
     # * the toolchains are matched by target settings and target_compatible_with
     # * the first toolchain satisfying the above wins
     #
     # this means we need to register the toolchains prefixed with a number of
     # format 00xy, where x and y are some digits and the leading zeros to
     # ensure lexicographical sorting.
-    prefix_len = len(str(len(names)))
+    #
+    # Add 1 so that there is always a leading zero
+    prefix_len = len(str(len(toolchains))) + 1
     prefix = "0" * (prefix_len - 1)
 
-    # reverse the names list so that the later items override earlier toolchain
-    # registrations.
-    names = [n for _, n in sorted(enumerate(names), key = lambda x: -x[0])]
-
-    for i, name in enumerate(names):
+    for i, toolchain in enumerate(toolchains):
         # prefix with a prefix and then truncate the string.
         number_prefix = "{}{}".format(prefix, i)[-prefix_len:]
 
         native.toolchain(
-            name = "{}_{}".format(number_prefix, name),
-            target_compatible_with = target_compatible_with.get(name, []),
-            target_settings = target_settings.get(name, []),
-            toolchain = implementations[name],
+            name = "{}_{}_{}".format(number_prefix, name, toolchain),
+            target_compatible_with = target_compatible_with.get(toolchain, []),
+            target_settings = target_settings.get(toolchain, []),
+            toolchain = implementations[toolchain],
             toolchain_type = UV_TOOLCHAIN_TYPE,
         )

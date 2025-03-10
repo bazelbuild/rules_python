@@ -436,6 +436,57 @@ def _test_complex_configuring(env):
 
 _tests.append(_test_complex_configuring)
 
+def _test_non_rules_python_non_root_is_ignored(env):
+    calls = []
+    uv = _process_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                default = [
+                    _default(
+                        base_url = "https://example.org",
+                        manifest_filename = "manifest.json",
+                        version = "1.0.0",
+                        platform = "osx",
+                        compatible_with = ["@platforms//os:os"],
+                    ),
+                ],
+                configure = [
+                    _configure(),  # use defaults
+                ],
+            ),
+            _mod(
+                name = "something",
+                configure = [
+                    _configure(version = "6.6.6"),  # use defaults whatever they are
+                ],
+            ),
+        ),
+        uv_repository = lambda **kwargs: calls.append(kwargs),
+    )
+
+    uv.names().contains_exactly([
+        "1_0_0_osx",
+    ])
+    uv.implementations().contains_exactly({
+        "1_0_0_osx": "@uv_1_0_0_osx//:uv_toolchain",
+    })
+    uv.compatible_with().contains_exactly({
+        "1_0_0_osx": ["@platforms//os:os"],
+    })
+    uv.target_settings().contains_exactly({})
+    env.expect.that_collection(calls).contains_exactly([
+        {
+            "name": "uv_1_0_0_osx",
+            "platform": "osx",
+            "sha256": "deadb00f",
+            "urls": ["https://example.org/1.0.0/osx"],
+            "version": "1.0.0",
+        },
+    ])
+
+_tests.append(_test_non_rules_python_non_root_is_ignored)
+
 _analysis_tests = []
 
 def _test_toolchain_precedence(name):

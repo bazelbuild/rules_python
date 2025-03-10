@@ -29,7 +29,8 @@ def _toolchains_repo_impl(repository_ctx):
     contents = _TEMPLATE.format(
         render.call(
             "toolchains_hub",
-            names = render.list(repository_ctx.attr.toolchain_names),
+            name = repr("uv_toolchain"),
+            toolchains = render.list(repository_ctx.attr.toolchain_names),
             implementations = render.dict(
                 repository_ctx.attr.toolchain_implementations,
             ),
