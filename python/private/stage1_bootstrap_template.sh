@@ -219,6 +219,7 @@ fi
 if [[ -n "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}" ]]; then
   read -a additional_interpreter_args <<< "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}"
   interpreter_args+=("${additional_interpreter_args[@]}")
+  unset RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS
 fi
 
 export RUNFILES_DIR
