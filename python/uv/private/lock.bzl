@@ -29,6 +29,7 @@ def _impl(ctx):
 
     # TODO @aignas 2025-03-02: create an executable file here that is using a
     # python and uv toolchains.
+
     if ctx.files.src_outs:
         args.add_all([
             "--src-out",
@@ -45,9 +46,7 @@ def _impl(ctx):
             ctx.outputs.out,
         ],
         arguments = [args],
-        tools = [
-            ctx.executable.cmd,
-        ],
+        tools = [ctx.executable.cmd],
         progress_message = "Locking requirements using uv",
         env = ctx.attr.env,
     )
