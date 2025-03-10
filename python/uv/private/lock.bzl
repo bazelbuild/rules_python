@@ -30,10 +30,10 @@ def _impl(ctx):
     # TODO @aignas 2025-03-02: create an executable file here that is using a
     # python and uv toolchains.
 
-    if ctx.files.src_outs:
+    if ctx.files.maybe_out:
         args.add_all([
             "--src-out",
-            ctx.files.src_outs[0].path,
+            ctx.files.maybe_out[0].path,
         ])
     args.add("--output-file", ctx.outputs.out)
     args.add_all(ctx.files.srcs)
@@ -41,7 +41,7 @@ def _impl(ctx):
     ctx.actions.run(
         executable = ctx.executable.cmd,
         mnemonic = "RulesPythonLock",
-        inputs = ctx.files.srcs + ctx.files.src_outs,
+        inputs = ctx.files.srcs + ctx.files.maybe_out,
         outputs = [
             ctx.outputs.out,
         ],
@@ -65,30 +65,11 @@ _lock = rule(
             cfg = "target",
         ),
         "env": attr.string_dict(),
+        "maybe_out": attr.label(allow_single_file = True),
         "out": attr.output(mandatory = True),
-        "src_outs": attr.label_list(mandatory = True, allow_files = True),
         "srcs": attr.label_list(mandatory = True, allow_files = True),
     },
 )
-
-def _glob(path):
-    """A small function to return a list of existing outputs.
-
-    If the file referenced by the input argument exists, then it will return
-    it, otherwise it will return an empty list. This is useful to for programs
-    like pip-compile which behave differently if the output file exists and
-    update the output file in place.
-
-    The API of the function ensures that path is not a glob itself.
-
-    Args:
-        path: {type}`str` the file name.
-    """
-    for p in native.glob([path], allow_empty = True):
-        if path == p:
-            return [p]
-
-    return []
 
 def lock(*, name, srcs, out, args = [], **kwargs):
     """Pin the requirements based on the src files.
@@ -125,13 +106,13 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     args += user_args
 
     run_args = []
-    existing_outputs = _glob(out)
-    if existing_outputs:
+    maybe_out = _maybe_path(out)
+    if maybe_out:
         # This means that the output file already exists and it should be used
         # to create a new file. This will be taken care by the locker tool.
         #
         # TODO @aignas 2025-03-02: similarly to sphinx rule, expand the output to short_path
-        run_args += ["--output-file", "$(rootpath {})".format(existing_outputs[0])]
+        run_args += ["--output-file", "$(rootpath {})".format(maybe_out)]
     else:
         # TODO @aignas 2025-03-02: pass the output as a string
         run_out = "{}/{}".format(pkg, out)
@@ -159,7 +140,7 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         srcs = [locker_target + ".py"],
         data = [
             "//python/uv:current_toolchain",
-        ] + srcs + existing_outputs,
+        ] + srcs + ([maybe_out] if maybe_out else []),
         args = run_args,
         tags = ["manual"],
         deps = ["//python/runfiles"],
@@ -171,7 +152,7 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         # Check if the output file already exists, if yes, first copy it to the
         # output file location in order to make `uv` not change the requirements if
         # we are just running the command.
-        src_outs = existing_outputs,
+        maybe_out = maybe_out,
         out = out + ".new",
         tags = [
             "local",
@@ -183,11 +164,11 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         cmd = locker_target,
     )
 
-    if existing_outputs:
+    if maybe_out:
         diff_test(
             name = name + "_test",
             file1 = out + ".new",
-            file2 = existing_outputs[0],
+            file2 = maybe_out,
             tags = ["manual"],
         )
 
@@ -212,3 +193,22 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         tags = ["manual"],
         **kwargs
     )
+
+def _maybe_path(path):
+    """A small function to return a list of existing outputs.
+
+    If the file referenced by the input argument exists, then it will return
+    it, otherwise it will return an empty list. This is useful to for programs
+    like pip-compile which behave differently if the output file exists and
+    update the output file in place.
+
+    The API of the function ensures that path is not a glob itself.
+
+    Args:
+        path: {type}`str` the file name.
+    """
+    for p in native.glob([path], allow_empty = True):
+        if path == p:
+            return p
+
+    return None
