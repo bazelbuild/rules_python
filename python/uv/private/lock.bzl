@@ -15,6 +15,7 @@
 """A simple macro to lock the requirements.
 """
 
+load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
@@ -27,7 +28,7 @@ _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:
 _RunLockInfo = provider(
     doc = "Information for running the underlying Sphinx command directly",
     fields = {
-        "locker": """
+        "cmd": """
 :type: Target
 
 The locker binary to run.
@@ -46,14 +47,13 @@ def _impl(ctx):
             ctx.files.src_outs[0].path,
         ])
     args.add("--output-file", ctx.outputs.out)
-    args.add_all(ctx.attr.args)
 
     # TODO @aignas 2025-03-02: add the following deps to _RunLockInfo
     srcs = ctx.files.srcs + ctx.files.src_outs
     args.add_all(ctx.files.srcs)
 
     ctx.actions.run(
-        executable = ctx.executable._locker,
+        executable = ctx.executable.cmd,
         mnemonic = "RulesPythonLock",
         inputs = srcs,
         outputs = [
@@ -61,7 +61,7 @@ def _impl(ctx):
         ],
         arguments = [args],
         tools = [
-            ctx.executable._locker,
+            ctx.executable.cmd,
         ],
         progress_message = "Locking requirements using uv",
         env = ctx.attr.env,
@@ -69,7 +69,7 @@ def _impl(ctx):
 
     return [
         DefaultInfo(files = depset([ctx.outputs.out])),
-        _RunLockInfo(locker = ctx.executable._locker),
+        _RunLockInfo(cmd = ctx.executable.cmd),
     ]
 
 _lock = rule(
@@ -78,15 +78,15 @@ _lock = rule(
 """,
     attrs = {
         "args": attr.string_list(),
-        "env": attr.string_dict(),
-        "out": attr.output(mandatory = True),
-        "src_outs": attr.label_list(mandatory = True, allow_files = True),
-        "srcs": attr.label_list(mandatory = True, allow_files = True),
-        "_locker": attr.label(
+        "cmd": attr.label(
             default = "//python/uv/private:pip_compile",
             executable = True,
             cfg = "target",
         ),
+        "env": attr.string_dict(),
+        "out": attr.output(mandatory = True),
+        "src_outs": attr.label_list(mandatory = True, allow_files = True),
+        "srcs": attr.label_list(mandatory = True, allow_files = True),
     },
 )
 
@@ -130,6 +130,26 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     ]
     args += user_args
 
+    expand_template(
+        name = name + "_locker_src",
+        out = name + "_locker.py",
+        template = "//python/uv/private:pip_compile.py",
+        substitutions = {
+            "    args = []": "    args = " + repr(args),
+        },
+        tags = ["manual"],
+    )
+
+    py_binary(
+        name = name + "_locker",
+        srcs = [name + "_locker.py"],
+        data = [
+            "//python/uv:current_toolchain",
+        ],
+        tags = ["manual"],
+        deps = ["//python/runfiles"],
+    )
+
     _lock(
         name = name,
         srcs = srcs,
@@ -145,6 +165,7 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         ],
         args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
+        cmd = name + "_locker",
     )
 
     run_args = []

@@ -19,22 +19,25 @@ def _run() -> None:
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
     args = []
-    args += sys.argv[1:]
+    sys_args = sys.argv[1:]
 
-    src_out = args[1] if args[0] == "--src-out" else None
+    src_out = sys_args[1] if sys_args[0] == "--src-out" else None
     if src_out:
-        args = args[2:]
+        sys_args = sys_args[2:]
 
-    if args[0] != "--output-file":
+    if sys_args[0] != "--output-file":
         raise ValueError(
-            f"The first arg should be to declare the output file, got:\n{args}"
+            f"The first arg should be to declare the output file, got:\n{sys_args}"
         )
     else:
-        out = args[1]
+        out = sys_args[1]
 
+    srcs = sys_args[2:]
+
+    # this is set under bazel run
     workspace = env.get("BUILD_WORKSPACE_DIRECTORY")
     if workspace:
-        args[1] = Path(workspace) / out
+        dst = Path(workspace) / out
     elif src_out:
         src = Path(src_out)
         dst = Path(out)
@@ -42,7 +45,7 @@ def _run() -> None:
 
         shutil.copy(src, dst)
 
-    uv_args = ["pip", "compile"] + args
+    uv_args = ["pip", "compile"] + args + srcs + ["--output-file", str(dst)]
 
     if sys.platform == "win32":
         import subprocess
