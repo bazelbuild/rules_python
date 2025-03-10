@@ -15,6 +15,7 @@
 """A simple macro to lock the requirements.
 """
 
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
@@ -182,6 +183,14 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
         cmd = locker_target,
     )
+
+    if existing_outputs:
+        diff_test(
+            name = name + "_test",
+            file1 = out + ".new",
+            file2 = existing_outputs[0],
+            tags = ["manual"],
+        )
 
     # Write a script that can be used for updating the in-tree version of the
     # requirements file
