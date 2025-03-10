@@ -132,31 +132,40 @@ for a particular version.
     },
 )
 
-def _configure(config, *, platform, compatible_with, target_settings, urls = [], sha256 = "", **values):
+def _configure(config, *, platform, compatible_with, target_settings, urls = [], sha256 = "", override = False, **values):
     """Set the value in the config if the value is provided"""
     for key, value in values.items():
         if not value:
             continue
 
+        if not override and config.get(key):
+            continue
+
         config[key] = value
 
     config.setdefault("platforms", {})
-    if platform and not (compatible_with or target_settings or urls):
-        config["platforms"].pop(platform)
-    elif platform:
-        if compatible_with or target_settings:
-            config["platforms"][platform] = struct(
-                name = platform.replace("-", "_").lower(),
-                compatible_with = compatible_with,
-                target_settings = target_settings,
-            )
-        if urls:
-            config.setdefault("urls", {})[platform] = struct(
-                sha256 = sha256,
-                urls = urls,
-            )
+    if not platform:
+        if compatible_with or target_settings or urls:
+            fail("`platform` name must be specified when specifying `compatible_with`, `target_settings` or `urls`")
     elif compatible_with or target_settings:
-        fail("`platform` name must be specified when specifying `compatible_with` or `target_settings`")
+        if not override and config.get("platforms", {}).get(platform):
+            return
+
+        config["platforms"][platform] = struct(
+            name = platform.replace("-", "_").lower(),
+            compatible_with = compatible_with,
+            target_settings = target_settings,
+        )
+    elif urls:
+        if not override and config.get("urls", {}).get(platform):
+            return
+
+        config.setdefault("urls", {})[platform] = struct(
+            sha256 = sha256,
+            urls = urls,
+        )
+    else:
+        config["platforms"].pop(platform)
 
 def process_modules(
         module_ctx,
@@ -205,6 +214,7 @@ def process_modules(
                 platform = tag.platform,
                 compatible_with = tag.compatible_with,
                 target_settings = tag.target_settings,
+                override = mod.is_root,
             )
 
     for key in [
@@ -259,6 +269,7 @@ def process_modules(
                 target_settings = tag.target_settings,
                 sha256 = tag.sha256,
                 urls = tag.urls,
+                override = mod.is_root,
             )
 
     if not versions:
