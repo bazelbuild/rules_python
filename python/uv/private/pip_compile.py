@@ -4,12 +4,15 @@ import os
 import sys
 from pathlib import Path
 
-from python import runfiles
-
 
 def _run() -> None:
-    rfiles = runfiles.Create()
-    uv_path = rfiles.Rlocation("_main/python/uv/current_toolchain/uv")
+    uv_path = ""
+    if not uv_path:
+        from python import runfiles
+
+        rfiles = runfiles.Create()
+        uv_path = rfiles.Rlocation("_main/python/uv/current_toolchain/uv")
+
     if not uv_path:
         raise RuntimeError("cannot find uv: {}".format(uv_path))
 
@@ -20,6 +23,9 @@ def _run() -> None:
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
     args = []
     sys_args = sys.argv[1:]
+    if sys_args[0].startswith("--file"):
+        # TODO @aignas 2025-03-10: use argparse.ArgumentParser instead
+        sys_args = Path(sys_args[0].partition("=")[-1]).read_text().strip().split("\n")
 
     src_out = sys_args[1] if sys_args[0] == "--src-out" else None
     if src_out:

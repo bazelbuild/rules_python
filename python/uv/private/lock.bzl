@@ -19,17 +19,25 @@ load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
+load("//python/private:text_util.bzl", "render")  # buildifier: disable=bzl-visibility
 
 visibility(["//..."])
 
 _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
-def _impl(ctx):
+_LockRunInfo = provider(
+    doc = "Information about source tree for Sphinx to build.",
+    fields = {
+        "args": """
+:type: Args
+
+TODO
+""",
+    },
+)
+
+def _lock_impl(ctx):
     args = ctx.actions.args()
-
-    # TODO @aignas 2025-03-02: create an executable file here that is using a
-    # python and uv toolchains.
-
     if ctx.files.maybe_out:
         args.add_all([
             "--src-out",
@@ -37,6 +45,7 @@ def _impl(ctx):
         ])
     args.add("--output-file", ctx.outputs.out)
     args.add_all(ctx.files.srcs)
+    args.use_param_file("--file=%s", use_always = True)
 
     ctx.actions.run(
         executable = ctx.executable.cmd,
@@ -51,10 +60,13 @@ def _impl(ctx):
         env = ctx.attr.env,
     )
 
-    return [DefaultInfo(files = depset([ctx.outputs.out]))]
+    return [
+        DefaultInfo(files = depset([ctx.outputs.out])),
+        _LockRunInfo(args = args),
+    ]
 
 _lock = rule(
-    implementation = _impl,
+    implementation = _lock_impl,
     doc = """\
 """,
     attrs = {
@@ -69,6 +81,37 @@ _lock = rule(
         "out": attr.output(mandatory = True),
         "srcs": attr.label_list(mandatory = True, allow_files = True),
     },
+)
+
+def _run_lock_impl(ctx):
+    provider = ctx.attr.lock[_LockRunInfo]
+
+    executable = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = executable,
+        substitutions = {
+            "    args = []": "    args = " + render.indent(render.list(provider.args)),
+        },
+        is_executable = True,
+    )
+    fail(provider)
+
+_run_lock = rule(
+    implementation = _run_lock_impl,
+    doc = """\
+""",
+    attrs = {
+        "lock": attr.label(
+            mandatory = True,
+            providers = [_LockRunInfo],
+        ),
+        "_template": attr.label(
+            default = "//python/uv/private:pip_compile.py",
+            allow_single_file = True,
+        ),
+    },
+    executable = True,
 )
 
 def lock(*, name, srcs, out, args = [], **kwargs):
@@ -142,6 +185,7 @@ def lock(*, name, srcs, out, args = [], **kwargs):
             "//python/uv:current_toolchain",
         ] + srcs + ([maybe_out] if maybe_out else []),
         args = run_args,
+        python_version = kwargs.get("python_version"),
         tags = ["manual"],
         deps = ["//python/runfiles"],
     )
@@ -162,6 +206,11 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
         cmd = locker_target,
+    )
+
+    _run_lock(
+        name = name + ".run2",
+        lock = name,
     )
 
     if maybe_out:
