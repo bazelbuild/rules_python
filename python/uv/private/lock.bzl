@@ -16,7 +16,6 @@
 """
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
-load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
@@ -24,17 +23,6 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: dis
 visibility(["//..."])
 
 _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
-
-_RunLockInfo = provider(
-    doc = "Information for running the underlying Sphinx command directly",
-    fields = {
-        "cmd": """
-:type: Target
-
-The locker binary to run.
-""",
-    },
-)
 
 def _impl(ctx):
     args = ctx.actions.args()
@@ -47,15 +35,12 @@ def _impl(ctx):
             ctx.files.src_outs[0].path,
         ])
     args.add("--output-file", ctx.outputs.out)
-
-    # TODO @aignas 2025-03-02: add the following deps to _RunLockInfo
-    srcs = ctx.files.srcs + ctx.files.src_outs
     args.add_all(ctx.files.srcs)
 
     ctx.actions.run(
         executable = ctx.executable.cmd,
         mnemonic = "RulesPythonLock",
-        inputs = srcs,
+        inputs = ctx.files.srcs + ctx.files.src_outs,
         outputs = [
             ctx.outputs.out,
         ],
@@ -67,10 +52,7 @@ def _impl(ctx):
         env = ctx.attr.env,
     )
 
-    return [
-        DefaultInfo(files = depset([ctx.outputs.out])),
-        _RunLockInfo(cmd = ctx.executable.cmd),
-    ]
+    return [DefaultInfo(files = depset([ctx.outputs.out]))]
 
 _lock = rule(
     implementation = _impl,
@@ -79,7 +61,7 @@ _lock = rule(
     attrs = {
         "args": attr.string_list(),
         "cmd": attr.label(
-            default = "//python/uv/private:pip_compile",
+            mandatory = True,
             executable = True,
             cfg = "target",
         ),
@@ -89,6 +71,25 @@ _lock = rule(
         "srcs": attr.label_list(mandatory = True, allow_files = True),
     },
 )
+
+def _glob(path):
+    """A small function to return a list of existing outputs.
+
+    If the file referenced by the input argument exists, then it will return
+    it, otherwise it will return an empty list. This is useful to for programs
+    like pip-compile which behave differently if the output file exists and
+    update the output file in place.
+
+    The API of the function ensures that path is not a glob itself.
+
+    Args:
+        path: {type}`str` the file name.
+    """
+    for p in native.glob([path], allow_empty = True):
+        if path == p:
+            return [p]
+
+    return []
 
 def lock(*, name, srcs, out, args = [], **kwargs):
     """Pin the requirements based on the src files.
@@ -108,17 +109,11 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         **kwargs: Extra kwargs passed to the {obj}`py_binary` rule.
     """
     pkg = native.package_name()
-    update_target = name + ".update"
-
-    user_args = args
-
-    existing_outputs = []
-    for path in native.glob([out], allow_empty = True):
-        if path == out:
-            existing_outputs = [out]
-            break
+    update_target = "{}.update".format(name)
+    locker_target = "{}.run".format(name)
 
     # TODO @aignas 2025-03-02: move the following args to a template expansion action
+    user_args = args
     args = [
         # FIXME @aignas 2025-03-02: this acts differently in native_binary and the rule
         "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
@@ -129,10 +124,30 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         "--no-cache",
     ]
     args += user_args
+    run_args = []
+
+    existing_outputs = _glob(out)
+    if existing_outputs:
+        # This means that the output file already exists and it should be used
+        # to create a new file. This will be taken care by the locker tool.
+        #
+        # TODO @aignas 2025-03-02: similarly to sphinx rule, expand the output to short_path
+        run_args += ["--output-file", "$(rootpath {})".format(existing_outputs[0])]
+    else:
+        # TODO @aignas 2025-03-02: pass the output as a string
+        run_out = "{}/{}".format(pkg, out)
+        run_args += ["--output-file", run_out]
+
+    # args just get passed as is
+    run_args += [
+        # TODO @aignas 2025-03-02: get the full source location for these
+        "$(rootpath {})".format(s)
+        for s in srcs
+    ]
 
     expand_template(
-        name = name + "_locker_src",
-        out = name + "_locker.py",
+        name = locker_target + "_gen",
+        out = locker_target + ".py",
         template = "//python/uv/private:pip_compile.py",
         substitutions = {
             "    args = []": "    args = " + repr(args),
@@ -141,11 +156,12 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     )
 
     py_binary(
-        name = name + "_locker",
-        srcs = [name + "_locker.py"],
+        name = locker_target,
+        srcs = [locker_target + ".py"],
         data = [
             "//python/uv:current_toolchain",
-        ],
+        ] + srcs + existing_outputs,
+        args = run_args,
         tags = ["manual"],
         deps = ["//python/runfiles"],
     )
@@ -165,45 +181,13 @@ def lock(*, name, srcs, out, args = [], **kwargs):
         ],
         args = args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
-        cmd = name + "_locker",
-    )
-
-    run_args = []
-    if existing_outputs:
-        # This means that the output file already exists and it should be used
-        # to create a new file. This will be taken care by the locker tool.
-        #
-        # TODO @aignas 2025-03-02: similarly to sphinx rule, expand the output to short_path
-        run_args += ["--output-file", "$(location {})".format(existing_outputs[0])]
-    else:
-        # TODO @aignas 2025-03-02: pass the output as a string
-        run_out = "{}/{}".format(pkg, out)
-        run_args += ["--output-file", run_out]
-
-    # args just get passed as is
-    run_args += args + [
-        # TODO @aignas 2025-03-02: get the full source location for these
-        "$(location {})".format(s)
-        for s in srcs
-    ]
-
-    native_binary(
-        # this is expand_template using the stuff from the provider from the _lock rule
-        name = name + ".run",
-        args = run_args,  # the main difference is the expansion of args here
-        data = srcs + existing_outputs,  # This only depends on inputs to the _lock
-        src = "//python/uv/private:pip_compile",
-        tags = [
-            "local",
-            "manual",
-            "no-cache",
-        ],
+        cmd = locker_target,
     )
 
     # Write a script that can be used for updating the in-tree version of the
     # requirements file
     write_file(
-        name = name + ".update_gen",
+        name = update_target + "_gen",
         out = update_target + ".py",
         content = [
             "from os import environ",

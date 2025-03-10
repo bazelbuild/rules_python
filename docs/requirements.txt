@@ -10,9 +10,9 @@ alabaster==1.0.0 \
     --hash=sha256:c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e \
     --hash=sha256:fc6786402dc3fcb2de3cabd5fe455a2db534b371124f1f21de8731783dec828b
     # via sphinx
-astroid==3.3.8 \
-    --hash=sha256:187ccc0c248bfbba564826c26f070494f7bc964fd286b6d9fff4420e55de828c \
-    --hash=sha256:a88c7994f914a4ea8572fac479459f4955eeccc877be3f2d959a33273b0cf40b
+astroid==3.3.9 \
+    --hash=sha256:622cc8e3048684aa42c820d9d218978021c3c3d174fb03a9f0d615921744f550 \
+    --hash=sha256:d05bfd0acba96a7bd43e222828b7d9bc1e138aaeb0649707908d3702a9831248
     # via sphinx-autodoc2
 babel==2.17.0 \
     --hash=sha256:0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d \
@@ -135,9 +135,9 @@ imagesize==1.4.1 \
     --hash=sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b \
     --hash=sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a
     # via sphinx
-jinja2==3.1.5 \
-    --hash=sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb \
-    --hash=sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb
+jinja2==3.1.6 \
+    --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
+    --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
     # via
     #   myst-parser
     #   readthedocs-sphinx-ext
@@ -306,9 +306,9 @@ snowballstemmer==2.2.0 \
     --hash=sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1 \
     --hash=sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a
     # via sphinx
-sphinx==8.2.1 \
-    --hash=sha256:b5d2bb3cdf6207fcacde9f92085d2b97667b05b9c346eaec426ca4be8af505e9 \
-    --hash=sha256:e4b932951b9c18b039f73b72e4e63afe967d90408700ec222b981ac24647c01e
+sphinx==8.2.3 \
+    --hash=sha256:398ad29dee7f63a75888314e9424d40f52ce5a6a87ae88e7071e80af296ec348 \
+    --hash=sha256:4405915165f13521d875a8c29c8970800a0141c14cc5416a38feca4ea5d9b9c3
     # via
     #   rules-python-docs (docs/pyproject.toml)
     #   myst-parser

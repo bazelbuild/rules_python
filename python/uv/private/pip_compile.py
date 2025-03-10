@@ -32,8 +32,6 @@ def _run() -> None:
     else:
         out = sys_args[1]
 
-    srcs = sys_args[2:]
-
     # this is set under bazel run
     workspace = env.get("BUILD_WORKSPACE_DIRECTORY")
     if workspace:
@@ -44,8 +42,9 @@ def _run() -> None:
         import shutil
 
         shutil.copy(src, dst)
+    sys_args[1] = str(dst)
 
-    uv_args = ["pip", "compile"] + args + srcs + ["--output-file", str(dst)]
+    uv_args = ["pip", "compile"] + args + sys_args
 
     if sys.platform == "win32":
         import subprocess
