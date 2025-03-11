@@ -207,64 +207,46 @@ def parse_requirements(
         # Return normalized names
         ret_requirements = ret.setdefault(normalize_name(whl_name), [])
 
-        # First, find if there's a common sdist across all platforms
-        common_sdist = None
-        common_sdist_hash = None
         all_platforms = []
+        common_sdist = None
+
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
-            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
-            all_platforms.extend(target_platforms)
             whls, sdist = _add_dists(
                 requirement = r,
                 index_urls = index_urls.get(whl_name),
                 logger = logger,
             )
-            if sdist:
-                if not common_sdist:
-                    common_sdist = sdist
-                    common_sdist_hash = sdist.sha256
-                elif sdist.sha256 == common_sdist_hash:
-                    continue
-                else:
-                    common_sdist = None
-                    break
+            
+            if sdist and not common_sdist:
+                common_sdist = sdist
 
-        # If we found a common sdist, add it as a separate entry
-        if common_sdist:
-            # Take the first requirement's info as base since version should be same
-            base_req = sorted(reqs.values(), key = lambda r: r.requirement_line)[0]
+            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
+            all_platforms.extend(target_platforms)
+
             ret_requirements.append(
                 struct(
-                    distribution = base_req.distribution,
-                    srcs = base_req.srcs,
+                    distribution = r.distribution,
+                    srcs = r.srcs,
+                    target_platforms = sorted(target_platforms),
+                    extra_pip_args = r.extra_pip_args,
+                    whls = whls,
+                    sdist = None,
+                    is_exposed = is_exposed,
+                ),
+            )
+        
+        if common_sdist:
+            ret_requirements.append(
+                struct(
+                    distribution = r.distribution,
+                    srcs = r.srcs,
                     target_platforms = sorted(all_platforms),
-                    extra_pip_args = base_req.extra_pip_args,
+                    extra_pip_args = r.extra_pip_args,
                     whls = [],
                     sdist = common_sdist,
                     is_exposed = is_exposed,
                 ),
             )
-
-        # Now add platform-specific entries with wheels
-        for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
-            whls, sdist = _add_dists(
-                requirement = r,
-                index_urls = index_urls.get(whl_name),
-                logger = logger,
-            )
-            if not common_sdist or len(whls) > 0:  # Only add entries that have wheels
-                target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
-                ret_requirements.append(
-                    struct(
-                        distribution = r.distribution,
-                        srcs = r.srcs,
-                        target_platforms = sorted(target_platforms),
-                        extra_pip_args = r.extra_pip_args,
-                        whls = whls,
-                        sdist = None if common_sdist else sdist,  # No sdist in wheel-specific entries
-                        is_exposed = is_exposed,
-                    ),
-                )
 
     if logger:
         logger.debug(lambda: "Will configure whl repos: {}".format(ret.keys()))
