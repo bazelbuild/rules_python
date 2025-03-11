@@ -20,10 +20,12 @@ def _run() -> None:
     uv = os.fsdecode(uv_path)
     env = os.environ.copy()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file", type=Path)
-    args = parser.parse_args()
-    sys_args = args.file.read_text().strip().split("\n")
+    # TODO @aignas 2025-03-11: this does not work when we try to pass extra args via bazel run
+    # The best way is to do a template expansion.
+
+    params = Path(f"{sys.argv[0]}.params.txt")
+    assert params.exists(), f"{params} does not exist"
+    sys_args = params.read_text().strip().split("\n")
 
     # Let `uv` know that it was spawned by this Python interpreter
     env["UV_INTERNAL__PARENT_INTERPRETER"] = sys.executable
@@ -51,7 +53,7 @@ def _run() -> None:
         shutil.copy(src, dst)
     sys_args[1] = str(dst)
 
-    uv_args = ["pip", "compile"] + args + sys_args
+    uv_args = ["pip", "compile"] + args + sys_args + uv_args
 
     if sys.platform == "win32":
         import subprocess

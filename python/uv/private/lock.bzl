@@ -43,9 +43,18 @@ def _lock_impl(ctx):
         ])
     args.add("--output-file", ctx.outputs.out)
     args.add_all(ctx.files.srcs)
+    args.add_all(["--custom-compile-command", "bazel run //{}:{}.update".format(
+        ctx.label.package,
+        ctx.label.name,
+    )])
+    args.add_all([
+        "--no-python-downloads",
+        "--no-cache",
+    ])
+    args.add_all(ctx.attr.args)
 
     # We use a manual param file so that we can forward it to the debug executable rule
-    param_file = ctx.actions.declare_file(ctx.label.name + ".params.txt")
+    param_file = ctx.actions.declare_file(ctx.label.name + ".params")
     ctx.actions.write(
         output = param_file,
         content = args,
@@ -54,13 +63,14 @@ def _lock_impl(ctx):
     run_args = [param_file.path]
     args = ctx.actions.args()
     args.add_all(run_args)
+    args.add_all(ctx.attr.run_args)
 
-    cmd = ctx.executable.cmd
+    cmd = ctx.executable._cmd
 
     srcs = ctx.files.srcs + ctx.files.maybe_out + [param_file]
     ctx.actions.run(
-        executable = ctx.executable.cmd,
-        mnemonic = "RulesPythonLock",
+        executable = cmd,
+        mnemonic = "RulesPythonUvPipCompile",
         inputs = srcs,
         outputs = [ctx.outputs.out],
         arguments = [args],
@@ -74,9 +84,9 @@ def _lock_impl(ctx):
             files = depset([ctx.outputs.out]),
         ),
         _LockRunInfo(
-            cmd = ctx.attr.cmd,
-            cmd_file = ctx.executable.cmd,
-            args = run_args,
+            cmd = ctx.attr._cmd,
+            cmd_file = cmd,
+            args = param_file,
             srcs = srcs,
         ),
     ]
@@ -87,20 +97,27 @@ _lock = rule(
 """,
     attrs = {
         "args": attr.string_list(),
-        "cmd": attr.label(
-            mandatory = True,
-            executable = True,
-            cfg = "target",
-        ),
         "env": attr.string_dict(),
         "maybe_out": attr.label(allow_single_file = True),
         "out": attr.output(mandatory = True),
+        "run_args": attr.string_list(),
         "srcs": attr.label_list(mandatory = True, allow_files = True),
+        "_cmd": attr.label(
+            default = "//python/uv/private:pip_compile",
+            executable = True,
+            cfg = "target",
+        ),
     },
 )
 
 def _run_lock_impl(ctx):
     run_info = ctx.attr.lock[_LockRunInfo]
+    params = ctx.actions.declare_file(ctx.label.name + ".params.txt")
+    ctx.actions.symlink(
+        output = params,
+        target_file = run_info.args,
+    )
+
     executable = ctx.actions.declare_file(ctx.label.name + ".exe")
     ctx.actions.symlink(
         output = executable,
@@ -109,7 +126,7 @@ def _run_lock_impl(ctx):
     )
 
     runfiles = ctx.runfiles(
-        files = run_info.srcs,
+        files = run_info.srcs + [run_info.cmd_file],
         transitive_files = run_info.cmd[DefaultInfo].files,
     ).merge(run_info.cmd[DefaultInfo].default_runfiles)
 
@@ -135,7 +152,7 @@ _run_lock = rule(
     executable = True,
 )
 
-def lock(*, name, srcs, out, args = [], **kwargs):
+def lock(*, name, srcs, out, args = [], run_args = [], **kwargs):
     """Pin the requirements based on the src files.
 
     Differences with the current {obj}`compile_pip_requirements` rule:
@@ -156,60 +173,14 @@ def lock(*, name, srcs, out, args = [], **kwargs):
     update_target = "{}.update".format(name)
     locker_target = "{}.run".format(name)
 
-    # TODO @aignas 2025-03-02: move the following args to a template expansion action
     user_args = args
     args = [
-        # FIXME @aignas 2025-03-02: this acts differently in native_binary and the rule
-        "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
         "--generate-hashes",
         "--emit-index-url",
         "--no-strip-extras",
-        "--no-python-downloads",
-        "--no-cache",
     ]
     args += user_args
-
-    run_args = []
     maybe_out = _maybe_path(out)
-    if maybe_out:
-        # This means that the output file already exists and it should be used
-        # to create a new file. This will be taken care by the locker tool.
-        #
-        # TODO @aignas 2025-03-02: similarly to sphinx rule, expand the output to short_path
-        run_args += ["--output-file", "$(rootpath {})".format(maybe_out)]
-    else:
-        # TODO @aignas 2025-03-02: pass the output as a string
-        run_out = "{}/{}".format(pkg, out)
-        run_args += ["--output-file", run_out]
-
-    # args just get passed as is
-    run_args += [
-        # TODO @aignas 2025-03-02: get the full source location for these
-        "$(rootpath {})".format(s)
-        for s in srcs
-    ]
-
-    expand_template(
-        name = locker_target + "_gen",
-        out = locker_target + ".py",
-        template = "//python/uv/private:pip_compile.py",
-        substitutions = {
-            "    args = []": "    args = " + repr(args),
-        },
-        tags = ["manual"],
-    )
-
-    py_binary(
-        name = locker_target,
-        srcs = [locker_target + ".py"],
-        data = [
-            "//python/uv:current_toolchain",
-        ] + srcs + ([maybe_out] if maybe_out else []),
-        args = run_args,
-        python_version = kwargs.get("python_version"),
-        tags = ["manual"],
-        deps = ["//python/runfiles"],
-    )
 
     _lock(
         name = name,
@@ -225,13 +196,14 @@ def lock(*, name, srcs, out, args = [], **kwargs):
             "no-cache",
         ],
         args = args,
+        run_args = run_args,
         target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
-        cmd = locker_target,
     )
 
     _run_lock(
-        name = name + ".run2",
+        name = locker_target,
         lock = name,
+        args = run_args,
     )
 
     if maybe_out:

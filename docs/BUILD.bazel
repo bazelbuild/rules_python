@@ -171,6 +171,8 @@ lock(
     out = "requirements.txt",
     args = [
         "--universal",
+    ],
+    run_args = [
         "--upgrade",
     ],
     visibility = ["//private:__pkg__"],
