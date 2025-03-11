@@ -662,8 +662,8 @@ def _test_sdist_different_hashes(env):
     got = parse_requirements(
         ctx = _mock_ctx(),
         requirements_by_platform = {
-            "requirements_sdist_different_hashes": ["windows_x86_64"],
-            "requirements_sdist_different_hashes_linux": ["linux_x86_64"],
+            "requirements_sdist_different_hashes": ["cp315_windows_x86_64"],
+            "requirements_sdist_different_hashes_linux": ["cp315_linux_x86_64"],
         },
         get_index_urls = _mock_get_index_urls,
     )
@@ -683,10 +683,10 @@ def _test_sdist_different_hashes(env):
                     marker = "",
                     requirement = "foo==0.0.1",
                     requirement_line = "foo==0.0.1 --hash=sha256:deadbaaf --hash=sha256:cafebabe",
-                    shas = ["deadbaaf", "cafebabe"],
+                    shas = ["cafebabe", "deadbaaf"],
                     version = "0.0.1",
                 ),
-                target_platforms = ["linux_x86_64"],
+                target_platforms = ["cp315_linux_x86_64"],
                 whls = [
                     struct(
                         filename = "foo-0.0.1-py3-none-manylinux_2_17_x86_64.whl",
@@ -710,10 +710,10 @@ def _test_sdist_different_hashes(env):
                     marker = "",
                     requirement = "foo==0.0.1",
                     requirement_line = "foo==0.0.1 --hash=sha256:deadbeef --hash=sha256:cafebabe",
-                    shas = ["deadbeef", "cafebabe"],
+                    shas = ["cafebabe", "deadbeef"],
                     version = "0.0.1",
                 ),
-                target_platforms = ["windows_x86_64"],
+                target_platforms = ["cp315_windows_x86_64"],
                 whls = [
                     struct(
                         filename = "foo-0.0.1-py3-none-win_amd64.whl",
