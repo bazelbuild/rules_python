@@ -55,11 +55,14 @@ Unreleased changes template.
 * (deps) platforms 0.0.4 -> 0.0.11
 * (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
 * (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
+* (gazelle) The generated manifest file (default: `gazelle_python.yaml`) will now include the
+  YAML document start `---` line. Implemented in
+  [#2656](https://github.com/bazelbuild/rules_python/pull/2656).
 
 {#v0-0-0-fixed}
 ### Fixed
 * (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
-* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in 
+* (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in
   `file` generation mode. Fixed in [#2619](https://github.com/bazelbuild/rules_python/pull/2619).
 * (bzlmod) Running as root is no longer an error. `ignore_root_user_error=True`
   is now the default. Note that running as root may still cause spurious
