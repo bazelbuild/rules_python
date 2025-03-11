@@ -294,7 +294,7 @@ def _add_dists(*, requirement, index_urls, logger = None):
     """
 
     # Handle direct URLs in requirements
-    if hasattr(requirement.srcs, "url"):
+    if requirement.srcs.url:
         url = requirement.srcs.url
         _, _, filename = url.rpartition("/")
         direct_url_dist = struct(

@@ -32,7 +32,7 @@ def index_sources(line):
             * `marker` - str; the marker expression, as per PEP508 spec.
             * `requirement` - str; a requirement line without the marker. This can
                 be given to `pip` to install a package.
-            * `url` - str, optional; URL if the requirement specifies a direct URL.
+            * `url` - str; URL if the requirement specifies a direct URL, empty string otherwise.
     """
     line = line.replace("\\", " ")
     head, _, maybe_hashes = line.partition(";")
@@ -57,22 +57,11 @@ def index_sources(line):
         " ".join(["--hash=sha256:{}".format(sha) for sha in shas]),
     ).strip()
 
+    url = ""
     if "@" in head:
         requirement = requirement_line
-
-        _, _, url_and_rest = requirement.partition("@")
         _, _, url_and_rest = requirement.partition("@")
         url = url_and_rest.strip().partition(" ")[0].strip()
-
-        if url:
-            return struct(
-                requirement = requirement,
-                requirement_line = requirement_line,
-                version = version,
-                shas = sorted(shas),
-                marker = marker,
-                url = url,
-            )
 
     return struct(
         requirement = requirement,
@@ -80,4 +69,5 @@ def index_sources(line):
         version = version,
         shas = sorted(shas),
         marker = marker,
+        url = url,
     )
