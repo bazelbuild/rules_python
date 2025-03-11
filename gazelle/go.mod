@@ -25,4 +25,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/smacker/go-tree-sitter => github.com/dougthor42/go-tree-sitter v0.0.0-20240422154435-0628b34cbf9c
+replace github.com/smacker/go-tree-sitter v0.0.0-20240422154435-0628b34cbf9c => github.com/dougthor42/go-tree-sitter v0.0.0-20240422154435-0628b34cbf9c
