@@ -560,7 +560,8 @@ def _test_toolchain_precedence(name):
 def _test_toolchain_precedence_impl(env, target):
     # Check that the forwarded UvToolchainInfo looks vaguely correct.
     uv_info = env.expect.that_target(target).provider(
-        UvToolchainInfo, factory = lambda v, meta: v
+        UvToolchainInfo,
+        factory = lambda v, meta: v,
     )
     env.expect.that_str(str(uv_info.label)).contains("//tests/uv/uv:fake_foof")
 
