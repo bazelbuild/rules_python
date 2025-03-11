@@ -703,6 +703,7 @@ pip_fallback==0.0.1
                         filename = "simple-0.0.1-py3-none-any.whl",
                         target_platforms = None,
                         version = "3.15",
+                        target_platforms = ("cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"),
                     ),
                 ],
                 "pypi_315_simple_sdist_deadbeef": [
@@ -721,6 +722,7 @@ pip_fallback==0.0.1
                         filename = "some-other-pkg-0.0.1-py3-none-any.whl",
                         target_platforms = None,
                         version = "3.15",
+                        target_platforms = ("cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"),
                     ),
                 ],
             },
