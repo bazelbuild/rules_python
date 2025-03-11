@@ -686,6 +686,21 @@ def _test_sdist_different_hashes(env):
                     shas = ["cafebabe", "deadbaaf"],
                     version = "0.0.1",
                 ),
+                target_platforms = ["cp315_linux_x86_64", "cp315_windows_x86_64"],
+                whls = [],
+            ),
+            struct(
+                distribution = "foo",
+                extra_pip_args = [],
+                is_exposed = True,
+                sdist = None,
+                srcs = struct(
+                    marker = "",
+                    requirement = "foo==0.0.1",
+                    requirement_line = "foo==0.0.1 --hash=sha256:deadbaaf --hash=sha256:cafebabe",
+                    shas = ["cafebabe", "deadbaaf"],
+                    version = "0.0.1",
+                ),
                 target_platforms = ["cp315_linux_x86_64"],
                 whls = [
                     struct(
@@ -700,12 +715,7 @@ def _test_sdist_different_hashes(env):
                 distribution = "foo",
                 extra_pip_args = [],
                 is_exposed = True,
-                sdist = struct(
-                    filename = "foo-0.0.1.tar.gz",
-                    url = "https://pypi.org/foo-0.0.1.tar.gz",
-                    sha256 = "cafebabe",
-                    yanked = False,
-                ),
+                sdist = None,
                 srcs = struct(
                     marker = "",
                     requirement = "foo==0.0.1",
