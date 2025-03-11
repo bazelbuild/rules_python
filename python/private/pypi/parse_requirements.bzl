@@ -304,8 +304,10 @@ def _add_dists(*, requirement, index_urls, logger = None):
             yanked = False,
         )
 
-        # TODO should be able to handle sdist by checking the filename extension
-        return [direct_url_dist], None
+        if filename.endswith(".whl"):
+            return [direct_url_dist], None
+        else:
+            return None, direct_url_dist
 
     if not index_urls:
         return [], None
