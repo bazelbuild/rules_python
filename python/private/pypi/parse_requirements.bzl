@@ -307,7 +307,7 @@ def _add_dists(*, requirement, index_urls, logger = None):
         if filename.endswith(".whl"):
             return [direct_url_dist], None
         else:
-            return None, direct_url_dist
+            return [], direct_url_dist
 
     if not index_urls:
         return [], None

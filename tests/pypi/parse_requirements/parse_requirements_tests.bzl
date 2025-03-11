@@ -29,6 +29,7 @@ foo==0.0.1 \
 foo[extra] @ https://some-url/package.whl
 bar @ https://example.org/bar-1.0.whl --hash=sha256:deadbeef
 baz @ https://test.com/baz-2.0.whl; python_version < "3.8" --hash=sha256:deadb00f
+qux @ https://example.org/qux-1.0.tar.gz --hash=sha256:deadbe0f
 """,
         "requirements_extra_args": """\
 --index-url=example.org
@@ -202,6 +203,29 @@ def _test_direct_urls(env):
                     sha256 = "",
                     yanked = False,
                 )],
+            ),
+        ],
+        "qux": [
+            struct(
+                distribution = "qux",
+                extra_pip_args = [],
+                sdist = struct(
+                    url = "https://example.org/qux-1.0.tar.gz",
+                    filename = "qux-1.0.tar.gz",
+                    sha256 = "deadbe0f",
+                    yanked = False,
+                ),
+                is_exposed = True,
+                srcs = struct(
+                    marker = "",
+                    requirement = "qux @ https://example.org/qux-1.0.tar.gz --hash=sha256:deadbe0f",
+                    requirement_line = "qux @ https://example.org/qux-1.0.tar.gz --hash=sha256:deadbe0f",
+                    shas = ["deadbe0f"],
+                    version = "",
+                    url = "https://example.org/qux-1.0.tar.gz",
+                ),
+                target_platforms = ["linux_x86_64"],
+                whls = [],
             ),
         ],
     })
