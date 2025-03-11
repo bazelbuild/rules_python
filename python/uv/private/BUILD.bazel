@@ -13,6 +13,16 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:py_binary.bzl", "py_binary")
+
+exports_files(
+    srcs = [
+        "copy.py",
+        "pip_compile.py",
+    ],
+    # only because this is used from a macro to template
+    visibility = ["//visibility:public"],
+)
 
 filegroup(
     name = "distribution",
@@ -87,4 +97,16 @@ bzl_library(
     name = "versions_bzl",
     srcs = ["versions.bzl"],
     visibility = ["//python/uv:__subpackages__"],
+)
+
+py_binary(
+    name = "pip_compile",
+    srcs = ["pip_compile.py"],
+    data = [
+        "//python/uv:current_toolchain",
+    ],
+    tags = ["manual"],
+    # only because this is used from a macro and we want to make the tool runable via `native_binary`.
+    visibility = ["//visibility:public"],
+    deps = ["//python/runfiles"],
 )

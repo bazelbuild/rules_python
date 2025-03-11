@@ -18,12 +18,24 @@
 load("//python/uv/private:lock.bzl", "lock")  # buildifier: disable=bzl-visibility
 
 def publish_deps(*, name, outs, **kwargs):
-    """Generate all of the requirements files for all platforms."""
+    """Generate all of the requirements files for all platforms.
+
+    Args:
+        name: {type}`str`: the currently unused.
+        outs: {type}`dict[Label, str]`: the output files mapping to the platform
+            for each requirement file to be generated.
+        **kwargs: Extra args passed to the {rule}`lock` rule.
+    """
     for out, platform in outs.items():
+        args = ["--upgrade"]
+        if platform:
+            args.append("--python-platform=" + platform)
+        else:
+            args.append("--universal")
+
         lock(
             name = out.replace(".txt", ""),
             out = out,
-            universal = platform == "",
-            args = [] if not platform else ["--python-platform=" + platform],
+            args = args,
             **kwargs
         )
