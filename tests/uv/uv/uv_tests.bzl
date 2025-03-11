@@ -20,7 +20,6 @@ load("@rules_testing//lib:truth.bzl", "subjects")
 load("//python/uv:uv_toolchain_info.bzl", "UvToolchainInfo")
 load("//python/uv/private:uv.bzl", "process_modules")  # buildifier: disable=bzl-visibility
 load("//python/uv/private:uv_toolchain.bzl", "uv_toolchain")  # buildifier: disable=bzl-visibility
-load("//tests/uv:uv_toolchain_info_subject.bzl", "uv_toolchain_info_subject")
 
 _tests = []
 
@@ -561,10 +560,9 @@ def _test_toolchain_precedence(name):
 def _test_toolchain_precedence_impl(env, target):
     # Check that the forwarded UvToolchainInfo looks vaguely correct.
     uv_info = env.expect.that_target(target).provider(
-        UvToolchainInfo,
-        factory = uv_toolchain_info_subject,
+        UvToolchainInfo, factory = lambda v, meta: v
     )
-    env.expect.that_str(str(uv_info.actual.label)).contains("//tests/uv/uv:fake_foof")
+    env.expect.that_str(str(uv_info.label)).contains("//tests/uv/uv:fake_foof")
 
 _analysis_tests.append(_test_toolchain_precedence)
 

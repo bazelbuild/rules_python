@@ -18,12 +18,11 @@ load(":toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
 def toolchains_hub(
         *,
-        name = None,
+        name,
         toolchains,
         implementations,
         target_compatible_with,
         target_settings):
-    # @unnamed-macro
     """Define the toolchains so that the lexicographical order registration is deterministic.
 
     TODO @aignas 2025-03-09: see if this can be reused in the python toolchains.

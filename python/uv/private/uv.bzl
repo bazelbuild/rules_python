@@ -91,7 +91,8 @@ configure = tag_class(
 Build the `uv` toolchain configuration by appending the provided configuration.
 The information is appended to the version configuration that is specified by
 {attr}`version` attribute, or if the version is unspecified, the version of the
-last {obj}`uv.configure` call or the version from the defaults is used.
+last {obj}`uv.configure` call in the current module, or the version from the
+defaults is used.
 
 Complex configuration example:
 ```starlark
@@ -370,7 +371,7 @@ def _get_tool_urls_from_dist_manifest(module_ctx, *, base_url, manifest_filename
 
     Example manifest url: https://github.com/astral-sh/uv/releases/download/0.6.5/dist-manifest.json
 
-    The example format is as bellow
+    The example format is as below
 
         dist_version	"0.28.0"
         announcement_tag	"0.6.5"
