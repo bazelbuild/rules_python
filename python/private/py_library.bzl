@@ -141,32 +141,28 @@ Source files are no longer added to the runfiles directly.
 :::
 """
 
-def create_py_library_rule_builder(*, attrs = {}, **kwargs):
-    """Creates a py_library rule.
+# NOTE: Exported publicaly
+def create_py_library_rule_builder():
+    """Create a rule builder for a py_library.
 
-    Args:
-        attrs: dict of rule attributes.
-        **kwargs: Additional kwargs to pass onto {obj}`ruleb.Rule()`.
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} VERSION_NEXT_FEATURE
+    :::
 
     Returns:
-        {type}`ruleb.Rule` builder object.
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_library` rule.
     """
-
-    # Within Google, the doc attribute is overridden
-    kwargs.setdefault("doc", _DEFAULT_PY_LIBRARY_DOC)
-
-    # TODO: b/253818097 - fragments=py is only necessary so that
-    # RequiredConfigFragmentsTest passes
-    fragments = kwargs.pop("fragments", None) or []
-    kwargs["exec_groups"] = REQUIRED_EXEC_GROUP_BUILDERS | (kwargs.get("exec_groups") or {})
-
     builder = ruleb.Rule(
-        attrs = dicts.add(LIBRARY_ATTRS, attrs),
-        fragments = fragments + ["py"],
+        doc = _DEFAULT_PY_LIBRARY_DOC,
+        exec_groups = REQUIRED_EXEC_GROUP_BUILDERS,
+        attrs = LIBRARY_ATTRS,
+        fragments = ["py"],
         toolchains = [
             ruleb.ToolchainType(TOOLCHAIN_TYPE, mandatory = False),
             ruleb.ToolchainType(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ],
-        **kwargs
     )
     return builder
