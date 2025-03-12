@@ -1,6 +1,6 @@
 # Environment Variables
 
-:::{envvar} RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS
+::::{envvar} RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS
 
 This variable allows for additional arguments to be provided to the Python interpreter
 at bootstrap time when the `bash` bootstrap is used. If
@@ -20,7 +20,9 @@ in the command executed being;
 python /path/to/debugger.py --port 12345 --file /path/to/file.py
 ```
 
-:::
+:::{versionadded} VERSION_NEXT_FEATURE
+
+::::
 
 :::{envvar} RULES_PYTHON_BOOTSTRAP_VERBOSE
 
