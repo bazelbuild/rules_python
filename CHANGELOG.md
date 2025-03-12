@@ -79,6 +79,9 @@ Unreleased changes template.
   binary whose interpreter to use.
 * (pypi) An extra argument to add the interpreter lib dir to `LDFLAGS` when
   building wheels from `sdist`.
+* (pypi) Direct HTTP urls for wheels and sdists are now supported when using
+  {obj}`experimental_index_url` (bazel downloader).
+  Partially fixes [#2363](https://github.com/bazelbuild/rules_python/issues/2363).
 
 {#v0-0-0-removed}
 ### Removed
