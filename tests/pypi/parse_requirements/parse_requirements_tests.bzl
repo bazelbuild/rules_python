@@ -451,6 +451,7 @@ _tests.append(_test_different_package_version)
 
 def _test_sdist_different_hashes(env):
     """Test that sdists with same hash but wheels with different hashes across platforms are handled correctly."""
+
     def _mock_get_index_urls(_, distributions):
         return {
             "foo": struct(

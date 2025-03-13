@@ -216,7 +216,7 @@ def parse_requirements(
                 index_urls = index_urls.get(whl_name),
                 logger = logger,
             )
-            
+
             if sdist and not common_sdist:
                 common_sdist = sdist
 
@@ -234,7 +234,7 @@ def parse_requirements(
                     is_exposed = is_exposed,
                 ),
             )
-        
+
         if common_sdist:
             ret_requirements.append(
                 struct(
