@@ -218,7 +218,10 @@ def parse_requirements(
             )
 
             if sdist and not common_sdist:
-                common_sdist = sdist
+                common_sdist = struct(
+                    req = r,
+                    sdist = sdist,
+                )
 
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
             all_platforms.extend(target_platforms)
@@ -238,12 +241,12 @@ def parse_requirements(
         if common_sdist:
             ret_requirements.append(
                 struct(
-                    distribution = r.distribution,
-                    srcs = r.srcs,
+                    distribution = common_sdist.req.distribution,
+                    srcs = common_sdist.req.srcs,
                     target_platforms = sorted(all_platforms),
-                    extra_pip_args = r.extra_pip_args,
+                    extra_pip_args = common_sdist.req.extra_pip_args,
                     whls = [],
-                    sdist = common_sdist,
+                    sdist = common_sdist.sdist,
                     is_exposed = is_exposed,
                 ),
             )
