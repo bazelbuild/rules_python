@@ -84,7 +84,6 @@ def kwargs_setter(kwargs, key):
 
     return setter
 
-# todo: use this everywhere
 def kwargs_getter_doc(kwargs):
     """Creates a `kwargs_getter` for the `doc` key."""
     return kwargs_getter(kwargs, "doc")
@@ -93,7 +92,6 @@ def kwargs_setter_doc(kwargs):
     """Creates a `kwargs_setter` for the `doc` key."""
     return kwargs_setter(kwargs, "doc")
 
-# todo: use this everywhere
 def kwargs_getter_mandatory(kwargs):
     """Creates a `kwargs_getter` for the `mandatory` key."""
     return kwargs_getter(kwargs, "mandatory")
