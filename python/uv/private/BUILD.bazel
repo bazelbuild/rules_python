@@ -13,6 +13,16 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
+
+exports_files(
+    srcs = [
+        "copy.py",
+        "pip_compile.py",
+    ],
+    # only because this is used from a macro to template
+    visibility = ["//visibility:public"],
+)
 
 filegroup(
     name = "distribution",
@@ -31,9 +41,9 @@ bzl_library(
     srcs = ["lock.bzl"],
     visibility = ["//python/uv:__subpackages__"],
     deps = [
-        "//python:py_binary_bzl",
+        "//python:py_test_bzl",
         "//python/private:bzlmod_enabled_bzl",
-        "@bazel_skylib//rules:write_file",
+        "@bazel_skylib//rules:expand_template",
     ],
 )
 
@@ -80,4 +90,14 @@ bzl_library(
     deps = [
         "//python/private:text_util_bzl",
     ],
+)
+
+filegroup(
+    name = "pip_compile_template",
+    srcs = select({
+        "@platforms//os:windows": ["pip_compile.ps1"],
+        "//conditions:default": ["pip_compile.sh"],
+    }),
+    target_compatible_with = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"],
+    visibility = ["//visibility:public"],
 )

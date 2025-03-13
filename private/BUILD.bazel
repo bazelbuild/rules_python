@@ -4,6 +4,7 @@ load("@rules_multirun//:defs.bzl", "multirun")
 
 multirun(
     name = "requirements.update",
+    testonly = True,
     commands = [
         "//tools/publish:{}.update".format(r)
         for r in [
