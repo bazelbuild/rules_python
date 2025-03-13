@@ -97,13 +97,32 @@ load("@bazel_skylib//lib:types.bzl", "types")
 load(
     ":builders_util.bzl",
     "kwargs_getter",
+    "kwargs_getter_doc",
     "kwargs_set_default_dict",
     "kwargs_set_default_doc",
     "kwargs_set_default_ignore_none",
     "kwargs_set_default_list",
     "kwargs_setter",
+    "kwargs_setter_doc",
     "list_add_unique",
 )
+
+# Various string constants for kwarg key names used across two or more
+# functions, or in contexts with optional lookups (e.g. dict.dict, key in dict).
+# Constants are used to reduce the chance of typos.
+# NOTE: These keys are often part of function signature via `**kwargs`; they
+# are not simply internal names.
+_ATTRS = "attrs"
+_CFG = "cfg"
+_EXEC_COMPATIBLE_WITH = "exec_compatible_with"
+_EXEC_GROUPS = "exec_groups"
+_IMPLEMENTATION = "implementation"
+_INPUTS = "inputs"
+_OUTPUTS = "outputs"
+_TOOLCHAINS = "toolchains"
+
+def _is_builder(obj):
+    return hasattr(obj, "build")
 
 def _ExecGroup_typedef():
     """Builder for {external:bzl:obj}`exec_group`
@@ -127,16 +146,16 @@ def _ExecGroup_new(**kwargs):
     Returns:
         {type}`ExecGroup`
     """
-    kwargs_set_default_list(kwargs, "toolchains")
-    kwargs_set_default_list(kwargs, "exec_compatible_with")
+    kwargs_set_default_list(kwargs, _TOOLCHAINS)
+    kwargs_set_default_list(kwargs, _EXEC_COMPATIBLE_WITH)
 
-    for i, value in enumerate(kwargs["toolchains"]):
-        kwargs["toolchains"][i] = _ToolchainType_maybe_from(value)
+    for i, value in enumerate(kwargs[_TOOLCHAINS]):
+        kwargs[_TOOLCHAINS][i] = _ToolchainType_maybe_from(value)
 
     # buildifier: disable=uninitialized
     self = struct(
-        toolchains = kwargs_getter(kwargs, "toolchains"),
-        exec_compatible_with = kwargs_getter(kwargs, "exec_compatible_with"),
+        toolchains = kwargs_getter(kwargs, _TOOLCHAINS),
+        exec_compatible_with = kwargs_getter(kwargs, _EXEC_COMPATIBLE_WITH),
         kwargs = kwargs,
         build = lambda: _ExecGroup_build(self),
     )
@@ -150,15 +169,15 @@ def _ExecGroup_maybe_from(obj):
 
 def _ExecGroup_build(self):
     kwargs = dict(self.kwargs)
-    if kwargs.get("toolchains"):
-        kwargs["toolchains"] = [
-            v.build() if hasattr(v, "build") else v
-            for v in kwargs["toolchains"]
+    if kwargs.get(_TOOLCHAINS):
+        kwargs[_TOOLCHAINS] = [
+            v.build() if _is_builder(v) else v
+            for v in kwargs[_TOOLCHAINS]
         ]
-    if kwargs.get("exec_compatible_with"):
-        kwargs["exec_compatible_with"] = [
-            v.build() if hasattr(v, "build") else v
-            for v in kwargs["exec_compatible_with"]
+    if kwargs.get(_EXEC_COMPATIBLE_WITH):
+        kwargs[_EXEC_COMPATIBLE_WITH] = [
+            v.build() if _is_builder(v) else v
+            for v in kwargs[_EXEC_COMPATIBLE_WITH]
         ]
     return exec_group(**kwargs)
 
@@ -276,7 +295,7 @@ def _RuleCfg_new(rule_cfg_arg):
     """Creates a builder for the `rule.cfg` arg.
 
     Args:
-        rule_cfg_arg: {type}`str | dict` The `cfg` arg passed to Rule().
+        rule_cfg_arg: {type}`str | dict | None` The `cfg` arg passed to Rule().
 
     Returns:
         {type}`RuleCfg`
@@ -287,10 +306,10 @@ def _RuleCfg_new(rule_cfg_arg):
     else:
         # Assume its a string, config.target, config.none, or other
         # valid object.
-        state["implementation"] = rule_cfg_arg
+        state[_IMPLEMENTATION] = rule_cfg_arg
 
-    kwargs_set_default_list(state, "inputs")
-    kwargs_set_default_list(state, "outputs")
+    kwargs_set_default_list(state, _INPUTS)
+    kwargs_set_default_list(state, _OUTPUTS)
 
     # buildifier: disable=uninitialized
     self = struct(
@@ -298,10 +317,10 @@ def _RuleCfg_new(rule_cfg_arg):
         add_outputs = lambda *a, **k: _RuleCfg_add_outputs(self, *a, **k),
         _state = state,
         build = lambda: _RuleCfg_build(self),
-        implementation = kwargs_getter(state, "implementation"),
-        inputs = kwargs_getter(state, "inputs"),
-        outputs = kwargs_getter(state, "outputs"),
-        set_implementation = kwargs_setter(state, "implementation"),
+        implementation = kwargs_getter(state, _IMPLEMENTATION),
+        inputs = kwargs_getter(state, _INPUTS),
+        outputs = kwargs_getter(state, _OUTPUTS),
+        set_implementation = kwargs_setter(state, _IMPLEMENTATION),
         update_inputs = lambda *a, **k: _RuleCfg_update_inputs(self, *a, **k),
         update_outputs = lambda *a, **k: _RuleCfg_update_outputs(self, *a, **k),
     )
@@ -345,7 +364,7 @@ def _RuleCfg_build(self):
     Returns:
         {type}`transition` the transition object to apply to the rule.
     """
-    impl = self._state["implementation"]
+    impl = self._state[_IMPLEMENTATION]
     if impl == "target" or impl == None:
         # config.target is Bazel 8+
         if hasattr(config, "target"):
@@ -358,8 +377,8 @@ def _RuleCfg_build(self):
         return transition(
             implementation = impl,
             # Transitions only accept unique lists of strings.
-            inputs = {str(v): None for v in self._state.get("inputs")}.keys(),
-            outputs = {str(v): None for v in self._state.get("outputs")}.keys(),
+            inputs = {str(v): None for v in self._state[_INPUTS]}.keys(),
+            outputs = {str(v): None for v in self._state[_OUTPUTS]}.keys(),
         )
     else:
         # Assume its valid. Probably an `config.XXX` object or manually
@@ -376,7 +395,7 @@ def _RuleCfg_update_inputs(self, *others):
             `Label`, not `str`, should be passed to ensure different apparent
             labels can be properly de-duplicated.
     """
-    list_add_unique(self._state["inputs"], others)
+    list_add_unique(self._state[_INPUTS], others)
 
 def _RuleCfg_update_outputs(self, *others):
     """Add a collection of values to outputs.
@@ -388,7 +407,7 @@ def _RuleCfg_update_outputs(self, *others):
             `Label`, not `str`, should be passed to ensure different apparent
             labels can be properly de-duplicated.
     """
-    list_add_unique(self._state["outputs"], others)
+    list_add_unique(self._state[_OUTPUTS], others)
 
 # buildifier: disable=name-conventions
 RuleCfg = struct(
@@ -461,40 +480,40 @@ def _Rule_new(**kwargs):
             dicts to specify sub-objects instead of the immutable Bazel
             objects.
     """
-    kwargs.setdefault("implementation", None)
+    kwargs.setdefault(_IMPLEMENTATION, None)
     kwargs_set_default_doc(kwargs)
-    kwargs_set_default_dict(kwargs, "exec_groups")
+    kwargs_set_default_dict(kwargs, _EXEC_GROUPS)
     kwargs_set_default_ignore_none(kwargs, "executable", False)
     kwargs_set_default_list(kwargs, "fragments")
     kwargs_set_default_list(kwargs, "provides")
     kwargs_set_default_ignore_none(kwargs, "test", False)
-    kwargs_set_default_list(kwargs, "toolchains")
+    kwargs_set_default_list(kwargs, _TOOLCHAINS)
 
-    for name, value in kwargs["exec_groups"].items():
-        kwargs["exec_groups"][name] = _ExecGroup_maybe_from(value)
+    for name, value in kwargs[_EXEC_GROUPS].items():
+        kwargs[_EXEC_GROUPS][name] = _ExecGroup_maybe_from(value)
 
-    for i, value in enumerate(kwargs["toolchains"]):
-        kwargs["toolchains"][i] = _ToolchainType_maybe_from(value)
+    for i, value in enumerate(kwargs[_TOOLCHAINS]):
+        kwargs[_TOOLCHAINS][i] = _ToolchainType_maybe_from(value)
 
     # buildifier: disable=uninitialized
     self = struct(
-        attrs = _AttrsDict_new(kwargs.pop("attrs", None)),
+        attrs = _AttrsDict_new(kwargs.pop(_ATTRS, None)),
         build = lambda *a, **k: _Rule_build(self, *a, **k),
-        cfg = _RuleCfg_new(kwargs.pop("cfg", None)),
-        doc = kwargs_getter(kwargs, "doc"),
-        exec_groups = kwargs_getter(kwargs, "exec_groups"),
+        cfg = _RuleCfg_new(kwargs.pop(_CFG, None)),
+        doc = kwargs_getter_doc(kwargs),
+        exec_groups = kwargs_getter(kwargs, _EXEC_GROUPS),
         executable = kwargs_getter(kwargs, "executable"),
         fragments = kwargs_getter(kwargs, "fragments"),
-        implementation = kwargs_getter(kwargs, "implementation"),
+        implementation = kwargs_getter(kwargs, _IMPLEMENTATION),
         kwargs = kwargs,
         provides = kwargs_getter(kwargs, "provides"),
-        set_doc = kwargs_setter(kwargs, "doc"),
+        set_doc = kwargs_setter_doc(kwargs),
         set_executable = kwargs_setter(kwargs, "executable"),
-        set_implementation = kwargs_setter(kwargs, "implementation"),
+        set_implementation = kwargs_setter(kwargs, _IMPLEMENTATION),
         set_test = kwargs_setter(kwargs, "test"),
         test = kwargs_getter(kwargs, "test"),
         to_kwargs = lambda: _Rule_to_kwargs(self),
-        toolchains = kwargs_getter(kwargs, "toolchains"),
+        toolchains = kwargs_getter(kwargs, _TOOLCHAINS),
     )
     return self
 
@@ -540,20 +559,20 @@ def _Rule_to_kwargs(self):
         {type}`dict`
     """
     kwargs = dict(self.kwargs)
-    if "exec_groups" in kwargs:
-        kwargs["exec_groups"] = {
-            k: v.build() if hasattr(v, "build") else v
-            for k, v in kwargs["exec_groups"].items()
+    if _EXEC_GROUPS in kwargs:
+        kwargs[_EXEC_GROUPS] = {
+            k: v.build() if _is_builder(v) else v
+            for k, v in kwargs[_EXEC_GROUPS].items()
         }
-    if "toolchains" in kwargs:
-        kwargs["toolchains"] = [
-            v.build() if hasattr(v, "build") else v
-            for v in kwargs["toolchains"]
+    if _TOOLCHAINS in kwargs:
+        kwargs[_TOOLCHAINS] = [
+            v.build() if _is_builder(v) else v
+            for v in kwargs[_TOOLCHAINS]
         ]
-    if "attrs" not in kwargs:
-        kwargs["attrs"] = self.attrs.build()
-    if "cfg" not in kwargs:
-        kwargs["cfg"] = self.cfg.build()
+    if _ATTRS not in kwargs:
+        kwargs[_ATTRS] = self.attrs.build()
+    if _CFG not in kwargs:
+        kwargs[_CFG] = self.cfg.build()
     return kwargs
 
 # buildifier: disable=name-conventions
@@ -591,8 +610,8 @@ def _AttrsDict_new(initial):
     """Creates a builder for the `rule.attrs` dict.
 
     Args:
-        initial: {type}`dict[str, callable | AttributeBuilder]` dict of initial
-            values to populate the attributes dict with.
+        initial: {type}`dict[str, callable | AttributeBuilder] | None` dict of
+            initial values to populate the attributes dict with.
 
     Returns:
         {type}`AttrsDict`
@@ -655,7 +674,7 @@ def _AttrsDict_build(self):
     """
     attrs = {}
     for k, v in self.map.items():
-        attrs[k] = v.build() if hasattr(v, "build") else v
+        attrs[k] = v.build() if _is_builder(v) else v
     return attrs
 
 # buildifier: disable=name-conventions

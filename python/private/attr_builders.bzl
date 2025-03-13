@@ -18,28 +18,101 @@ load("@bazel_skylib//lib:types.bzl", "types")
 load(
     ":builders_util.bzl",
     "kwargs_getter",
+    "kwargs_getter_doc",
+    "kwargs_getter_mandatory",
     "kwargs_set_default_doc",
     "kwargs_set_default_ignore_none",
     "kwargs_set_default_list",
     "kwargs_set_default_mandatory",
     "kwargs_setter",
+    "kwargs_setter_doc",
+    "kwargs_setter_mandatory",
     "to_label_maybe",
 )
 
+# Various string constants for kwarg key names used across two or more
+# functions, or in contexts with optional lookups (e.g. dict.dict, key in dict).
+# Constants are used to reduce the chance of typos.
+# NOTE: These keys are often part of function signature via `**kwargs`; they
+# are not simply internal names.
+_ALLOW_FILES = "allow_files"
+_ALLOW_EMPTY = "allow_empty"
+_ALLOW_SINGLE_FILE = "allow_single_file"
+_DEFAULT = "default"
+_INPUTS = "inputs"
+_OUTPUTS = "outputs"
+_CFG = "cfg"
+_VALUES = "values"
+
 def _kwargs_set_default_allow_empty(kwargs):
-    existing = kwargs.get("allow_empty")
+    existing = kwargs.get(_ALLOW_EMPTY)
     if existing == None:
-        kwargs["allow_empty"] = True
+        kwargs[_ALLOW_EMPTY] = True
+
+def _kwargs_getter_allow_empty(kwargs):
+    return kwargs_getter(kwargs, _ALLOW_EMPTY)
+
+def _kwargs_setter_allow_empty(kwargs):
+    return kwargs_setter(kwargs, _ALLOW_EMPTY)
 
 def _kwargs_set_default_allow_files(kwargs):
-    existing = kwargs.get("allow_files")
+    existing = kwargs.get(_ALLOW_FILES)
     if existing == None:
-        kwargs["allow_files"] = False
+        kwargs[_ALLOW_FILES] = False
+
+def _kwargs_getter_allow_files(kwargs):
+    return kwargs_getter(kwargs, _ALLOW_FILES)
+
+def _kwargs_setter_allow_files(kwargs):
+    return kwargs_setter(kwargs, _ALLOW_FILES)
+
+def _kwargs_set_default_aspects(kwargs):
+    kwargs_set_default_list(kwargs, "aspects")
+
+def _kwargs_getter_aspects(kwargs):
+    return kwargs_getter(kwargs, "aspects")
+
+def _kwargs_getter_providers(kwargs):
+    return kwargs_getter(kwargs, "providers")
+
+def _kwargs_set_default_providers(kwargs):
+    kwargs_set_default_list(kwargs, "providers")
 
 def _common_label_build(self, attr_factory):
     kwargs = dict(self.kwargs)
-    kwargs["cfg"] = self.cfg.build()
+    kwargs[_CFG] = self.cfg.build()
     return attr_factory(**kwargs)
+
+def _WhichCfg_typedef():
+    """Values returned by `AttrCfg.which_cfg`
+
+    :::{field} TARGET
+
+    Indicates the target config is set.
+    :::
+
+    :::{field} EXEC
+
+    Indicates the exec config is set.
+    :::
+    :::{field} NONE
+
+    Indicates the "none" config is set (see {obj}`config.none`).
+    :::
+    :::{field} IMPL
+
+    Indicates a custom transition is set.
+    :::
+    """
+
+# buildifier: disable=name-conventions
+_WhichCfg = struct(
+    TYPEDEF = _WhichCfg_typedef,
+    TARGET = "target",
+    EXEC = "exec",
+    NONE = "none",
+    IMPL = "impl",
+)
 
 def _AttrCfg_typedef():
     """Builder for `cfg` arg of label attributes.
@@ -50,12 +123,15 @@ def _AttrCfg_typedef():
     :::{function} outputs() -> list[Label]
     :::
 
-    :::{function} which_cfg() -> str
+    :::{function} which_cfg() -> attrb.WhichCfg
 
     Tells which of the cfg modes is set. Will be one of: target, exec, none,
     or implementation
     :::
     """
+
+_ATTR_CFG_WHICH = "which"
+_ATTR_CFG_VALUE = "value"
 
 def _AttrCfg_new(
         inputs = None,
@@ -78,16 +154,15 @@ def _AttrCfg_new(
         {type}`AttrCfg`
     """
     state = {
-        "inputs": inputs,
-        "outputs": outputs,
-        # Value depends on "which" key
-        # For which=impl, the value is a function or arbitrary object
-        "value": True,
-        # str: target, exec, none, or impl
-        "which": "target",
+        _INPUTS: inputs,
+        _OUTPUTS: outputs,
+        # Value depends on _ATTR_CFG_WHICH key. See associated setters.
+        _ATTR_CFG_VALUE: True,
+        # str: one of the _WhichCfg values
+        _ATTR_CFG_WHICH: _WhichCfg.TARGET,
     }
-    kwargs_set_default_list(state, "inputs")
-    kwargs_set_default_list(state, "outputs")
+    kwargs_set_default_list(state, _INPUTS)
+    kwargs_set_default_list(state, _OUTPUTS)
 
     # buildifier: disable=uninitialized
     self = struct(
@@ -96,21 +171,21 @@ def _AttrCfg_new(
         build = lambda: _AttrCfg_build(self),
         exec_group = lambda: _AttrCfg_exec_group(self),
         implementation = lambda: _AttrCfg_implementation(self),
-        inputs = kwargs_getter(state, "inputs"),
+        inputs = kwargs_getter(state, _INPUTS),
         none = lambda: _AttrCfg_none(self),
-        outputs = kwargs_getter(state, "outputs"),
+        outputs = kwargs_getter(state, _OUTPUTS),
         set_exec = lambda *a, **k: _AttrCfg_set_exec(self, *a, **k),
         set_implementation = lambda *a, **k: _AttrCfg_set_implementation(self, *a, **k),
         set_none = lambda: _AttrCfg_set_none(self),
         set_target = lambda: _AttrCfg_set_target(self),
         target = lambda: _AttrCfg_target(self),
-        which_cfg = kwargs_getter(state, "which"),
+        which_cfg = kwargs_getter(state, _ATTR_CFG_WHICH),
     )
 
     # Only one of the three kwargs should be present. We just process anything
     # we see because it's simpler.
-    if "cfg" in kwargs:
-        cfg = kwargs.pop("cfg")
+    if _CFG in kwargs:
+        cfg = kwargs.pop(_CFG)
         if cfg == "target" or cfg == None:
             self.set_target()
         elif cfg == "exec":
@@ -136,9 +211,9 @@ def _AttrCfg_from_attr_kwargs_pop(attr_kwargs):
     Returns:
         {type}`AttrCfg`
     """
-    cfg = attr_kwargs.pop("cfg", None)
+    cfg = attr_kwargs.pop(_CFG, None)
     if not types.is_dict(cfg):
-        kwargs = {"cfg": cfg}
+        kwargs = {_CFG: cfg}
     else:
         kwargs = cfg
     return _AttrCfg_new(**kwargs)
@@ -150,7 +225,7 @@ def _AttrCfg_implementation(self):
         {type}`callable | None` the custom transition function to use, if
         any, or `None` if a different config mode is being used.
     """
-    return self._state["value"] if self._state["which"] == "impl" else None
+    return self._state[_ATTR_CFG_VALUE] if self._state[_ATTR_CFG_WHICH] == _WhichCfg.IMPL else None
 
 def _AttrCfg_none(self):
     """Tells if none cfg (`config.none()`) is set.
@@ -158,7 +233,7 @@ def _AttrCfg_none(self):
     Returns:
         {type}`bool` True if none cfg is set, False if not.
     """
-    return self._state["value"] if self._state["which"] == "none" else False
+    return self._state[_ATTR_CFG_VALUE] if self._state[_ATTR_CFG_WHICH] == _WhichCfg.NONE else False
 
 def _AttrCfg_target(self):
     """Tells if target cfg is set.
@@ -166,7 +241,7 @@ def _AttrCfg_target(self):
     Returns:
         {type}`bool` True if target cfg is set, False if not.
     """
-    return self._state["value"] if self._state["which"] == "target" else False
+    return self._state[_ATTR_CFG_VALUE] if self._state[_ATTR_CFG_WHICH] == _WhichCfg.TARGET else False
 
 def _AttrCfg_exec_group(self):
     """Tells the exec group to use if an exec transition is being used.
@@ -178,7 +253,7 @@ def _AttrCfg_exec_group(self):
         {type}`str | None` the name of the exec group to use if any,
         or `None` if `which_cfg` isn't `exec`
     """
-    return self._state["value"] if self._state["which"] == "exec" else None
+    return self._state[_ATTR_CFG_VALUE] if self._state[_ATTR_CFG_WHICH] == _WhichCfg.EXEC else None
 
 def _AttrCfg_set_implementation(self, impl):
     """Sets a custom transition function to use.
@@ -187,13 +262,13 @@ def _AttrCfg_set_implementation(self, impl):
         self: implicitly added.
         impl: {type}`callable` a transition implementation function.
     """
-    self._state["which"] = "impl"
-    self._state["value"] = impl
+    self._state[_ATTR_CFG_WHICH] = _WhichCfg.IMPL
+    self._state[_ATTR_CFG_VALUE] = impl
 
 def _AttrCfg_set_none(self):
     """Sets to use the "none" transition."""
-    self._state["which"] = "none"
-    self._state["value"] = True
+    self._state[_ATTR_CFG_WHICH] = _WhichCfg.NONE
+    self._state[_ATTR_CFG_VALUE] = True
 
 def _AttrCfg_set_exec(self, exec_group = None):
     """Sets to use an exec transition.
@@ -202,35 +277,35 @@ def _AttrCfg_set_exec(self, exec_group = None):
         self: implicitly added.
         exec_group: {type}`str | None` the exec group name to use, if any.
     """
-    self._state["which"] = "exec"
-    self._state["value"] = exec_group
+    self._state[_ATTR_CFG_WHICH] = _WhichCfg.EXEC
+    self._state[_ATTR_CFG_VALUE] = exec_group
 
 def _AttrCfg_set_target(self):
     """Sets to use the target transition."""
-    self._state["which"] = "target"
-    self._state["value"] = True
+    self._state[_ATTR_CFG_WHICH] = _WhichCfg.TARGET
+    self._state[_ATTR_CFG_VALUE] = True
 
 def _AttrCfg_build(self):
-    which = self._state["which"]
-    value = self._state["value"]
+    which = self._state[_ATTR_CFG_WHICH]
+    value = self._state[_ATTR_CFG_VALUE]
     if which == None:
         return None
-    elif which == "target":
+    elif which == _WhichCfg.TARGET:
         # config.target is Bazel 8+
         if hasattr(config, "target"):
             return config.target()
         else:
             return "target"
-    elif which == "exec":
+    elif which == _WhichCfg.EXEC:
         return config.exec(value)
-    elif which == "none":
+    elif which == _WhichCfg.NONE:
         return config.none()
     elif types.is_function(value):
         return transition(
             implementation = value,
             # Transitions only accept unique lists of strings.
-            inputs = {str(v): None for v in self._state["inputs"]}.keys(),
-            outputs = {str(v): None for v in self._state["outputs"]}.keys(),
+            inputs = {str(v): None for v in self._state[_INPUTS]}.keys(),
+            outputs = {str(v): None for v in self._state[_OUTPUTS]}.keys(),
         )
     else:
         # Otherwise, just assume the value is valid and whoever set it knows
@@ -290,7 +365,7 @@ def _Bool_new(**kwargs):
     Returns:
         {type}`Bool`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", False)
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, False)
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
 
@@ -298,13 +373,13 @@ def _Bool_new(**kwargs):
     self = struct(
         # keep sorted
         build = lambda: attr.bool(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -356,22 +431,22 @@ def _Int_new(**kwargs):
     Returns:
         {type}`Int`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", 0)
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, 0)
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
-    kwargs_set_default_list(kwargs, "values")
+    kwargs_set_default_list(kwargs, _VALUES)
 
     # buildifier: disable=uninitialized
     self = struct(
         build = lambda: attr.int(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        values = kwargs_getter(kwargs, "values"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        values = kwargs_getter(kwargs, _VALUES),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -421,7 +496,7 @@ def _IntList_new(**kwargs):
     Returns:
         {type}`IntList`
     """
-    kwargs_set_default_list(kwargs, "default")
+    kwargs_set_default_list(kwargs, _DEFAULT)
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
@@ -429,15 +504,15 @@ def _IntList_new(**kwargs):
     # buildifier: disable=uninitialized
     self = struct(
         # keep sorted
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
         build = lambda: attr.int_list(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -516,34 +591,34 @@ def _Label_new(**kwargs):
         {type}`Label`
     """
     kwargs_set_default_ignore_none(kwargs, "executable", False)
-    kwargs_set_default_list(kwargs, "aspects")
-    kwargs_set_default_list(kwargs, "providers")
+    _kwargs_set_default_aspects(kwargs)
+    _kwargs_set_default_providers(kwargs)
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
 
-    kwargs["default"] = to_label_maybe(kwargs.get("default"))
+    kwargs[_DEFAULT] = to_label_maybe(kwargs.get(_DEFAULT))
 
     # buildifier: disable=uninitialized
     self = struct(
         # keep sorted
         add_allow_files = lambda v: _Label_add_allow_files(self, v),
-        allow_files = kwargs_getter(kwargs, "allow_files"),
-        allow_single_file = kwargs_getter(kwargs, "allow_single_file"),
-        aspects = kwargs_getter(kwargs, "aspects"),
+        allow_files = _kwargs_getter_allow_files(kwargs),
+        allow_single_file = kwargs_getter(kwargs, _ALLOW_SINGLE_FILE),
+        aspects = _kwargs_getter_aspects(kwargs),
         build = lambda: _common_label_build(self, attr.label),
         cfg = _AttrCfg_from_attr_kwargs_pop(kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         executable = kwargs_getter(kwargs, "executable"),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        providers = kwargs_getter(kwargs, "providers"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        providers = _kwargs_getter_providers(kwargs),
         set_allow_files = lambda v: _Label_set_allow_files(self, v),
         set_allow_single_file = lambda v: _Label_set_allow_single_file(self, v),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
         set_executable = kwargs_setter(kwargs, "executable"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -558,10 +633,10 @@ def _Label_set_allow_files(self, v):
             If set to `None`, then `allow_files` is unset.
     """
     if v == None:
-        self.kwargs.pop("allow_files", None)
+        self.kwargs.pop(_ALLOW_FILES, None)
     else:
-        self.kwargs["allow_files"] = v
-        self.kwargs.pop("allow_single_file", None)
+        self.kwargs[_ALLOW_FILES] = v
+        self.kwargs.pop(_ALLOW_SINGLE_FILE, None)
 
 def _Label_add_allow_files(self, *values):
     """Adds allowed file extensions
@@ -572,10 +647,10 @@ def _Label_add_allow_files(self, *values):
         self: implicitly added.
         *values: {type}`str` file extensions to allow (including dot)
     """
-    self.kwargs.pop("allow_single_file", None)
-    if not types.is_list(self.kwargs.get("allow_files")):
-        self.kwargs["allow_files"] = []
-    existing = self.kwargs["allow_files"]
+    self.kwargs.pop(_ALLOW_SINGLE_FILE, None)
+    if not types.is_list(self.kwargs.get(_ALLOW_FILES)):
+        self.kwargs[_ALLOW_FILES] = []
+    existing = self.kwargs[_ALLOW_FILES]
     existing.extend([v for v in values if v not in existing])
 
 def _Label_set_allow_single_file(self, v):
@@ -589,10 +664,10 @@ def _Label_set_allow_single_file(self, v):
             If set to `None`, then `allow_single_file` is unset.
     """
     if v == None:
-        self.kwargs.pop("allow_single_file", None)
+        self.kwargs.pop(_ALLOW_SINGLE_FILE, None)
     else:
-        self.kwargs["allow_single_file"] = v
-        self.kwargs.pop("allow_files", None)
+        self.kwargs[_ALLOW_SINGLE_FILE] = v
+        self.kwargs.pop(_ALLOW_FILES, None)
 
 # buildifier: disable=name-conventions
 Label = struct(
@@ -658,9 +733,9 @@ def _LabelKeyedStringDict_new(**kwargs):
     Returns:
         {type}`LabelKeyedStringDict`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", {})
-    kwargs_set_default_list(kwargs, "aspects")
-    kwargs_set_default_list(kwargs, "providers")
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, {})
+    _kwargs_set_default_aspects(kwargs)
+    _kwargs_set_default_providers(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
     _kwargs_set_default_allow_files(kwargs)
     kwargs_set_default_doc(kwargs)
@@ -670,21 +745,21 @@ def _LabelKeyedStringDict_new(**kwargs):
     self = struct(
         # keep sorted
         add_allow_files = lambda *v: _LabelKeyedStringDict_add_allow_files(self, *v),
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
-        allow_files = kwargs_getter(kwargs, "allow_files"),
-        aspects = kwargs_getter(kwargs, "aspects"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
+        allow_files = _kwargs_getter_allow_files(kwargs),
+        aspects = _kwargs_getter_aspects(kwargs),
         build = lambda: _common_label_build(self, attr.label_keyed_string_dict),
         cfg = _AttrCfg_from_attr_kwargs_pop(kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        providers = kwargs_getter(kwargs, "providers"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_allow_files = kwargs_setter(kwargs, "allow_files"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        providers = _kwargs_getter_providers(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_allow_files = _kwargs_setter_allow_files(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -695,9 +770,9 @@ def _LabelKeyedStringDict_add_allow_files(self, *values):
         self: implicitly added.
         *values: {type}`str` file extensions to allow (including dot)
     """
-    if not types.is_list(self.kwargs.get("allow_files")):
-        self.kwargs["allow_files"] = []
-    existing = self.kwargs["allow_files"]
+    if not types.is_list(self.kwargs.get(_ALLOW_FILES)):
+        self.kwargs[_ALLOW_FILES] = []
+    existing = self.kwargs[_ALLOW_FILES]
     existing.extend([v for v in values if v not in existing])
 
 # buildifier: disable=name-conventions
@@ -769,30 +844,30 @@ def _LabelList_new(**kwargs):
     _kwargs_set_default_allow_empty(kwargs)
     kwargs_set_default_mandatory(kwargs)
     kwargs_set_default_doc(kwargs)
-    if kwargs.get("allow_files") == None:
-        kwargs["allow_files"] = False
-    kwargs_set_default_list(kwargs, "aspects")
-    kwargs_set_default_list(kwargs, "default")
-    kwargs_set_default_list(kwargs, "providers")
+    if kwargs.get(_ALLOW_FILES) == None:
+        kwargs[_ALLOW_FILES] = False
+    _kwargs_set_default_aspects(kwargs)
+    kwargs_set_default_list(kwargs, _DEFAULT)
+    _kwargs_set_default_providers(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
         # keep sorted
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
-        allow_files = kwargs_getter(kwargs, "allow_files"),
-        aspects = kwargs_getter(kwargs, "aspects"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
+        allow_files = _kwargs_getter_allow_files(kwargs),
+        aspects = _kwargs_getter_aspects(kwargs),
         build = lambda: _common_label_build(self, attr.label_list),
         cfg = _AttrCfg_from_attr_kwargs_pop(kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        providers = kwargs_getter(kwargs, "providers"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_allow_files = kwargs_setter(kwargs, "allow_files"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        providers = _kwargs_getter_providers(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_allow_files = _kwargs_setter_allow_files(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -840,11 +915,11 @@ def _Output_new(**kwargs):
     self = struct(
         # keep sorted
         build = lambda: attr.output(**self.kwargs),
-        doc = kwargs_getter(kwargs, "doc"),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -895,14 +970,14 @@ def _OutputList_new(**kwargs):
 
     # buildifier: disable=uninitialized
     self = struct(
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
         build = lambda: attr.output_list(**self.kwargs),
-        doc = kwargs_getter(kwargs, "doc"),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -952,22 +1027,22 @@ def _String_new(**kwargs):
     Returns:
         {type}`String`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", "")
-    kwargs_set_default_list(kwargs, "values")
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, "")
+    kwargs_set_default_list(kwargs, _VALUES)
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
-        mandatory = kwargs_getter(kwargs, "mandatory"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
+        mandatory = kwargs_getter_mandatory(kwargs),
         build = lambda: attr.string(**self.kwargs),
         kwargs = kwargs,
-        values = kwargs_getter(kwargs, "values"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        values = kwargs_getter(kwargs, _VALUES),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -1015,22 +1090,22 @@ def _StringDict_new(**kwargs):
     Returns:
         {type}`StringDict`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", {})
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, {})
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
         build = lambda: attr.string_dict(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -1099,31 +1174,31 @@ def _StringKeyedLabelDict_new(**kwargs):
     Returns:
         {type}`StringKeyedLabelDict`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", {})
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, {})
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
     _kwargs_set_default_allow_files(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
-    kwargs_set_default_list(kwargs, "aspects")
-    kwargs_set_default_list(kwargs, "providers")
+    _kwargs_set_default_aspects(kwargs)
+    _kwargs_set_default_providers(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
-        allow_files = kwargs_getter(kwargs, "allow_files"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
+        allow_files = _kwargs_getter_allow_files(kwargs),
         build = lambda: _common_label_build(self, attr.string_keyed_label_dict),
         cfg = _AttrCfg_from_attr_kwargs_pop(kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_allow_files = kwargs_setter(kwargs, "allow_files"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
-        providers = kwargs_getter(kwargs, "providers"),
-        aspects = kwargs_getter(kwargs, "aspects"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_allow_files = _kwargs_setter_allow_files(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
+        providers = _kwargs_getter_providers(kwargs),
+        aspects = _kwargs_getter_aspects(kwargs),
     )
     return self
 
@@ -1174,23 +1249,23 @@ def _StringList_new(**kwargs):
     Returns:
         {type}`StringList`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", [])
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, [])
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
         build = lambda: attr.string_list(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -1240,23 +1315,23 @@ def _StringListDict_new(**kwargs):
     Returns:
         {type}`StringListDict`
     """
-    kwargs_set_default_ignore_none(kwargs, "default", {})
+    kwargs_set_default_ignore_none(kwargs, _DEFAULT, {})
     kwargs_set_default_doc(kwargs)
     kwargs_set_default_mandatory(kwargs)
     _kwargs_set_default_allow_empty(kwargs)
 
     # buildifier: disable=uninitialized
     self = struct(
-        allow_empty = kwargs_getter(kwargs, "allow_empty"),
+        allow_empty = _kwargs_getter_allow_empty(kwargs),
         build = lambda: attr.string_list_dict(**self.kwargs),
-        default = kwargs_getter(kwargs, "default"),
-        doc = kwargs_getter(kwargs, "doc"),
+        default = kwargs_getter(kwargs, _DEFAULT),
+        doc = kwargs_getter_doc(kwargs),
         kwargs = kwargs,
-        mandatory = kwargs_getter(kwargs, "mandatory"),
-        set_allow_empty = kwargs_setter(kwargs, "allow_empty"),
-        set_default = kwargs_setter(kwargs, "default"),
-        set_doc = kwargs_setter(kwargs, "doc"),
-        set_mandatory = kwargs_setter(kwargs, "mandatory"),
+        mandatory = kwargs_getter_mandatory(kwargs),
+        set_allow_empty = _kwargs_setter_allow_empty(kwargs),
+        set_default = kwargs_setter(kwargs, _DEFAULT),
+        set_doc = kwargs_setter_doc(kwargs),
+        set_mandatory = kwargs_setter_mandatory(kwargs),
     )
     return self
 
@@ -1281,4 +1356,5 @@ attrb = struct(
     StringKeyedLabelDict = _StringKeyedLabelDict_new,
     StringList = _StringList_new,
     StringListDict = _StringListDict_new,
+    WhichCfg = _WhichCfg,
 )
