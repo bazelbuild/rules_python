@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load(":common.bzl", "runfiles_root_path")
 load(":py_exec_tools_info.bzl", "PyExecToolsInfo")
 load(":sentinel.bzl", "SentinelInfo")
 load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
@@ -82,24 +83,86 @@ See {obj}`PyExecToolsInfo.exec_interpreter` for further docs.
     },
 )
 
+def relative_path(from_, to):
+    """Compute a relative path from one path to another.
+
+    Args:
+        from_: {type}`str` the starting directory. Note that it should be
+            a directory because relative-symlinks are relative to the
+            directory the symlink resides in.
+        to: {type}`str` the path that `from_` wants to point to
+
+    Returns:
+        {type}`str` a relative path
+    """
+    from_parts = from_.split("/")
+    to_parts = to.split("/")
+
+    # Strip common leading parts from both paths
+    n = min(len(from_parts), len(to_parts))
+    for _ in range(n):
+        if from_parts[0] == to_parts[0]:
+            from_parts.pop(0)
+            to_parts.pop(0)
+        else:
+            break
+
+    # Impossible to compute a relative path without knowing what ".." is
+    if from_parts and from_parts[0] == "..":
+        fail("cannot compute relative path from '%s' to '%s'", from_, to)
+
+    parts = ([".."] * len(from_parts)) + to_parts
+    return paths.join(*parts)
+
 def _current_interpreter_executable_impl(ctx):
     toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
     runtime = toolchain.py3_runtime
+    direct = []
 
     # NOTE: We name the output filename after the underlying file name
     # because of things like pyenv: they use $0 to determine what to
     # re-exec. If it's not a recognized name, then they fail.
     if runtime.interpreter:
-        executable = ctx.actions.declare_file(runtime.interpreter.basename)
-        ctx.actions.symlink(output = executable, target_file = runtime.interpreter, is_executable = True)
+        # Even though ctx.actions.symlink() could be used, we bump into the issue
+        # with RBE where bazel is making a copy to the file instead of symlinking
+        # to the hermetic toolchain repository. This means that we need to employ
+        # a similar strategy to how the `py_executable` venv is created where the
+        # file in the `runfiles` is a dangling symlink into the hermetic toolchain
+        # repository. This smells like a bug in RBE, but I would not be surprised
+        # if it is not one.
+
+        # Create a dangling symlink in `bin/python3` to the real interpreter
+        # in the hermetic toolchain.
+        interpreter_basename = runtime.interpreter.basename
+        executable = ctx.actions.declare_symlink("bin/" + interpreter_basename)
+        direct.append(executable)
+        interpreter_actual_path = runfiles_root_path(ctx, runtime.interpreter.short_path)
+        target_path = relative_path(
+            # dirname is necessary because a relative symlink is relative to
+            # the directory the symlink resides within.
+            from_ = paths.dirname(runfiles_root_path(ctx, executable.short_path)),
+            to = interpreter_actual_path,
+        )
+        ctx.actions.symlink(output = executable, target_path = target_path)
+
+        # Create a dangling symlink into the runfiles and use that as the
+        # entry point.
+        interpreter_actual_path = runfiles_root_path(ctx, executable.short_path)
+        executable = ctx.actions.declare_symlink(interpreter_basename)
+        target_path = interpreter_basename + ".runfiles/" + interpreter_actual_path
+        ctx.actions.symlink(output = executable, target_path = target_path)
     else:
-        executable = ctx.actions.declare_symlink(paths.basename(runtime.interpreter_path))
-        ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)
+        interpreter_basename = paths.basename(runtime.interpreter.interpreter_path)
+        executable = ctx.actions.declare_symlink(interpreter_basename)
+        direct.append(executable)
+        target_path = runtime.interpreter_path
+        ctx.actions.symlink(output = executable, target_path = target_path)
+
     return [
         toolchain,
         DefaultInfo(
             executable = executable,
-            runfiles = ctx.runfiles([executable], transitive_files = runtime.files),
+            runfiles = ctx.runfiles(direct, transitive_files = runtime.files),
         ),
     ]
 
