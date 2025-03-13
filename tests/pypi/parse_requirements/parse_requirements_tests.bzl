@@ -70,15 +70,15 @@ foo==0.0.3 --hash=sha256:deadbaaf
 
 foo==0.0.3 --hash=sha256:deadbaaf
 """,
-        "requirements_windows": """\
-foo[extra]==0.0.2 --hash=sha256:deadbeef
-bar==0.0.1 --hash=sha256:deadb00f
-""",
         "requirements_sdist_different_hashes": """\
 foo==0.0.1 --hash=sha256:deadbeef --hash=sha256:cafebabe
 """,
         "requirements_sdist_different_hashes_linux": """\
 foo==0.0.1 --hash=sha256:deadbaaf --hash=sha256:cafebabe
+""",
+        "requirements_windows": """\
+foo[extra]==0.0.2 --hash=sha256:deadbeef
+bar==0.0.1 --hash=sha256:deadb00f
 """,
     }
 
@@ -452,20 +452,20 @@ _tests.append(_test_different_package_version)
 def _test_sdist_different_hashes(env):
     """Test that sdists with same hash but wheels with different hashes across platforms are handled correctly."""
 
-    def _mock_get_index_urls(_, distributions):
+    def _mock_get_index_urls(_, _):
         return {
             "foo": struct(
                 whls = {
-                    "deadbeef": struct(
-                        filename = "foo-0.0.1-py3-none-win_amd64.whl",
-                        url = "https://pypi.org/foo-0.0.1-win.whl",
-                        sha256 = "deadbeef",
-                        yanked = False,
-                    ),
                     "deadbaaf": struct(
                         filename = "foo-0.0.1-py3-none-manylinux_2_17_x86_64.whl",
                         url = "https://pypi.org/foo-0.0.1-linux.whl",
                         sha256 = "deadbaaf",
+                        yanked = False,
+                    ),
+                    "deadbeef": struct(
+                        filename = "foo-0.0.1-py3-none-win_amd64.whl",
+                        url = "https://pypi.org/foo-0.0.1-win.whl",
+                        sha256 = "deadbeef",
                         yanked = False,
                     ),
                 },
