@@ -76,7 +76,7 @@ else
       if [[ ! -L "$stub_filename" ]]; then
         break
       fi
-      stub_filename=$(realpath $stub_filename)
+      stub_filename=$(readlink $stub_filename)
     done
     echo >&2 "Unable to find runfiles directory for $1"
     exit 1
