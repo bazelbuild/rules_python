@@ -207,6 +207,9 @@ def parse_requirements(
         # Return normalized names
         ret_requirements = ret.setdefault(normalize_name(whl_name), [])
 
+        all_platforms = []
+        common_sdist = None
+
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
                 requirement = r,
@@ -214,7 +217,15 @@ def parse_requirements(
                 logger = logger,
             )
 
+            if sdist and not common_sdist:
+                common_sdist = struct(
+                    req = r,
+                    sdist = sdist,
+                )
+
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
+            all_platforms.extend(target_platforms)
+
             ret_requirements.append(
                 struct(
                     distribution = r.distribution,
@@ -222,7 +233,20 @@ def parse_requirements(
                     target_platforms = sorted(target_platforms),
                     extra_pip_args = r.extra_pip_args,
                     whls = whls,
-                    sdist = sdist,
+                    sdist = None,
+                    is_exposed = is_exposed,
+                ),
+            )
+
+        if common_sdist:
+            ret_requirements.append(
+                struct(
+                    distribution = common_sdist.req.distribution,
+                    srcs = common_sdist.req.srcs,
+                    target_platforms = sorted(all_platforms),
+                    extra_pip_args = common_sdist.req.extra_pip_args,
+                    whls = [],
+                    sdist = common_sdist.sdist,
                     is_exposed = is_exposed,
                 ),
             )
