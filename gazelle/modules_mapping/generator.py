@@ -164,4 +164,4 @@ if __name__ == "__main__":
     generator = Generator(
         sys.stderr, args.output_file, args.exclude_patterns, args.include_stub_packages
     )
-    exit(generator.run(args.wheels))
+    sys.exit(generator.run(args.wheels))
