@@ -91,6 +91,9 @@ Unreleased changes template.
 * (pypi) Direct HTTP urls for wheels and sdists are now supported when using
   {obj}`experimental_index_url` (bazel downloader).
   Partially fixes [#2363](https://github.com/bazelbuild/rules_python/issues/2363).
+* (rules) APIs for creating custom rules based on the core py_binary, py_test,
+  and py_library rules
+  ([#1647](https://github.com/bazelbuild/rules_python/issues/1647))
 
 {#v0-0-0-removed}
 ### Removed
