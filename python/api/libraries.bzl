@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loading-phase APIs specific to executables (binaries/tests).
+"""
+{#python-apis-libraries-bzl}
+Loading-phase APIs specific to executables (binaries/tests).
 
 :::{versionadded} VERSION_NEXT_FEATURE
 :::

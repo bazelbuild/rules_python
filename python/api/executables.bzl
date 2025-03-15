@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loading-phase APIs specific to executables (binaries/tests).
+"""
+{#python-apis-executables-bzl}
+Loading-phase APIs specific to executables (binaries/tests).
 
 :::{versionadded} VERSION_NEXT_FEATURE
 :::
@@ -20,10 +22,10 @@
 
 load("//python/private:py_binary_rule.bzl", "create_py_binary_rule_builder")
 load("//python/private:py_executable.bzl", "create_executable_rule_builder")
-load("//python/private:py_test_rule.bzl", "create_test_rule_builder")
+load("//python/private:py_test_rule.bzl", "create_py_test_rule_builder")
 
 executables = struct(
     py_binary_rule_builder = create_py_binary_rule_builder,
-    py_test_rule_builder = create_test_rule_builder,
+    py_test_rule_builder = create_py_test_rule_builder,
     executable_rule_builder = create_executable_rule_builder,
 )

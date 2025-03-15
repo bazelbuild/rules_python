@@ -427,6 +427,7 @@ bzl_library(
         ":attributes_bzl",
         ":common_bzl",
         ":flags_bzl",
+        ":precompile_bzl",
         ":py_cc_link_params_info_bzl",
         ":py_internal_bzl",
         ":rule_builders_bzl",
@@ -446,8 +447,6 @@ bzl_library(
     name = "py_library_rule_bzl",
     srcs = ["py_library_rule.bzl"],
     deps = [
-        ":common_bzl",
-        ":precompile_bzl",
         ":py_library_bzl",
     ],
 )

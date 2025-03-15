@@ -31,15 +31,29 @@ for the development of APIs to support custom derived rules.
 Custom rules can be created using the core rules as a basis by using their rule
 builder APIs.
 
-* {bzl:obj}`//python/apis:executables.bzl%executables` for builders for executables
-* {bzl:obj}`//python/apis:libraries.bzl%libraries` for builders for libraries
+* [`//python/apis:executables.bzl`](#python-apis-executables-bzl): builders for
+  executables.
+* [`//python/apis:libraries.bzl`](#python-apis-libraries-bzl): builders for
+  libraries.
 
 These builders create {bzl:obj}`ruleb.Rule` objects, which are thin
 wrappers around the keyword arguments eventually passed to the `rule()`
 function. These builder APIs give access to the _entire_ rule definition and
 allow arbitrary modifications.
 
-### Example: validating a source file
+This is level of control is powerful, but also volatile. A rule definition
+contains many details that _must_ change as the implementation changes. What
+is more or less likely to change isn't known in advance, but some general
+rules are:
+
+* Additive behavior to public attributes will be less prone to breaking.
+* Internal attributes that directly support a public attribute are likely
+  reliable.
+* Internal attributes that support an action are more likely to change.
+* Rule toolchains are moderately stable (toolchains are mostly internal to
+  how a rule works, but custom toolchains are supported).
+
+## Example: validating a source file
 
 In this example, we derive from `py_library` a custom rule that verifies source
 code contains the word "snakes". It does this by:
@@ -95,7 +109,7 @@ def create_has_snakes_rule():
 has_snakes_library = create_has_snakes_rule()
 ```
 
-### Example: adding transitions
+## Example: adding transitions
 
 In this example, we derive from `py_binary` to force building for a particular
 platform. We do this by:

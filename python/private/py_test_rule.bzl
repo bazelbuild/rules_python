@@ -42,7 +42,7 @@ def create_py_test_rule_builder():
 
     Returns:
         {type}`ruleb.Rule` with the necessary settings
-        for creating a `py_binary` rule.
+        for creating a `py_test` rule.
     """
     builder = create_executable_rule_builder(
         implementation = _py_test_impl,
