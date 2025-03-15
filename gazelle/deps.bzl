@@ -184,9 +184,9 @@ def go_deps():
     )
     go_repository(
         name = "com_github_smacker_go_tree_sitter",
+        commit = "71e8858be7ad43fb866e2daabe83e95e6eff91bd",
         importpath = "github.com/smacker/go-tree-sitter",
         remote = "https://github.com/dougthor42/go-tree-sitter",
-        commit = "71e8858be7ad43fb866e2daabe83e95e6eff91bd",
         vcs = "git",
     )
     go_repository(
