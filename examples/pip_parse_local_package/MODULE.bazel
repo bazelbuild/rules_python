@@ -1,0 +1,25 @@
+module(name = "rules_python_pip_parse_local_package_example")
+
+bazel_dep(name = "rules_python", version = "0.0.0")
+local_path_override(
+    module_name = "rules_python",
+    path = "../..",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    # We can specify the exact version.
+    python_version = "3.9.13",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pypi",
+    # If we want to expand the PROJECT_ROOT variable in the requirement lock file,
+    # we need to pass a label to the file defining the project root.
+    project_root = "//:pyproject.toml",
+    # We need to use the same version here as in the `python.toolchain` call.
+    python_version = "3.9.13",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "pypi", "pypi_39_hello")
