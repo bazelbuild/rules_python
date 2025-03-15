@@ -276,6 +276,13 @@ def _maybe_collect_coverage(enable):
         yield
         return
 
+    instrumented_files = [abs_path for abs_path, _ in instrumented_file_paths()]
+    unique_dirs = {os.path.dirname(file) for file in instrumented_files}
+    source = "\n\t".join(unique_dirs)
+
+    print_verbose_coverage("Instrumented Files:\n" + "\n".join(instrumented_files))
+    print_verbose_coverage("Sources:\n" + "\n".join(unique_dirs))
+
     import uuid
 
     import coverage
@@ -289,8 +296,10 @@ def _maybe_collect_coverage(enable):
     print_verbose_coverage("coveragerc file:", rcfile_name)
     with open(rcfile_name, "w") as rcfile:
         rcfile.write(
-            """[run]
+            f"""[run]
 relative_files = True
+source =
+\t{source}
 """
         )
     try:

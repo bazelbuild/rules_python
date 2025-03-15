@@ -1,4 +1,4 @@
-# Copyright 2024 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the definitions of all providers."""
+"""Defines an empty toolchain that returns just ToolchainInfo."""
 
-UvToolchainInfo = provider(
-    doc = "Information about how to invoke the uv executable.",
-    fields = {
-        "label": """
-:type: Label
+def _empty_toolchain_impl(ctx):
+    # Include the label so e.g. tests can identify what the target was.
+    return [platform_common.ToolchainInfo(label = ctx.label)]
 
-The uv toolchain implementation label returned by the toolchain.
-""",
-        "uv": """
-:type: Target
-
-The uv binary `Target`
-""",
-        "version": """
-:type: str
-
-The uv version
-""",
-    },
+empty_toolchain = rule(
+    implementation = _empty_toolchain_impl,
 )
