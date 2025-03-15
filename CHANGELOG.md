@@ -72,7 +72,7 @@ Unreleased changes template.
   creating `.pyc` files.
 * (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 * (gazelle) The forked version of `go-tree-sitter` is now used in the correct way - via `go mod`'s
-  `repalce` directive, fixing [#2630](https://github.com/bazelbuild/rules_python/issues/2630).
+  `replace` directive, fixing [#2630](https://github.com/bazelbuild/rules_python/issues/2630).
   ([#2667](https://github.com/bazelbuild/rules_python/pull/2667))
 
 {#v0-0-0-added}
