@@ -20,9 +20,9 @@ without the overhead of a bazel-in-bazel integration test.
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//python/private:attr_builders.bzl", "attrb")  # buildifier: disable=bzl-visibility
 load("//python/private:py_binary_macro.bzl", "py_binary_macro")  # buildifier: disable=bzl-visibility
-load("//python/private:py_binary_rule.bzl", "create_binary_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_binary_rule.bzl", "create_py_binary_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:py_test_macro.bzl", "py_test_macro")  # buildifier: disable=bzl-visibility
-load("//python/private:py_test_rule.bzl", "create_test_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_rule.bzl", "create_py_test_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
@@ -79,9 +79,9 @@ def _create_reconfig_rule(builder):
     builder.cfg.update_outputs(_RECONFIG_OUTPUTS)
     return builder.build()
 
-_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())
+_py_reconfig_binary = _create_reconfig_rule(create_py_binary_rule_builder())
 
-_py_reconfig_test = _create_reconfig_rule(create_test_rule_builder())
+_py_reconfig_test = _create_reconfig_rule(create_py_test_rule_builder())
 
 def py_reconfig_test(**kwargs):
     """Create a py_test with customized build settings for testing.

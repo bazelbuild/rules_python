@@ -25,16 +25,9 @@ load(
     "REQUIRED_EXEC_GROUP_BUILDERS",
 )
 load(":builders.bzl", "builders")
-load(
-    ":common.bzl",
-    "collect_imports",
-    "collect_runfiles",
-    "create_instrumented_files_info",
-    "create_output_group_info",
-    "create_py_info",
-    "filter_to_py_srcs",
-)
+load(":common.bzl", "collect_cc_info", "collect_imports", "collect_runfiles", "create_instrumented_files_info", "create_library_semantics_struct", "create_output_group_info", "create_py_info", "filter_to_py_srcs", "get_imports")
 load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
+load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
 load(":rule_builders.bzl", "ruleb")
@@ -56,6 +49,16 @@ LIBRARY_ATTRS = dicts.add(
         ),
     },
 )
+
+def _py_library_impl_with_semantics(ctx):
+    return py_library_impl(
+        ctx,
+        semantics = create_library_semantics_struct(
+            get_imports = get_imports,
+            maybe_precompile = maybe_precompile,
+            get_cc_info_for_library = collect_cc_info,
+        ),
+    )
 
 def py_library_impl(ctx, *, semantics):
     """Abstract implementation of py_library rule.
@@ -156,8 +159,9 @@ def create_py_library_rule_builder():
         for creating a `py_library` rule.
     """
     builder = ruleb.Rule(
+        implementation = _py_library_impl_with_semantics,
         doc = _DEFAULT_PY_LIBRARY_DOC,
-        exec_groups = REQUIRED_EXEC_GROUP_BUILDERS,
+        exec_groups = dict(REQUIRED_EXEC_GROUP_BUILDERS),
         attrs = LIBRARY_ATTRS,
         fragments = ["py"],
         toolchains = [
