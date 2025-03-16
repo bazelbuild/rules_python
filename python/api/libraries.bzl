@@ -14,7 +14,7 @@
 
 """
 {#python-apis-libraries-bzl}
-Loading-phase APIs specific to executables (binaries/tests).
+Loading-phase APIs specific to libraries.
 
 :::{versionadded} VERSION_NEXT_FEATURE
 :::
