@@ -1737,7 +1737,24 @@ def create_base_executable_rule():
     """
     return create_executable_rule_builder().build()
 
+# NOTE: Exported publicly
 def create_executable_rule_builder(implementation, **kwargs):
+    """Create a rule builder for an executable Python program.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    An executable rule is one that sets either `executable=True` or `test=True`,
+    and the output is something that can be run directly (e.g. `bazel run`,
+    `exec(...)` etc)
+
+    :::{versionadded} VERSION_NEXT_FEATURE
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating an executable Python rule.
+    """
     builder = ruleb.Rule(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,
