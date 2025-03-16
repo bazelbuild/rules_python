@@ -91,6 +91,8 @@ Unreleased changes template.
 * (pypi) Direct HTTP urls for wheels and sdists are now supported when using
   {obj}`experimental_index_url` (bazel downloader).
   Partially fixes [#2363](https://github.com/bazelbuild/rules_python/issues/2363).
+* (rules) Added {obj}`interpreter_args` attribute to `py_binary` and `py_test`,
+  which allows pass arguments to the interpreter before the regular args.
 
 {#v0-0-0-removed}
 ### Removed

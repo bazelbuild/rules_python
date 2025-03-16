@@ -87,6 +87,21 @@ EXECUTABLE_ATTRS = dicts.add(
     IMPORTS_ATTRS,
     COVERAGE_ATTRS,
     {
+        "interpreter_args": lambda: attrb.StringList(
+            doc = """
+Arguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+        ),
         "legacy_create_init": lambda: attrb.Int(
             default = -1,
             values = [-1, 0, 1],
@@ -664,6 +679,10 @@ def _create_stage1_bootstrap(
         "%recreate_venv_at_runtime%": str(int(venv.recreate_venv_at_runtime)) if venv else "0",
         "%target%": str(ctx.label),
         "%workspace_name%": ctx.workspace_name,
+        "%interpreter_args%": "\n".join([
+            '"{}"'.format(v)
+            for v in ctx.attr.interpreter_args
+        ]),
     }
 
     if stage2_bootstrap:
