@@ -161,7 +161,7 @@ def _python_repository_impl(rctx):
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
     if "linux" in platform:
-        # Workaround around https://github.com/indygreg/python-build-standalone/issues/231
+        # Workaround around https://github.com/astral-sh/python-build-standalone/issues/231
         for url in urls:
             head_and_release, _, _ = url.rpartition("/")
             _, _, release = head_and_release.rpartition("/")
@@ -177,7 +177,7 @@ def _python_repository_impl(rctx):
                 # building on.
                 #
                 # Link to the first affected release:
-                # https://github.com/indygreg/python-build-standalone/releases/tag/20240224
+                # https://github.com/astral-sh/python-build-standalone/releases/tag/20240224
                 rctx.delete("share/terminfo")
                 break
 
