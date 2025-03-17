@@ -101,6 +101,7 @@ pip
 coverage
 precompiling
 gazelle
+Extending <extending>
 Contributing <contributing>
 support
 Changelog <changelog>

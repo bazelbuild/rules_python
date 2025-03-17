@@ -25,6 +25,26 @@ bzl_library(
     deps = ["//python/private/api:api_bzl"],
 )
 
+bzl_library(
+    name = "executables_bzl",
+    srcs = ["executables.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//python/private:py_binary_rule_bzl",
+        "//python/private:py_executable_bzl",
+        "//python/private:py_test_rule_bzl",
+    ],
+)
+
+bzl_library(
+    name = "libraries_bzl",
+    srcs = ["libraries.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//python/private:py_library_bzl",
+    ],
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
