@@ -20,6 +20,10 @@ in the command executed being;
 python /path/to/debugger.py --port 12345 --file /path/to/file.py
 ```
 
+:::{seealso}
+The {bzl:obj}`interpreter_args` attribute.
+:::
+
 :::{versionadded} VERSION_NEXT_FEATURE
 
 ::::

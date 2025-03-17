@@ -98,6 +98,10 @@ CPython, see https://docs.python.org/3/using/cmdline.html.
 Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
 :::
 
+:::{seealso}
+The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+:::
+
 :::{versionadded} VERSION_NEXT_FEATURE
 :::
 """,
