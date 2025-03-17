@@ -94,6 +94,8 @@ Unreleased changes template.
 * (rules) APIs for creating custom rules based on the core py_binary, py_test,
   and py_library rules
   ([#1647](https://github.com/bazelbuild/rules_python/issues/1647))
+* (rules) Added {obj}`interpreter_args` attribute to `py_binary` and `py_test`,
+  which allows pass arguments to the interpreter before the regular args.
 
 {#v0-0-0-removed}
 ### Removed

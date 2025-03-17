@@ -87,6 +87,21 @@ EXECUTABLE_ATTRS = dicts.add(
     IMPORTS_ATTRS,
     COVERAGE_ATTRS,
     {
+        "interpreter_args": lambda: attrb.StringList(
+            doc = """
+Arguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+        ),
         "legacy_create_init": lambda: attrb.Int(
             default = -1,
             values = [-1, 0, 1],
@@ -658,6 +673,10 @@ def _create_stage1_bootstrap(
     python_binary_actual = venv.interpreter_actual_path if venv else ""
 
     subs = {
+        "%interpreter_args%": "\n".join([
+            '"{}"'.format(v)
+            for v in ctx.attr.interpreter_args
+        ]),
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": python_binary_path,
         "%python_binary_actual%": python_binary_actual,
