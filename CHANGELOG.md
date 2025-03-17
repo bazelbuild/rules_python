@@ -94,7 +94,9 @@ Unreleased changes template.
 * (rules) APIs for creating custom rules based on the core py_binary, py_test,
   and py_library rules
   ([#1647](https://github.com/bazelbuild/rules_python/issues/1647))
-* (rules) Added env-var to allow additional interpreter args for stage1 bootstrap
+* (rules) Added env-var to allow additional interpreter args for stage1 bootstrap.
+  See {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable.
+  Only applicable for {obj}`--bootstrap_impl=script`.
 * (rules) Added {obj}`interpreter_args` attribute to `py_binary` and `py_test`,
   which allows pass arguments to the interpreter before the regular args.
 
