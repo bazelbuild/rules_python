@@ -21,6 +21,11 @@ IS_ZIPFILE="%is_zipfile%"
 # 0 or 1
 RECREATE_VENV_AT_RUNTIME="%recreate_venv_at_runtime%"
 
+# array of strings
+declare -a INTERPRETER_ARGS_FROM_TARGET=(
+%interpreter_args%
+)
+
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   # NOTE: Macs have an old version of mktemp, so we must use only the
   # minimal functionality of it.
@@ -229,6 +234,7 @@ command=(
   "${interpreter_env[@]}"
   "$python_exe"
   "${interpreter_args[@]}"
+  "${INTERPRETER_ARGS_FROM_TARGET[@]}"
   "$stage2_bootstrap"
   "$@"
 )
