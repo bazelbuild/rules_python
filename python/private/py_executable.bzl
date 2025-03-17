@@ -673,16 +673,16 @@ def _create_stage1_bootstrap(
     python_binary_actual = venv.interpreter_actual_path if venv else ""
 
     subs = {
+        "%interpreter_args%": "\n".join([
+            '"{}"'.format(v)
+            for v in ctx.attr.interpreter_args
+        ]),
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": python_binary_path,
         "%python_binary_actual%": python_binary_actual,
         "%recreate_venv_at_runtime%": str(int(venv.recreate_venv_at_runtime)) if venv else "0",
         "%target%": str(ctx.label),
         "%workspace_name%": ctx.workspace_name,
-        "%interpreter_args%": "\n".join([
-            '"{}"'.format(v)
-            for v in ctx.attr.interpreter_args
-        ]),
     }
 
     if stage2_bootstrap:

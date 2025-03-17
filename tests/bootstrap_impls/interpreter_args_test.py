@@ -15,9 +15,11 @@
 import sys
 import unittest
 
+
 class InterpreterArgsTest(unittest.TestCase):
     def test_interpreter_args(self):
         self.assertEqual(sys._xoptions, {"SPECIAL": "1"})
+
 
 if __name__ == "__main__":
     unittest.main()
