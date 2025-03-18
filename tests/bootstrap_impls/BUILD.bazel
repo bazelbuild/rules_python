@@ -71,6 +71,12 @@ sh_py_run_test(
 )
 
 sh_py_run_test(
+    name = "run_binary_find_runfiles_test",
+    py_src = "bin.py",
+    sh_src = "run_binary_find_runfiles_test.sh",
+)
+
+sh_py_run_test(
     name = "run_binary_bootstrap_script_zip_yes_test",
     bootstrap_impl = "script",
     build_python_zip = "yes",
@@ -85,6 +91,14 @@ sh_py_run_test(
     build_python_zip = "no",
     py_src = "bin.py",
     sh_src = "run_binary_zip_no_test.sh",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
+sh_py_run_test(
+    name = "run_binary_bootstrap_script_find_runfiles_test",
+    bootstrap_impl = "script",
+    py_src = "bin.py",
+    sh_src = "run_binary_find_runfiles_test.sh",
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
