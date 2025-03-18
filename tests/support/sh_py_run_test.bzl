@@ -18,10 +18,11 @@ without the overhead of a bazel-in-bazel integration test.
 """
 
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//python/private:attr_builders.bzl", "attrb")  # buildifier: disable=bzl-visibility
 load("//python/private:py_binary_macro.bzl", "py_binary_macro")  # buildifier: disable=bzl-visibility
-load("//python/private:py_binary_rule.bzl", "create_binary_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_binary_rule.bzl", "create_py_binary_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:py_test_macro.bzl", "py_test_macro")  # buildifier: disable=bzl-visibility
-load("//python/private:py_test_rule.bzl", "create_test_rule_builder")  # buildifier: disable=bzl-visibility
+load("//python/private:py_test_rule.bzl", "create_py_test_rule_builder")  # buildifier: disable=bzl-visibility
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
@@ -54,9 +55,9 @@ _RECONFIG_OUTPUTS = _RECONFIG_INPUTS + [
 _RECONFIG_INHERITED_OUTPUTS = [v for v in _RECONFIG_OUTPUTS if v in _RECONFIG_INPUTS]
 
 _RECONFIG_ATTRS = {
-    "bootstrap_impl": attr.string(),
-    "build_python_zip": attr.string(default = "auto"),
-    "extra_toolchains": attr.string_list(
+    "bootstrap_impl": attrb.String(),
+    "build_python_zip": attrb.String(default = "auto"),
+    "extra_toolchains": attrb.StringList(
         doc = """
 Value for the --extra_toolchains flag.
 
@@ -65,23 +66,22 @@ to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,
     ),
-    "python_src": attr.label(),
-    "venvs_use_declare_symlink": attr.string(),
+    "python_src": attrb.Label(),
+    "venvs_use_declare_symlink": attrb.String(),
 }
 
 def _create_reconfig_rule(builder):
     builder.attrs.update(_RECONFIG_ATTRS)
 
-    base_cfg_impl = builder.cfg.implementation.get()
-    builder.cfg.implementation.set(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
-    builder.cfg.inputs.update(_RECONFIG_INPUTS)
-    builder.cfg.outputs.update(_RECONFIG_OUTPUTS)
-
+    base_cfg_impl = builder.cfg.implementation()
+    builder.cfg.set_implementation(lambda *args: _perform_transition_impl(base_impl = base_cfg_impl, *args))
+    builder.cfg.update_inputs(_RECONFIG_INPUTS)
+    builder.cfg.update_outputs(_RECONFIG_OUTPUTS)
     return builder.build()
 
-_py_reconfig_binary = _create_reconfig_rule(create_binary_rule_builder())
+_py_reconfig_binary = _create_reconfig_rule(create_py_binary_rule_builder())
 
-_py_reconfig_test = _create_reconfig_rule(create_test_rule_builder())
+_py_reconfig_test = _create_reconfig_rule(create_py_test_rule_builder())
 
 def py_reconfig_test(**kwargs):
     """Create a py_test with customized build settings for testing.

@@ -3,6 +3,7 @@
 # To update this file, run:
 #   bazel run //:gazelle_python_manifest.update
 
+---
 manifest:
   modules_mapping:
     S3: s3cmd

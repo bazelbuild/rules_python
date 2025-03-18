@@ -124,4 +124,13 @@ sh_py_run_test(
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
+py_reconfig_test(
+    name = "interpreter_args_test",
+    srcs = ["interpreter_args_test.py"],
+    bootstrap_impl = "script",
+    interpreter_args = ["-XSPECIAL=1"],
+    main = "interpreter_args_test.py",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
 relative_path_test_suite(name = "relative_path_tests")

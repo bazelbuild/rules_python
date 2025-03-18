@@ -15,10 +15,17 @@ Target bzl:type 1 rules/lib/builtins/Target -
 ToolchainInfo bzl:type 1 rules/lib/providers/ToolchainInfo.html -
 attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
 attr.int bzl:type 1 rules/lib/toplevel/attr#int -
+attr.int_list bzl:type 1 rules/lib/toplevel/attr#int_list -
 attr.label bzl:type 1 rules/lib/toplevel/attr#label -
+attr.label_keyed_string_dict bzl:type 1 rules/lib/toplevel/attr#label_keyed_string_dict -
 attr.label_list bzl:type 1 rules/lib/toplevel/attr#label_list -
+attr.output bzl:type 1 rules/lib/toplevel/attr#output -
+attr.output_list bzl:type 1 rules/lib/toplevel/attr#output_list -
 attr.string bzl:type 1 rules/lib/toplevel/attr#string -
+attr.string_dict bzl:type 1 rules/lib/toplevel/attr#string_dict -
+attr.string_keyed_label_dict bzl:type 1 rules/lib/toplevel/attr#string_keyed_label_dict -
 attr.string_list bzl:type 1 rules/lib/toplevel/attr#string_list -
+attr.string_list_dict bzl:type 1 rules/lib/toplevel/attr#string_list_dict -
 bool bzl:type 1 rules/lib/bool -
 callable bzl:type 1 rules/lib/core/function -
 config_common.FeatureFlagInfo bzl:type 1 rules/lib/toplevel/config_common#FeatureFlagInfo -
@@ -60,6 +67,7 @@ ctx.workspace_name bzl:obj 1 rules/lib/builtins/ctx#workspace_name -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
 exec_compatible_with bzl:attr 1 reference/be/common-definitions#common.exec_compatible_with -
+exec_group bzl:function 1 rules/lib/globals/bzl#exec_group -
 int bzl:type 1 rules/lib/int -
 label bzl:type 1 concepts/labels -
 list bzl:type 1 rules/lib/list -
