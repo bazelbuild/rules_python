@@ -107,6 +107,15 @@ py_reconfig_test(
     main = "sys_path_order_test.py",
 )
 
+py_reconfig_test(
+    name = "main_module_test",
+    srcs = ["main_module.py"],
+    bootstrap_impl = "script",
+    imports = ["."],
+    main_module = "tests.bootstrap_impls.main_module",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
 sh_py_run_test(
     name = "inherit_pythonsafepath_env_test",
     bootstrap_impl = "script",
