@@ -16,33 +16,36 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load(":attr_builders.bzl", "attrb")
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
     "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
-    "REQUIRED_EXEC_GROUPS",
-    "SRCS_VERSION_ALL_VALUES",
-    "create_srcs_attr",
-    "create_srcs_version_attr",
+    "REQUIRED_EXEC_GROUP_BUILDERS",
 )
 load(":builders.bzl", "builders")
 load(
     ":common.bzl",
     "PYTHON_FILE_EXTENSIONS",
+    "collect_cc_info",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
+    "create_library_semantics_struct",
     "create_output_group_info",
     "create_py_info",
     "filter_to_py_srcs",
+    "get_imports",
     "runfiles_root_path",
     "union_attrs",
 )
 load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
+load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":rule_builders.bzl", "ruleb")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
@@ -51,14 +54,12 @@ load(
 
 _py_builtins = py_internal
 
-LIBRARY_ATTRS = union_attrs(
+LIBRARY_ATTRS = dicts.add(
     COMMON_ATTRS,
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
-    create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    create_srcs_attr(mandatory = False),
     {
-        "site_packages_root": attr.string(
+        "site_packages_root": lambda: attrb.String(
             doc = """
 Package relative prefix to remove from `srcs` for site-packages layouts.
 
@@ -99,11 +100,21 @@ more information.
 :::
 """,
         ),
-        "_add_srcs_to_runfiles_flag": attr.label(
+        "_add_srcs_to_runfiles_flag": lambda: attrb.Label(
             default = "//python/config_settings:add_srcs_to_runfiles",
         ),
     },
 )
+
+def _py_library_impl_with_semantics(ctx):
+    return py_library_impl(
+        ctx,
+        semantics = create_library_semantics_struct(
+            get_imports = get_imports,
+            maybe_precompile = maybe_precompile,
+            get_cc_info_for_library = collect_cc_info,
+        ),
+    )
 
 def py_library_impl(ctx, *, semantics):
     """Abstract implementation of py_library rule.
@@ -203,33 +214,6 @@ Source files are no longer added to the runfiles directly.
 :::
 """
 
-def create_py_library_rule(*, attrs = {}, **kwargs):
-    """Creates a py_library rule.
-
-    Args:
-        attrs: dict of rule attributes.
-        **kwargs: Additional kwargs to pass onto the rule() call.
-    Returns:
-        A rule object
-    """
-
-    # Within Google, the doc attribute is overridden
-    kwargs.setdefault("doc", _DEFAULT_PY_LIBRARY_DOC)
-
-    # TODO: b/253818097 - fragments=py is only necessary so that
-    # RequiredConfigFragmentsTest passes
-    fragments = kwargs.pop("fragments", None) or []
-    kwargs["exec_groups"] = REQUIRED_EXEC_GROUPS | (kwargs.get("exec_groups") or {})
-    return rule(
-        attrs = dicts.add(LIBRARY_ATTRS, attrs),
-        toolchains = [
-            config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
-            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
-        ],
-        fragments = fragments + ["py"],
-        **kwargs
-    )
-
 def _get_site_packages_symlinks(ctx):
     if not ctx.attr.site_packages_root:
         return []
@@ -296,3 +280,30 @@ def _repo_relative_short_path(short_path):
         return short_path[3:].partition("/")[2]
     else:
         return short_path
+
+# NOTE: Exported publicaly
+def create_py_library_rule_builder():
+    """Create a rule builder for a py_library.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} VERSION_NEXT_FEATURE
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_library` rule.
+    """
+    builder = ruleb.Rule(
+        implementation = _py_library_impl_with_semantics,
+        doc = _DEFAULT_PY_LIBRARY_DOC,
+        exec_groups = dict(REQUIRED_EXEC_GROUP_BUILDERS),
+        attrs = LIBRARY_ATTRS,
+        fragments = ["py"],
+        toolchains = [
+            ruleb.ToolchainType(TOOLCHAIN_TYPE, mandatory = False),
+            ruleb.ToolchainType(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+        ],
+    )
+    return builder

@@ -13,7 +13,7 @@ in this repository are simple aliases. On Bazel 7 and above `rules_python` uses
 a separate Starlark implementation,
 see {ref}`Migrating from the Bundled Rules` below.
 
-Once rules_python 1.0 is released, they will follow
+This repository follows
 [semantic versioning](https://semver.org) and the breaking change policy
 outlined in the [support](support) page.
 
@@ -101,6 +101,7 @@ pip
 coverage
 precompiling
 gazelle
+Extending <extending>
 Contributing <contributing>
 support
 Changelog <changelog>

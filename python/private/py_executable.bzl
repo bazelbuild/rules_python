@@ -18,18 +18,17 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load(":attr_builders.bzl", "attrb")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
     "COMMON_ATTRS",
+    "COVERAGE_ATTRS",
     "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
     "PycCollectionAttr",
-    "REQUIRED_EXEC_GROUPS",
-    "SRCS_VERSION_ALL_VALUES",
-    "create_srcs_attr",
-    "create_srcs_version_attr",
+    "REQUIRED_EXEC_GROUP_BUILDERS",
 )
 load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
@@ -50,7 +49,6 @@ load(
     "is_bool",
     "runfiles_root_path",
     "target_platform_has_any_constraint",
-    "union_attrs",
 )
 load(":flags.bzl", "BootstrapImplFlag", "VenvsUseDeclareSymlinkFlag")
 load(":precompile.bzl", "maybe_precompile")
@@ -60,6 +58,7 @@ load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(":py_runtime_info.bzl", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
+load(":rule_builders.bzl", "ruleb")
 load(
     ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
@@ -79,21 +78,35 @@ _EXTERNAL_PATH_PREFIX = "external"
 _ZIP_RUNFILES_DIRECTORY_NAME = "runfiles"
 _PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
 
-# Bazel 5.4 doesn't have config_common.toolchain_type
-_CC_TOOLCHAINS = [config_common.toolchain_type(
-    "@bazel_tools//tools/cpp:toolchain_type",
-    mandatory = False,
-)] if hasattr(config_common, "toolchain_type") else []
-
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
-EXECUTABLE_ATTRS = union_attrs(
+EXECUTABLE_ATTRS = dicts.add(
     COMMON_ATTRS,
     AGNOSTIC_EXECUTABLE_ATTRS,
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
+    COVERAGE_ATTRS,
     {
-        "legacy_create_init": attr.int(
+        "interpreter_args": lambda: attrb.StringList(
+            doc = """
+Arguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{seealso}
+The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+:::
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
+        ),
+        "legacy_create_init": lambda: attrb.Int(
             default = -1,
             values = [-1, 0, 1],
             doc = """\
@@ -110,7 +123,7 @@ the `srcs` of Python targets as required.
         # label, it is more treated as a string, and doesn't have to refer to
         # anything that exists because it gets treated as suffix-search string
         # over `srcs`.
-        "main": attr.label(
+        "main": lambda: attrb.Label(
             allow_single_file = True,
             doc = """\
 Optional; the name of the source file that is the main entry point of the
@@ -119,7 +132,7 @@ application. This file must also be listed in `srcs`. If left unspecified,
 filename in `srcs`, `main` must be specified.
 """,
         ),
-        "pyc_collection": attr.string(
+        "pyc_collection": lambda: attrb.String(
             default = PycCollectionAttr.INHERIT,
             values = sorted(PycCollectionAttr.__members__.values()),
             doc = """
@@ -134,7 +147,7 @@ Valid values are:
   target level.
 """,
         ),
-        "python_version": attr.string(
+        "python_version": lambda: attrb.String(
             # TODO(b/203567235): In the Java impl, the default comes from
             # --python_version. Not clear what the Starlark equivalent is.
             doc = """
@@ -160,25 +173,25 @@ accepting arbitrary Python versions.
 """,
         ),
         # Required to opt-in to the transition feature.
-        "_allowlist_function_transition": attr.label(
+        "_allowlist_function_transition": lambda: attrb.Label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
-        "_bootstrap_impl_flag": attr.label(
+        "_bootstrap_impl_flag": lambda: attrb.Label(
             default = "//python/config_settings:bootstrap_impl",
             providers = [BuildSettingInfo],
         ),
-        "_bootstrap_template": attr.label(
+        "_bootstrap_template": lambda: attrb.Label(
             allow_single_file = True,
             default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
         ),
-        "_launcher": attr.label(
+        "_launcher": lambda: attrb.Label(
             cfg = "target",
             # NOTE: This is an executable, but is only used for Windows. It
             # can't have executable=True because the backing target is an
             # empty target for other platforms.
             default = "//tools/launcher:launcher",
         ),
-        "_py_interpreter": attr.label(
+        "_py_interpreter": lambda: attrb.Label(
             # The configuration_field args are validated when called;
             # we use the precense of py_internal to indicate this Bazel
             # build has that fragment and name.
@@ -193,32 +206,29 @@ accepting arbitrary Python versions.
         "_py_toolchain_type": attr.label(
             default = TARGET_TOOLCHAIN_TYPE,
         ),
-        "_python_version_flag": attr.label(
+        "_python_version_flag": lambda: attrb.Label(
             default = "//python/config_settings:python_version",
         ),
-        "_venvs_use_declare_symlink_flag": attr.label(
+        "_venvs_use_declare_symlink_flag": lambda: attrb.Label(
             default = "//python/config_settings:venvs_use_declare_symlink",
             providers = [BuildSettingInfo],
         ),
-        "_windows_constraints": attr.label_list(
+        "_windows_constraints": lambda: attrb.LabelList(
             default = [
                 "@platforms//os:windows",
             ],
         ),
-        "_windows_launcher_maker": attr.label(
+        "_windows_launcher_maker": lambda: attrb.Label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
             executable = True,
         ),
-        "_zipper": attr.label(
+        "_zipper": lambda: attrb.Label(
             cfg = "exec",
             executable = True,
             default = "@bazel_tools//tools/zip:zipper",
         ),
     },
-    create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
-    create_srcs_attr(mandatory = True),
-    allow_none = True,
 )
 
 def convert_legacy_create_init_to_int(kwargs):
@@ -741,6 +751,10 @@ def _create_stage1_bootstrap(
     python_binary_actual = venv.interpreter_actual_path if venv else ""
 
     subs = {
+        "%interpreter_args%": "\n".join([
+            '"{}"'.format(v)
+            for v in ctx.attr.interpreter_args
+        ]),
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": python_binary_path,
         "%python_binary_actual%": python_binary_actual,
@@ -1820,24 +1834,43 @@ def create_base_executable_rule():
     """
     return create_executable_rule_builder().build()
 
+# NOTE: Exported publicly
 def create_executable_rule_builder(implementation, **kwargs):
-    builder = builders.RuleBuilder(
+    """Create a rule builder for an executable Python program.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    An executable rule is one that sets either `executable=True` or `test=True`,
+    and the output is something that can be run directly (e.g. `bazel run`,
+    `exec(...)` etc)
+
+    :::{versionadded} VERSION_NEXT_FEATURE
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating an executable Python rule.
+    """
+    builder = ruleb.Rule(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,
-        exec_groups = REQUIRED_EXEC_GROUPS,
+        exec_groups = dict(REQUIRED_EXEC_GROUP_BUILDERS),  # Mutable copy
         fragments = ["py", "bazel_py"],
         provides = [PyExecutableInfo],
         toolchains = [
-            TOOLCHAIN_TYPE,
-            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
-        ] + _CC_TOOLCHAINS,
-        cfg = builders.TransitionBuilder(
+            ruleb.ToolchainType(TOOLCHAIN_TYPE),
+            ruleb.ToolchainType(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+            ruleb.ToolchainType("@bazel_tools//tools/cpp:toolchain_type", mandatory = False),
+        ],
+        cfg = dict(
             implementation = _transition_executable_impl,
             inputs = [_PYTHON_VERSION_FLAG],
             outputs = [_PYTHON_VERSION_FLAG],
         ),
         **kwargs
     )
+    builder.attrs.get("srcs").set_mandatory(True)
     return builder
 
 def cc_configure_features(

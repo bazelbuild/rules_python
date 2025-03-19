@@ -1,5 +1,33 @@
 # Environment Variables
 
+::::{envvar} RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS
+
+This variable allows for additional arguments to be provided to the Python interpreter
+at bootstrap time when the `bash` bootstrap is used. If
+`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` were provided as `-Xaaa`, then the command
+would be;
+
+```
+python -Xaaa /path/to/file.py
+```
+
+This feature is likely to be useful for the integration of debuggers. For example,
+it would be possible to configure the `RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` to
+be set to `/path/to/debugger.py --port 12344 --file` resulting
+in the command executed being;
+
+```
+python /path/to/debugger.py --port 12345 --file /path/to/file.py
+```
+
+:::{seealso}
+The {bzl:obj}`interpreter_args` attribute.
+:::
+
+:::{versionadded} VERSION_NEXT_FEATURE
+
+::::
+
 :::{envvar} RULES_PYTHON_BOOTSTRAP_VERBOSE
 
 When `1`, debug information about bootstrapping of a program is printed to
