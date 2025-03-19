@@ -107,6 +107,8 @@ Unreleased changes template.
   Only applicable for {obj}`--bootstrap_impl=script`.
 * (rules) Added {obj}`interpreter_args` attribute to `py_binary` and `py_test`,
   which allows pass arguments to the interpreter before the regular args.
+* (rules) Added {obj}`main_module` attribute to `py_binary` and `py_test`,
+  which allows specifying a module name to run (i.e. `python -m <module>`).
 
 {#v0-0-0-removed}
 ### Removed

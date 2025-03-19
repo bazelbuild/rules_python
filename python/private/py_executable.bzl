@@ -130,6 +130,24 @@ Optional; the name of the source file that is the main entry point of the
 application. This file must also be listed in `srcs`. If left unspecified,
 `name`, with `.py` appended, is used instead. If `name` does not match any
 filename in `srcs`, `main` must be specified.
+
+This is mutually exclusive with {obj}`main_module`.
+""",
+        ),
+        "main_module": lambda: attrb.String(
+            doc = """
+Module name to execute as the main program.
+
+When set, `srcs` is not required, and it is assumed the module is
+provided by a dependency.
+
+See https://docs.python.org/3/using/cmdline.html#cmdoption-m for more
+information about running modules as the main program.
+
+This is mutually exclusive with {obj}`main`.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
 """,
         ),
         "pyc_collection": lambda: attrb.String(
@@ -716,6 +734,10 @@ def _create_stage2_bootstrap(
 
     template = runtime.stage2_bootstrap_template
 
+    if main_py:
+        main_py_path = "{}/{}".format(ctx.workspace_name, main_py.short_path)
+    else:
+        main_py_path = ""
     ctx.actions.expand_template(
         template = template,
         output = output,
@@ -723,7 +745,8 @@ def _create_stage2_bootstrap(
             "%coverage_tool%": _get_coverage_tool_runfiles_path(ctx, runtime),
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
-            "%main%": "{}/{}".format(ctx.workspace_name, main_py.short_path),
+            "%main%": main_py_path,
+            "%main_module%": ctx.attr.main_module,
             "%target%": str(ctx.label),
             "%workspace_name%": ctx.workspace_name,
         },
@@ -1007,7 +1030,10 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     """
     _validate_executable(ctx)
 
-    main_py = determine_main(ctx)
+    if not ctx.attr.main_module:
+        main_py = determine_main(ctx)
+    else:
+        main_py = None
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)
 
@@ -1126,6 +1152,12 @@ def _get_build_info(ctx, cc_toolchain):
 def _validate_executable(ctx):
     if ctx.attr.python_version == "PY2":
         fail("It is not allowed to use Python 2")
+
+    if ctx.attr.main and ctx.attr.main_module:
+        fail((
+            "Only one of main and main_module can be set, got: " +
+            "main={}, main_module={}"
+        ).format(ctx.attr.main, ctx.attr.main_module))
 
 def _declare_executable_file(ctx):
     if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
