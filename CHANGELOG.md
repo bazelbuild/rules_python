@@ -45,12 +45,35 @@ Unreleased changes template.
 * Nothing removed.
 -->
 
+
 {#v0-0-0}
 ## Unreleased
 
 [0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
 
 {#v0-0-0-changed}
+### Changed
+* Nothing changed.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+
+{#v1-3-0}
+## Unreleased
+
+[1.3.0]: https://github.com/bazelbuild/rules_python/releases/tag/1.3.0
+
+{#v1-3-0-changed}
 ### Changed
 * (deps) platforms 0.0.4 -> 0.0.11
 * (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
@@ -59,7 +82,7 @@ Unreleased changes template.
   YAML document start `---` line. Implemented in
   [#2656](https://github.com/bazelbuild/rules_python/pull/2656).
 
-{#v0-0-0-fixed}
+{#v1-3-0-fixed}
 ### Fixed
 * (pypi) The `ppc64le` is now pointing to the right target in the `platforms` package.
 * (gazelle) No longer incorrectly merge `py_binary` targets during partial updates in
@@ -76,7 +99,7 @@ Unreleased changes template.
   creating `.pyc` files.
 * (deps) doublestar 4.7.1 (required for recent Gazelle versions)
 
-{#v0-0-0-added}
+{#v1-3-0-added}
 ### Added
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
@@ -102,7 +125,7 @@ Unreleased changes template.
 * (rules) Added {obj}`main_module` attribute to `py_binary` and `py_test`,
   which allows specifying a module name to run (i.e. `python -m <module>`).
 
-{#v0-0-0-removed}
+{#v1-3-0-removed}
 ### Removed
 * Nothing removed.
 
