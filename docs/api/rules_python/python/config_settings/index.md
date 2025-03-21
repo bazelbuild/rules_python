@@ -266,7 +266,7 @@ Determines if relative symlinks are created using `declare_symlink()` at build
 time.
 
 This is only intended to work around
-[#2489](https://github.com/bazelbuild/rules_python/issues/2489), where some
+[#2489](https://github.com/bazel-contrib/rules_python/issues/2489), where some
 packaging rules don't support `declare_symlink()` artifacts.
 
 Values:

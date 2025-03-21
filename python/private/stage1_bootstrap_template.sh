@@ -243,7 +243,7 @@ command=(
 # using `kill`) to this process (the PID seen by the calling process) are
 # received by the Python process. Otherwise, this process receives the signal
 # and would have to manually propagate it.
-# See https://github.com/bazelbuild/rules_python/issues/2043#issuecomment-2215469971
+# See https://github.com/bazel-contrib/rules_python/issues/2043#issuecomment-2215469971
 # for more information.
 #
 # However, we can't use exec when there is cleanup to do afterwards. Control
