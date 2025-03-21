@@ -61,7 +61,7 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (pypi) Added version-based fetching in `_add_dists` when SHA256 hashes are unavailable, with unit tests in `//tests/pypi/parse_requirements`[#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
 
 {#v0-0-0-removed}
 ### Removed
