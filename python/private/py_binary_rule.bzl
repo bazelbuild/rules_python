@@ -20,23 +20,6 @@ load(
     "py_executable_impl",
 )
 
-_COVERAGE_ATTRS = {
-    # Magic attribute to help C++ coverage work. There's no
-    # docs about this; see TestActionBuilder.java
-    "_collect_cc_coverage": attr.label(
-        default = "@bazel_tools//tools/test:collect_cc_coverage",
-        executable = True,
-        cfg = "exec",
-    ),
-    # Magic attribute to make coverage work. There's no
-    # docs about this; see TestActionBuilder.java
-    "_lcov_merger": attr.label(
-        default = configuration_field(fragment = "coverage", name = "output_generator"),
-        executable = True,
-        cfg = "exec",
-    ),
-}
-
 def _py_binary_impl(ctx):
     return py_executable_impl(
         ctx = ctx,
@@ -44,13 +27,25 @@ def _py_binary_impl(ctx):
         inherited_environment = [],
     )
 
-def create_binary_rule_builder():
+# NOTE: Exported publicly
+def create_py_binary_rule_builder():
+    """Create a rule builder for a py_binary.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} 1.3.0
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_binary` rule.
+    """
     builder = create_executable_rule_builder(
         implementation = _py_binary_impl,
         executable = True,
     )
     builder.attrs.update(AGNOSTIC_BINARY_ATTRS)
-    builder.attrs.update(_COVERAGE_ATTRS)
     return builder
 
-py_binary = create_binary_rule_builder().build()
+py_binary = create_py_binary_rule_builder().build()

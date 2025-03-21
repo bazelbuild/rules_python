@@ -17,7 +17,7 @@ console_script generator from entry_points.txt contents.
 
 For Python versions earlier than 3.11 and for earlier bazel versions than 7.0 we need to workaround the issue of
 sys.path[0] breaking out of the runfiles tree see the following for more context:
-* https://github.com/bazelbuild/rules_python/issues/382
+* https://github.com/bazel-contrib/rules_python/issues/382
 * https://github.com/bazelbuild/bazel/pull/15701
 
 In affected bazel and Python versions we see in programs such as `flake8`, `pylint` or `pytest` errors because the
@@ -130,7 +130,7 @@ def run(
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
     # TODO: handle 'extras' in entry_point generation
-    # See https://github.com/bazelbuild/rules_python/issues/1383
+    # See https://github.com/bazel-contrib/rules_python/issues/1383
     # See https://packaging.python.org/en/latest/specifications/entry-points/
 
     with open(out, "w") as f:

@@ -30,7 +30,7 @@ bazel run @rules_python//python/bin:python \
 The {flag}`--python_src` flag for using the intepreter a binary/test uses.
 ::::
 
-::::{versionadded} VERSION_NEXT_FEATURE
+::::{versionadded} 1.3.0
 ::::
 :::
 

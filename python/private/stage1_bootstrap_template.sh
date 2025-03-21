@@ -21,6 +21,11 @@ IS_ZIPFILE="%is_zipfile%"
 # 0 or 1
 RECREATE_VENV_AT_RUNTIME="%recreate_venv_at_runtime%"
 
+# array of strings
+declare -a INTERPRETER_ARGS_FROM_TARGET=(
+%interpreter_args%
+)
+
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   # NOTE: Macs have an old version of mktemp, so we must use only the
   # minimal functionality of it.
@@ -197,6 +202,7 @@ stage2_bootstrap="$RUNFILES_DIR/$STAGE2_BOOTSTRAP"
 
 declare -a interpreter_env
 declare -a interpreter_args
+declare -a additional_interpreter_args
 
 # Don't prepend a potentially unsafe path to sys.path
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
@@ -215,6 +221,12 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
 fi
 
+if [[ -n "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}" ]]; then
+  read -a additional_interpreter_args <<< "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}"
+  interpreter_args+=("${additional_interpreter_args[@]}")
+  unset RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS
+fi
+
 export RUNFILES_DIR
 
 command=(
@@ -222,6 +234,7 @@ command=(
   "${interpreter_env[@]}"
   "$python_exe"
   "${interpreter_args[@]}"
+  "${INTERPRETER_ARGS_FROM_TARGET[@]}"
   "$stage2_bootstrap"
   "$@"
 )
@@ -230,7 +243,7 @@ command=(
 # using `kill`) to this process (the PID seen by the calling process) are
 # received by the Python process. Otherwise, this process receives the signal
 # and would have to manually propagate it.
-# See https://github.com/bazelbuild/rules_python/issues/2043#issuecomment-2215469971
+# See https://github.com/bazel-contrib/rules_python/issues/2043#issuecomment-2215469971
 # for more information.
 #
 # However, we can't use exec when there is cleanup to do afterwards. Control

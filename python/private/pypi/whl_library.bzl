@@ -34,8 +34,8 @@ def _get_xcode_location_cflags(rctx, logger = None):
     """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from astral-sh
+    otherwise. See https://github.com/astral-sh/python-build-standalone/issues/103
     """
 
     # Only run on MacOS hosts
@@ -92,8 +92,8 @@ def _get_xcode_location_cflags(rctx, logger = None):
 def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     """Gather cflags from a standalone toolchain for unix systems.
 
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from astral-sh
+    otherwise. See https://github.com/astral-sh/python-build-standalone/issues/103
     """
 
     # Only run on Unix systems
@@ -170,11 +170,28 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
 
+    env = {}
     if rctx.attr.environment != None:
-        args += [
-            "--environment",
-            json.encode(struct(arg = rctx.attr.environment)),
-        ]
+        for key, value in rctx.attr.environment.items():
+            env[key] = value
+
+    # This is super hacky, but working out something nice is tricky.
+    # This is in particular needed for psycopg2 which attempts to link libpython.a,
+    # in order to point the linker at the correct python intepreter.
+    if rctx.attr.add_libdir_to_library_search_path:
+        if "LDFLAGS" in env:
+            fail("Can't set both environment LDFLAGS and add_libdir_to_library_search_path")
+        command = [pypi_repo_utils.resolve_python_interpreter(rctx), "-c", "import sys ; sys.stdout.write('{}/lib'.format(sys.exec_prefix))"]
+        result = rctx.execute(command)
+        if result.return_code != 0:
+            fail("Failed to get LDFLAGS path: command: {}, exit code: {}, stdout: {}, stderr: {}".format(command, result.return_code, result.stdout, result.stderr))
+        libdir = result.stdout
+        env["LDFLAGS"] = "-L{}".format(libdir)
+
+    args += [
+        "--environment",
+        json.encode(struct(arg = env)),
+    ]
 
     return args
 

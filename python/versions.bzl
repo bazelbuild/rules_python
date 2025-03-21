@@ -22,7 +22,7 @@ WINDOWS_NAME = "windows"
 FREETHREADED = "freethreaded"
 INSTALL_ONLY = "install_only"
 
-DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
+DEFAULT_RELEASE_BASE_URL = "https://github.com/astral-sh/python-build-standalone/releases/download"
 
 # When updating the versions and releases, run the following command to get
 # the hashes:

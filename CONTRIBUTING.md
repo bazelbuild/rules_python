@@ -30,7 +30,7 @@ the [GitHub `gh` tool](https://github.com/cli/cli)
 (More advanced users may prefer the GitHub UI and raw `git` commands).
 
 ```shell
-gh repo fork bazelbuild/rules_python --clone --remote
+gh repo fork bazel-contrib/rules_python --clone --remote
 ```
 
 Next, make sure you have a new enough version of Python installed that supports the
