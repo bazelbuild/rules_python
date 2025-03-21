@@ -50,7 +50,7 @@ $PATH
 Please ensure an interpreter is available on this platform (and marked \
 executable), or else register an appropriate Python toolchain as per the \
 documentation for py_runtime_pair \
-(https://github.com/bazelbuild/rules_python/blob/master/docs/python.md#py_runtime_pair)."
+(https://github.com/bazel-contrib/rules_python/blob/master/docs/python.md#py_runtime_pair)."
 fi
 
 exec "$PYTHON_BIN" "$@"

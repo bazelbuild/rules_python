@@ -1,4 +1,4 @@
-module github.com/bazelbuild/rules_python/gazelle
+module github.com/bazel-contrib/rules_python/gazelle
 
 go 1.19
 

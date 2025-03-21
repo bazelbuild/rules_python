@@ -27,8 +27,8 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 	"github.com/bmatcuk/doublestar/v4"
 
-	"github.com/bazelbuild/rules_python/gazelle/manifest"
-	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
+	"github.com/bazel-contrib/rules_python/gazelle/manifest"
+	"github.com/bazel-contrib/rules_python/gazelle/pythonconfig"
 )
 
 // Configurer satisfies the config.Configurer interface. It's the

@@ -32,7 +32,7 @@ other minor changes bump the patch digit.
 To find if there were any features added or incompatible changes made, review
 [CHANGELOG.md](CHANGELOG.md) and the commit history. This can be done using
 github by going to the url:
-`https://github.com/bazelbuild/rules_python/compare/<VERSION>...main`.
+`https://github.com/bazel-contrib/rules_python/compare/<VERSION>...main`.
 
 ## Patch release with cherry picks
 
