@@ -114,14 +114,10 @@ def parse_modules(*, module_ctx, _fail = fail):
                     module_ctx.read(default_python_version_file).strip(),
                 )
             if default_python_version_env:
-                # Bazel version 7.1.0 and later support module_ctx.getenv(name, default):
-                # When building incrementally, any change to the value of the variable
-                # named by `name` will cause this repository to be re-fetched.
-                if "getenv" in dir(module_ctx):
-                    getenv = module_ctx.getenv
-                else:
-                    getenv = module_ctx.os.environ.get
-                default_python_version = getenv(default_python_version_env, default_python_version)
+                default_python_version = module_ctx.getenv(
+                    default_python_version_env,
+                    default_python_version,
+                )
     if not default_python_version:
         fallback_python_version_file = module_ctx.path(Label("@@//:.python-version"))
         if fallback_python_version_file.exists:
