@@ -111,7 +111,7 @@ def parse_modules(*, module_ctx, _fail = fail):
             if default_python_version_file:
                 default_python_version = _one_or_the_same(
                     default_python_version,
-                    module_ctx.read(default_python_version_file).strip(),
+                    module_ctx.read(default_python_version_file, watch = "yes").strip(),
                 )
             if default_python_version_env:
                 default_python_version = module_ctx.getenv(
@@ -121,7 +121,10 @@ def parse_modules(*, module_ctx, _fail = fail):
     if not default_python_version:
         fallback_python_version_file = module_ctx.path(Label("@@//:.python-version"))
         if fallback_python_version_file.exists:
-            default_python_version = module_ctx.read(fallback_python_version_file).strip()
+            default_python_version = module_ctx.read(
+                fallback_python_version_file,
+                watch = "yes",
+            ).strip()
 
     seen_versions = {}
     for mod in module_ctx.modules:
