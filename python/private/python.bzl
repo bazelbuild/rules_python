@@ -123,7 +123,7 @@ def parse_modules(*, module_ctx, _fail = fail):
                     getenv = module_ctx.os.environ.get
                 default_python_version = getenv(default_python_version_env, default_python_version)
     if not default_python_version:
-        fallback_python_version_file = module_ctx.path("@@//:.python-version")
+        fallback_python_version_file = module_ctx.path(Label("@@//:.python-version"))
         if fallback_python_version_file.exists:
             default_python_version = module_ctx.read(fallback_python_version_file).strip()
 

@@ -372,7 +372,7 @@ def _test_default_from_defaults_implicit_file(env):
                 toolchain = [_toolchain("3.10"), _toolchain("3.11"), _toolchain("3.12")],
                 is_root = True,
             ),
-            mocked_files = {"@@//:.python-version": "3.12\n"},
+            mocked_files = {Label("@@//:.python-version"): "3.12\n"},
         ),
     )
 
