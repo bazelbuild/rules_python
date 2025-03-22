@@ -25,6 +25,10 @@ SentinelInfo = provider(
 
 def _sentinel_impl(ctx):
     _ = ctx  # @unused
-    return [SentinelInfo()]
+    return [
+        SentinelInfo(),
+        # Also output ToolchainInfo
+        platform_common.ToolchainInfo(),
+    ]
 
 sentinel = rule(implementation = _sentinel_impl)
