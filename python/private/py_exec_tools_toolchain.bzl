@@ -117,7 +117,7 @@ def relative_path(from_, to):
 def _current_interpreter_executable_impl(ctx):
     toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
     runtime = toolchain.py3_runtime
-    direct = []
+    runfiles = []
 
     # NOTE: We name the output filename after the underlying file name
     # because of things like pyenv: they use $0 to determine what to
@@ -135,7 +135,7 @@ def _current_interpreter_executable_impl(ctx):
         # in the hermetic toolchain.
         interpreter_basename = runtime.interpreter.basename
         executable = ctx.actions.declare_symlink("bin/" + interpreter_basename)
-        direct.append(executable)
+        runfiles.append(executable)
         interpreter_actual_path = runfiles_root_path(ctx, runtime.interpreter.short_path)
         target_path = relative_path(
             # dirname is necessary because a relative symlink is relative to
@@ -152,11 +152,9 @@ def _current_interpreter_executable_impl(ctx):
         target_path = interpreter_basename + ".runfiles/" + interpreter_actual_path
         ctx.actions.symlink(output = executable, target_path = target_path)
     else:
-        interpreter_basename = paths.basename(runtime.interpreter_path)
-        executable = ctx.actions.declare_symlink(interpreter_basename)
-        direct.append(executable)
-        target_path = runtime.interpreter_path
-        ctx.actions.symlink(output = executable, target_path = target_path)
+        executable = ctx.actions.declare_symlink(paths.basename(runtime.interpreter_path))
+        runfiles.append(executable)
+        ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)
 
     return [
         toolchain,
