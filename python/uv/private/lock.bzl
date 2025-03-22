@@ -392,7 +392,10 @@ def lock(
       {obj}`pip.parse` bzlmod extension tag class. Note, you can use
       `native_test` to wrap this target to make a test. You can't customize the
       args via command line, but you can use RBE to generate requirements
-      (offload execution and run for different platforms)
+      (offload execution and run for different platforms). Note, that for RBE
+      to be usable, one needs to ensure that the nodes running the action have
+      internet connectivity or the indexes are provided in a different way for
+      a fully offline operation.
 
     :::{note}
     All of the targets have `manual` tags as locking results cannot be cached.
