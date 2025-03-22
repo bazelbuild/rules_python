@@ -152,7 +152,7 @@ def _current_interpreter_executable_impl(ctx):
         target_path = interpreter_basename + ".runfiles/" + interpreter_actual_path
         ctx.actions.symlink(output = executable, target_path = target_path)
     else:
-        interpreter_basename = paths.basename(runtime.interpreter.interpreter_path)
+        interpreter_basename = paths.basename(runtime.interpreter_path)
         executable = ctx.actions.declare_symlink(interpreter_basename)
         direct.append(executable)
         target_path = runtime.interpreter_path
