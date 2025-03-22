@@ -87,8 +87,6 @@ def _lock_impl(ctx):
     toolchain_info = ctx.toolchains[UV_TOOLCHAIN_TYPE]
     uv = toolchain_info.uv_toolchain_info.uv[DefaultInfo].files_to_run.executable
 
-    interpreter = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools.exec_interpreter[DefaultInfo]
-
     args = _args(ctx)
     args.add_all([
         uv,
@@ -108,7 +106,10 @@ def _lock_impl(ctx):
     args.add_all(ctx.files.constraints, before_each = "--constraints")
     args.add_all(ctx.attr.args)
 
-    python = interpreter.files_to_run.executable or "python"
+    exec_tools = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools
+    runtime = exec_tools.exec_runtime.py3_runtime
+    python = runtime.interpreter or runtime.interpreter_path
+    python_files = runtime.files
     args.add("--python", python)
     args.add_all(srcs)
 
@@ -142,7 +143,7 @@ def _lock_impl(ctx):
         arguments = [args.run_shell],
         tools = [
             uv,
-            interpreter.files_to_run,
+            python_files,
         ],
         progress_message = "Creating a requirements.txt with uv: //{}:{}".format(
             ctx.label.package,
@@ -158,7 +159,7 @@ def _lock_impl(ctx):
             env = ctx.attr.env,
             srcs = depset(
                 srcs + [uv],
-                transitive = [interpreter.files],
+                transitive = [python_files],
             ),
         ),
     ]
