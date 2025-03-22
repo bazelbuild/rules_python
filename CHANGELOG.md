@@ -57,7 +57,7 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (runfiles) ({obj}`--bootstrap_impl=script`) Follow symlinks when searching for runfiles.
 
 {#v0-0-0-added}
 ### Added
