@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Builders for creating attributes et al."""
+"""Builders for creating attributes et al.
+
+:::{versionadded} 1.3.0
+:::
+"""
 
 load("@bazel_skylib//lib:types.bzl", "types")
 load(

@@ -27,7 +27,20 @@ def _py_binary_impl(ctx):
         inherited_environment = [],
     )
 
-def create_binary_rule_builder():
+# NOTE: Exported publicly
+def create_py_binary_rule_builder():
+    """Create a rule builder for a py_binary.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} 1.3.0
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_binary` rule.
+    """
     builder = create_executable_rule_builder(
         implementation = _py_binary_impl,
         executable = True,
@@ -35,4 +48,4 @@ def create_binary_rule_builder():
     builder.attrs.update(AGNOSTIC_BINARY_ATTRS)
     return builder
 
-py_binary = create_binary_rule_builder().build()
+py_binary = create_py_binary_rule_builder().build()

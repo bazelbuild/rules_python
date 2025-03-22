@@ -91,6 +91,9 @@ def create_custom_foo_binary():
 
 custom_foo_binary = create_custom_foo_binary()
 ```
+
+:::{versionadded} 1.3.0
+:::
 """
 
 load("@bazel_skylib//lib:types.bzl", "types")

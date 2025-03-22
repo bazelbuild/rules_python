@@ -87,6 +87,25 @@ EXECUTABLE_ATTRS = dicts.add(
     IMPORTS_ATTRS,
     COVERAGE_ATTRS,
     {
+        "interpreter_args": lambda: attrb.StringList(
+            doc = """
+Arguments that are only applicable to the interpreter.
+
+The args an interpreter supports are specific to the interpreter. For
+CPython, see https://docs.python.org/3/using/cmdline.html.
+
+:::{note}
+Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
+:::
+
+:::{seealso}
+The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+:::
+
+:::{versionadded} 1.3.0
+:::
+""",
+        ),
         "legacy_create_init": lambda: attrb.Int(
             default = -1,
             values = [-1, 0, 1],
@@ -111,6 +130,24 @@ Optional; the name of the source file that is the main entry point of the
 application. This file must also be listed in `srcs`. If left unspecified,
 `name`, with `.py` appended, is used instead. If `name` does not match any
 filename in `srcs`, `main` must be specified.
+
+This is mutually exclusive with {obj}`main_module`.
+""",
+        ),
+        "main_module": lambda: attrb.String(
+            doc = """
+Module name to execute as the main program.
+
+When set, `srcs` is not required, and it is assumed the module is
+provided by a dependency.
+
+See https://docs.python.org/3/using/cmdline.html#cmdoption-m for more
+information about running modules as the main program.
+
+This is mutually exclusive with {obj}`main`.
+
+:::{versionadded} 1.3.0
+:::
 """,
         ),
         "pyc_collection": lambda: attrb.String(
@@ -623,6 +660,10 @@ def _create_stage2_bootstrap(
 
     template = runtime.stage2_bootstrap_template
 
+    if main_py:
+        main_py_path = "{}/{}".format(ctx.workspace_name, main_py.short_path)
+    else:
+        main_py_path = ""
     ctx.actions.expand_template(
         template = template,
         output = output,
@@ -630,7 +671,8 @@ def _create_stage2_bootstrap(
             "%coverage_tool%": _get_coverage_tool_runfiles_path(ctx, runtime),
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
-            "%main%": "{}/{}".format(ctx.workspace_name, main_py.short_path),
+            "%main%": main_py_path,
+            "%main_module%": ctx.attr.main_module,
             "%target%": str(ctx.label),
             "%workspace_name%": ctx.workspace_name,
         },
@@ -658,6 +700,10 @@ def _create_stage1_bootstrap(
     python_binary_actual = venv.interpreter_actual_path if venv else ""
 
     subs = {
+        "%interpreter_args%": "\n".join([
+            '"{}"'.format(v)
+            for v in ctx.attr.interpreter_args
+        ]),
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": python_binary_path,
         "%python_binary_actual%": python_binary_actual,
@@ -910,7 +956,10 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     """
     _validate_executable(ctx)
 
-    main_py = determine_main(ctx)
+    if not ctx.attr.main_module:
+        main_py = determine_main(ctx)
+    else:
+        main_py = None
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)
 
@@ -1029,6 +1078,12 @@ def _get_build_info(ctx, cc_toolchain):
 def _validate_executable(ctx):
     if ctx.attr.python_version == "PY2":
         fail("It is not allowed to use Python 2")
+
+    if ctx.attr.main and ctx.attr.main_module:
+        fail((
+            "Only one of main and main_module can be set, got: " +
+            "main={}, main_module={}"
+        ).format(ctx.attr.main, ctx.attr.main_module))
 
 def _declare_executable_file(ctx):
     if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
@@ -1737,7 +1792,24 @@ def create_base_executable_rule():
     """
     return create_executable_rule_builder().build()
 
+# NOTE: Exported publicly
 def create_executable_rule_builder(implementation, **kwargs):
+    """Create a rule builder for an executable Python program.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    An executable rule is one that sets either `executable=True` or `test=True`,
+    and the output is something that can be run directly (e.g. `bazel run`,
+    `exec(...)` etc)
+
+    :::{versionadded} 1.3.0
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating an executable Python rule.
+    """
     builder = ruleb.Rule(
         implementation = implementation,
         attrs = EXECUTABLE_ATTRS,

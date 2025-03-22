@@ -1,4 +1,4 @@
-# Copyright 2022 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of py_library rule."""
 
-load(":py_library.bzl", "create_py_library_rule_builder")
+"""
+{#python-apis-libraries-bzl}
+Loading-phase APIs specific to libraries.
 
-py_library = create_py_library_rule_builder().build()
+:::{versionadded} 1.3.0
+:::
+"""
+
+load("//python/private:py_library.bzl", "create_py_library_rule_builder")
+
+libraries = struct(
+    py_library_rule_builder = create_py_library_rule_builder,
+)

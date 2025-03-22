@@ -1,4 +1,4 @@
-# Copyright 2024 The Bazel Authors. All rights reserved.
+# Copyright 2025 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+import sys
 import unittest
 
-from tests.integration import runner
 
-
-class CustomCommandsTest(runner.TestCase):
-    # Regression test for https://github.com/bazel-contrib/rules_python/issues/1840
-    def test_run_build_python_zip_false(self):
-        result = self.run_bazel("run", "--build_python_zip=false", "//:bin")
-        self.assert_result_matches(result, "bazel-out")
+class InterpreterArgsTest(unittest.TestCase):
+    def test_interpreter_args(self):
+        self.assertEqual(sys._xoptions, {"SPECIAL": "1"})
 
 
 if __name__ == "__main__":
-    # Enabling this makes the runner log subprocesses as the test goes along.
-    # logging.basicConfig(level = "INFO")
     unittest.main()

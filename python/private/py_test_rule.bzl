@@ -30,7 +30,20 @@ def _py_test_impl(ctx):
     maybe_add_test_execution_info(providers, ctx)
     return providers
 
-def create_test_rule_builder():
+# NOTE: Exported publicaly
+def create_py_test_rule_builder():
+    """Create a rule builder for a py_test.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} 1.3.0
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_test` rule.
+    """
     builder = create_executable_rule_builder(
         implementation = _py_test_impl,
         test = True,
@@ -38,4 +51,4 @@ def create_test_rule_builder():
     builder.attrs.update(AGNOSTIC_TEST_ATTRS)
     return builder
 
-py_test = create_test_rule_builder().build()
+py_test = create_py_test_rule_builder().build()

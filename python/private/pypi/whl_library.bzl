@@ -34,8 +34,8 @@ def _get_xcode_location_cflags(rctx):
     """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from astral-sh
+    otherwise. See https://github.com/astral-sh/python-build-standalone/issues/103
     """
 
     # Only run on MacOS hosts
@@ -63,8 +63,8 @@ def _get_xcode_location_cflags(rctx):
 def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     """Gather cflags from a standalone toolchain for unix systems.
 
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from astral-sh
+    otherwise. See https://github.com/astral-sh/python-build-standalone/issues/103
     """
 
     # Only run on Unix systems
