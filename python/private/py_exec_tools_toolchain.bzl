@@ -29,13 +29,19 @@ def _py_exec_tools_toolchain_impl(ctx):
     if SentinelInfo in ctx.attr.exec_interpreter:
         exec_interpreter = None
 
-    return [platform_common.ToolchainInfo(
-        exec_tools = PyExecToolsInfo(
-            exec_interpreter = exec_interpreter,
-            precompiler = ctx.attr.precompiler,
+    # Forward the provider fields from the toolchain itself.
+    exec_runtime = ctx.attr.exec_interpreter[platform_common.ToolchainInfo]
+
+    return [
+        platform_common.ToolchainInfo(
+            exec_tools = PyExecToolsInfo(
+                exec_interpreter = exec_interpreter,
+                exec_runtime = exec_runtime,
+                precompiler = ctx.attr.precompiler,
+            ),
+            **extra_kwargs
         ),
-        **extra_kwargs
-    )]
+    ]
 
 py_exec_tools_toolchain = rule(
     implementation = _py_exec_tools_toolchain_impl,
@@ -51,6 +57,11 @@ This provides `ToolchainInfo` with the following attributes:
     attrs = {
         "exec_interpreter": attr.label(
             default = "//python/private:current_interpreter_executable",
+            providers = [
+                DefaultInfo,
+                # Add the toolchain provider so that we can forward provider fields.
+                platform_common.ToolchainInfo,
+            ],
             cfg = "exec",
             doc = """
 An interpreter that is directly usable in the exec configuration

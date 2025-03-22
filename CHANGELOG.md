@@ -61,7 +61,14 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (uv) A {obj}`lock` rule that is the replacement for the
+  {obj}`compile_pip_requirements`. This may still have rough corners
+  so please report issues with it in the
+  [#1975](https://github.com/bazel-contrib/rules_python/issues/1975).
+  Main highlights - the locking can be done within a build action or outside
+  it, there is no more automatic `test` target (but it can be added on the user
+  side by using `native_test`). For customizing the `uv` version that is used,
+  please check the {obj}`uv.configure` tag class.
 
 {#v0-0-0-removed}
 ### Removed
