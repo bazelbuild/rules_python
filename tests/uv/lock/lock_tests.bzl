@@ -35,6 +35,9 @@ def lock_test_suite(name):
             "testdata/build_constraints.txt",
             "testdata/build_constraints2.txt",
         ],
+        # It seems that the CI remote executors for the RBE do not have network
+        # connectivity. Is it only our setup or is it a property of RBE?
+        tags = ["no-remote-exec"],
         out = "testdata/requirements.txt",
     )
 
@@ -42,6 +45,9 @@ def lock_test_suite(name):
         name = "requirements_new_file",
         srcs = ["testdata/requirements.in"],
         out = "does_not_exist.txt",
+        # It seems that the CI remote executors for the RBE do not have network
+        # connectivity. Is it only our setup or is it a property of RBE?
+        tags = ["no-remote-exec"],
     )
 
     py_reconfig_test(
