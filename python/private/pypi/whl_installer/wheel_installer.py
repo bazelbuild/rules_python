@@ -129,6 +129,7 @@ def _extract_wheel(
         "name": whl.name,
         "version": whl.version,
         "extras": list(extras_requested),
+        "python_version": sys.version.partition(" ")[0],
         "requires_dist": requires_dist,
         "abi": abi,
         "entry_points": [
