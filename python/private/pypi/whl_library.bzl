@@ -21,7 +21,6 @@ load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names", "record_files")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
-load(":parse_requirements.bzl", "host_platform")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
@@ -354,6 +353,7 @@ def _whl_library_impl(rctx):
         entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
+        name = metadata["name"],
         whl_name = whl_path.basename,
         # TODO @aignas 2025-03-23: load the dep_template from the hub repository
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
@@ -369,25 +369,12 @@ def _whl_library_impl(rctx):
         entry_points = entry_points,
         # TODO @aignas 2025-03-23: store the annotation in the hub repo.
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
-        name = metadata["name"],
         requires_dist = metadata["requires_dist"],
-        # target the host platform if the target platform is not specified in the rule.
-        # TODO @aignas 2025-03-23: we should materialize this inside the
-        # hub_repository `requirements.bzl` file as `TARGET_PLATFORMS` with a
-        # note, that this is internal and will be only for usage of the
-        # `whl_library`
-        platforms = target_platforms or [
-            "{}_{}".format(metadata["abi"], host_platform(rctx)),
-        ],
-        # TODO @aignas 2025-03-23: we should expose the requested extras via a
-        # dict in `requirements.bzl` `EXTRAS` where the key is the package name
-        # and the value is the list of requested extras. like the above, for
-        # internal usage only.
+        # TODO @aignas 2025-03-23: we should just generate targets for all of the
+        # exposed extras and ask users to depend on this by `@pypi//foo:foo__extra`.
+        # Since all of the dependencies go through the `hub` repository, the extras
+        # that include packages that we don't
         extras = metadata["extras"],
-        # TODO @aignas 2025-03-23: we should expose full python version via the
-        # TARGET_PYTHON_VERSIONS list so that we can correctly calculate the
-        # deps. This would be again, internal only stuff.
-        host_python_version = metadata["python_version"],
     )
     rctx.file("BUILD.bazel", build_file_contents)
 

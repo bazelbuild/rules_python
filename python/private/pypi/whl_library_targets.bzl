@@ -58,6 +58,7 @@ def whl_library_targets(
             copy_file = copy_file,
             py_binary = py_binary,
             py_library = py_library,
+            deps = deps,
         )):
     """Create all of the whl_library targets.
 
@@ -101,7 +102,7 @@ def whl_library_targets(
     # the analysis phase. This means that we need to get the target platform abi
     # from the python version/versions we are setting the package up for. We can
     # potentially get this from the python toolchain interpreter.
-    package_deps = deps(
+    package_deps = rules.deps(
         name = name,
         requires_dist = requires_dist,
         platforms = platforms,
@@ -112,11 +113,6 @@ def whl_library_targets(
     dependencies = package_deps.deps
     dependencies_by_platform = package_deps.deps_select
 
-    dependencies = sorted([normalize_name(d) for d in dependencies])
-    dependencies_by_platform = {
-        platform: sorted([normalize_name(d) for d in deps])
-        for platform, deps in dependencies_by_platform.items()
-    }
     tags = sorted(tags)
     data = [] + data
 
