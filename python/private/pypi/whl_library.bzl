@@ -364,25 +364,43 @@ def _whl_library_impl(rctx):
         name = metadata["name"],
         requires_dist = metadata["requires_dist"],
         # target the host platform if the target platform is not specified in the rule.
+        # TODO @aignas 2025-03-23: we should materialize this inside the
+        # hub_repository `requirements.bzl` file as `TARGET_PLATFORMS` with a
+        # note, that this is internal and will be only for usage of the
+        # `whl_library`
         platforms = target_platforms or [
             "{}_{}".format(metadata["abi"], host_platform(rctx)),
         ],
+        # TODO @aignas 2025-03-23: we should expose the requested extras via a
+        # dict in `requirements.bzl` `EXTRAS` where the key is the package name
+        # and the value is the list of requested extras. like the above, for
+        # internal usage only.
         extras = metadata["extras"],
+        # TODO @aignas 2025-03-23: we should expose full python version via the
+        # TARGET_PYTHON_VERSIONS list so that we can correctly calculate the
+        # deps. This would be again, internal only stuff.
+        host_python_version = metadata["python_version"],
     )
 
     build_file_contents = generate_whl_library_build_bazel(
         name = whl_path.basename,
+        # TODO @aignas 2025-03-23: load the dep_template from the hub repository
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
+        # TODO @aignas 2025-03-23: replace `dependencies` and
+        # `dependencies_by_platform` with `requires_dist`.
         dependencies = package_deps.deps,
         dependencies_by_platform = package_deps.deps_select,
+        # TODO @aignas 2025-03-23: store the `group_name` per package in the hub repo
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
+        # TODO @aignas 2025-03-23: store the pip_data_exclude in the hub repo.
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
             "pypi_name=" + metadata["name"],
             "pypi_version=" + metadata["version"],
         ],
         entry_points = entry_points,
+        # TODO @aignas 2025-03-23: store the annotation in the hub repo.
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
     )
     rctx.file("BUILD.bazel", build_file_contents)
