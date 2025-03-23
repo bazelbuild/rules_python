@@ -97,6 +97,6 @@ class Wheel:
                 source=wheel_source,
                 destination=destination,
                 additional_metadata={
-                    "INSTALLER": b"https://github.com/bazelbuild/rules_python",
+                    "INSTALLER": b"https://github.com/bazel-contrib/rules_python",
                 },
             )

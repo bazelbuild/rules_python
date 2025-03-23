@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import examples.wheel.lib.module_with_data as module_with_data
+import examples.wheel.lib.module_with_type_annotations as module_with_type_annotations
 import examples.wheel.lib.simple_module as simple_module
 
 
@@ -23,6 +24,7 @@ def function():
 def main():
     print(function())
     print(module_with_data.function())
+    print(module_with_type_annotations.function())
     print(simple_module.function())
 
 

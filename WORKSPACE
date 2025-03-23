@@ -107,7 +107,7 @@ local_repository(
 # which we need to fetch in order to compile it.
 load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
-# See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# See: https://github.com/bazel-contrib/rules_python/blob/main/gazelle/README.md
 # This rule loads and compiles various go dependencies that running gazelle
 # for python requirements.
 _py_gazelle_deps()
@@ -118,7 +118,7 @@ interpreter = "@python_3_11_9_host//:python"
 #####################
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
-# https://github.com/bazelbuild/rules_python/issues/1016.
+# https://github.com/bazel-contrib/rules_python/issues/1016.
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -165,10 +165,4 @@ http_file(
     urls = [
         "https://files.pythonhosted.org/packages/50/67/3e966d99a07d60a21a21d7ec016e9e4c2642a86fea251ec68677daf71d4d/numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
     ],
-)
-
-# rules_proto expects //external:python_headers to point at the python headers.
-bind(
-    name = "python_headers",
-    actual = "//python/cc:current_py_cc_headers",
 )

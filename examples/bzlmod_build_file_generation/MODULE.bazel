@@ -12,7 +12,7 @@ module(
 # The following stanza defines the dependency rules_python.
 # For typical setups you set the version.
 # See the releases page for available versions.
-# https://github.com/bazelbuild/rules_python/releases
+# https://github.com/bazel-contrib/rules_python/releases
 bazel_dep(name = "rules_python", version = "0.0.0")
 
 # The following loads rules_python from the file system.
@@ -25,7 +25,7 @@ local_path_override(
 # The following stanza defines the dependency rules_python_gazelle_plugin.
 # For typical setups you set the version.
 # See the releases page for available versions.
-# https://github.com/bazelbuild/rules_python/releases
+# https://github.com/bazel-contrib/rules_python/releases
 bazel_dep(name = "rules_python_gazelle_plugin", version = "0.0.0")
 
 # The following starlark loads the gazelle plugin from the file system.

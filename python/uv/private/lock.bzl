@@ -30,9 +30,11 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
     """Pin the requirements based on the src files.
 
     Differences with the current {obj}`compile_pip_requirements` rule:
-    - This is implemented in shell and uv.
+    - This is implemented in shell and `uv`.
     - This does not error out if the output file does not exist yet.
     - Supports transitions out of the box.
+    - The execution of the lock file generation is happening inside of a build
+      action in a `genrule`.
 
     Args:
         name: The name of the target to run for updating the requirements.
@@ -41,8 +43,8 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, args = [], **kwa
         upgrade: Tell `uv` to always upgrade the dependencies instead of
             keeping them as they are.
         universal: Tell `uv` to generate a universal lock file.
-        args: Extra args to pass to `uv`.
-        **kwargs: Extra kwargs passed to the {obj}`py_binary` rule.
+        args: Extra args to pass to the rule.
+        **kwargs: Extra kwargs passed to the binary rule.
     """
     pkg = native.package_name()
     update_target = name + ".update"

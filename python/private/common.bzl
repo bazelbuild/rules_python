@@ -208,52 +208,6 @@ def create_executable_result_struct(*, extra_files_to_build, output_groups, extr
         extra_runfiles = extra_runfiles,
     )
 
-def union_attrs(*attr_dicts, allow_none = False):
-    """Helper for combining and building attriute dicts for rules.
-
-    Similar to dict.update, except:
-      * Duplicate keys raise an error if they aren't equal. This is to prevent
-        unintentionally replacing an attribute with a potentially incompatible
-        definition.
-      * None values are special: They mean the attribute is required, but the
-        value should be provided by another attribute dict (depending on the
-        `allow_none` arg).
-    Args:
-        *attr_dicts: The dicts to combine.
-        allow_none: bool, if True, then None values are allowed. If False,
-            then one of `attrs_dicts` must set a non-None value for keys
-            with a None value.
-
-    Returns:
-        dict of attributes.
-    """
-    result = {}
-    missing = {}
-    for attr_dict in attr_dicts:
-        for attr_name, value in attr_dict.items():
-            if value == None and not allow_none:
-                if attr_name not in result:
-                    missing[attr_name] = None
-            else:
-                if attr_name in missing:
-                    missing.pop(attr_name)
-
-                if attr_name not in result or result[attr_name] == None:
-                    result[attr_name] = value
-                elif value != None and result[attr_name] != value:
-                    fail("Duplicate attribute name: '{}': existing={}, new={}".format(
-                        attr_name,
-                        result[attr_name],
-                        value,
-                    ))
-
-                # Else, they're equal, so do nothing. This allows merging dicts
-                # that both define the same key from a common place.
-
-    if missing and not allow_none:
-        fail("Required attributes missing: " + csv(missing.keys()))
-    return result
-
 def csv(values):
     """Convert a list of strings to comma separated value string."""
     return ", ".join(sorted(values))
@@ -543,3 +497,20 @@ def target_platform_has_any_constraint(ctx, constraints):
         if ctx.target_platform_has_constraint(constraint_value):
             return True
     return False
+
+def runfiles_root_path(ctx, short_path):
+    """Compute a runfiles-root relative path from `File.short_path`
+
+    Args:
+        ctx: current target ctx
+        short_path: str, a main-repo relative path from `File.short_path`
+
+    Returns:
+        {type}`str`, a runflies-root relative path
+    """
+
+    # The ../ comes from short_path is for files in other repos.
+    if short_path.startswith("../"):
+        return short_path[3:]
+    else:
+        return "{}/{}".format(ctx.workspace_name, short_path)

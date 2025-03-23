@@ -9,6 +9,7 @@ load(
     "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
+    "VenvsUseDeclareSymlinkFlag",
 )
 load(
     "//python/private/pypi:flags.bzl",
@@ -118,6 +119,13 @@ config_setting(
 config_setting(
     name = "is_py_non_freethreaded",
     flag_values = {":py_freethreaded": FreeThreadedFlag.NO},
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "venvs_use_declare_symlink",
+    build_setting_default = VenvsUseDeclareSymlinkFlag.YES,
+    values = VenvsUseDeclareSymlinkFlag.flag_values(),
     visibility = ["//visibility:public"],
 )
 

@@ -47,7 +47,7 @@ def _test_minor_version_matching(name):
     }
     minor_cpu_matches = {
         str(Label(":is_python_3.11_aarch64")): "matched-3.11-aarch64",
-        str(Label(":is_python_3.11_ppc")): "matched-3.11-ppc",
+        str(Label(":is_python_3.11_ppc64le")): "matched-3.11-ppc64le",
         str(Label(":is_python_3.11_s390x")): "matched-3.11-s390x",
         str(Label(":is_python_3.11_x86_64")): "matched-3.11-x86_64",
     }
@@ -58,7 +58,7 @@ def _test_minor_version_matching(name):
     }
     minor_os_cpu_matches = {
         str(Label(":is_python_3.11_linux_aarch64")): "matched-3.11-linux-aarch64",
-        str(Label(":is_python_3.11_linux_ppc")): "matched-3.11-linux-ppc",
+        str(Label(":is_python_3.11_linux_ppc64le")): "matched-3.11-linux-ppc64le",
         str(Label(":is_python_3.11_linux_s390x")): "matched-3.11-linux-s390x",
         str(Label(":is_python_3.11_linux_x86_64")): "matched-3.11-linux-x86_64",
         str(Label(":is_python_3.11_osx_aarch64")): "matched-3.11-osx-aarch64",
@@ -171,7 +171,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
             },
         )
 
-    for cpu in ["s390x", "ppc", "x86_64", "aarch64"]:
+    for cpu in ["s390x", "ppc", "ppc64le", "x86_64", "aarch64"]:
         native.config_setting(
             name = "is_python_3.11_" + cpu,
             constraint_values = [
@@ -185,6 +185,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
     for (os, cpu) in [
         ("linux", "aarch64"),
         ("linux", "ppc"),
+        ("linux", "ppc64le"),
         ("linux", "s390x"),
         ("linux", "x86_64"),
         ("osx", "aarch64"),

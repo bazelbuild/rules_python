@@ -7,10 +7,10 @@ module(
 bazel_dep(name = "bazel_features", version = "1.21.0")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.16")
-bazel_dep(name = "platforms", version = "0.0.4")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Those are loaded only when using py_proto_library
-bazel_dep(name = "rules_proto", version = "7.0.2")
+# Use py_proto_library directly from protobuf repository
 bazel_dep(name = "protobuf", version = "29.0-rc2", repo_name = "com_google_protobuf")
 
 internal_deps = use_extension("//python/private:internal_deps.bzl", "internal_deps")
@@ -84,6 +84,7 @@ bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(name = "rules_shell", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_multirun", version = "0.9.0", dev_dependency = True)
 bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "1.0.1", dev_dependency = True)
 
 # Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
 # We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
@@ -173,16 +174,83 @@ use_repo(
     "build_bazel_bazel_self",
 )
 
-# EXPERIMENTAL: This is experimental and may be removed without notice
-uv = use_extension(
+# TODO @aignas 2025-01-27: should this be moved to `//python/extensions:uv.bzl` or should
+# it stay as it is? I think I may prefer to move it.
+uv = use_extension("//python/uv:uv.bzl", "uv")
+
+# Here is how we can define platforms for the `uv` binaries - this will affect
+# all of the downstream callers because we are using the extension without
+# `dev_dependency = True`.
+uv.default(
+    base_url = "https://github.com/astral-sh/uv/releases/download",
+    manifest_filename = "dist-manifest.json",
+    version = "0.6.3",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+    platform = "aarch64-apple-darwin",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    platform = "aarch64-unknown-linux-gnu",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:ppc",
+    ],
+    platform = "powerpc64-unknown-linux-gnu",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:ppc64le",
+    ],
+    platform = "powerpc64le-unknown-linux-gnu",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    platform = "s390x-unknown-linux-gnu",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    platform = "x86_64-apple-darwin",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+    platform = "x86_64-pc-windows-msvc",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    platform = "x86_64-unknown-linux-gnu",
+)
+use_repo(uv, "uv")
+
+register_toolchains("@uv//:all")
+
+uv_dev = use_extension(
     "//python/uv:uv.bzl",
     "uv",
     dev_dependency = True,
 )
-uv.toolchain(uv_version = "0.4.25")
-use_repo(uv, "uv_toolchains")
-
-register_toolchains(
-    "@uv_toolchains//:all",
-    dev_dependency = True,
+uv_dev.configure(
+    version = "0.6.2",
 )

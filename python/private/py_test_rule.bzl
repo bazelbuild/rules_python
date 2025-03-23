@@ -13,31 +13,13 @@
 # limitations under the License.
 """Implementation of py_test rule."""
 
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
 load(
     ":py_executable.bzl",
-    "create_executable_rule",
+    "create_executable_rule_builder",
     "py_executable_impl",
 )
-
-_BAZEL_PY_TEST_ATTRS = {
-    # This *might* be a magic attribute to help C++ coverage work. There's no
-    # docs about this; see TestActionBuilder.java
-    "_collect_cc_coverage": attr.label(
-        default = "@bazel_tools//tools/test:collect_cc_coverage",
-        executable = True,
-        cfg = "exec",
-    ),
-    # This *might* be a magic attribute to help C++ coverage work. There's no
-    # docs about this; see TestActionBuilder.java
-    "_lcov_merger": attr.label(
-        default = configuration_field(fragment = "coverage", name = "output_generator"),
-        cfg = "exec",
-        executable = True,
-    ),
-}
 
 def _py_test_impl(ctx):
     providers = py_executable_impl(
@@ -48,8 +30,25 @@ def _py_test_impl(ctx):
     maybe_add_test_execution_info(providers, ctx)
     return providers
 
-py_test = create_executable_rule(
-    implementation = _py_test_impl,
-    attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
-    test = True,
-)
+# NOTE: Exported publicaly
+def create_py_test_rule_builder():
+    """Create a rule builder for a py_test.
+
+    :::{include} /_includes/volatile_api.md
+    :::
+
+    :::{versionadded} 1.3.0
+    :::
+
+    Returns:
+        {type}`ruleb.Rule` with the necessary settings
+        for creating a `py_test` rule.
+    """
+    builder = create_executable_rule_builder(
+        implementation = _py_test_impl,
+        test = True,
+    )
+    builder.attrs.update(AGNOSTIC_TEST_ATTRS)
+    return builder
+
+py_test = create_py_test_rule_builder().build()

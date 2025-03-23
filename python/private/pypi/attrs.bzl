@@ -15,6 +15,15 @@
 "common attributes for whl_library and pip_repository"
 
 ATTRS = {
+    "add_libdir_to_library_search_path": attr.bool(
+        default = False,
+        doc = """
+If true, add the lib dir of the bundled interpreter to the library search path via `LDFLAGS`.
+
+:::{versionadded} 1.3.0
+:::
+""",
+    ),
     "download_only": attr.bool(
         doc = """
 Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of

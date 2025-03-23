@@ -292,6 +292,23 @@ def _add_dists(*, requirement, index_urls, logger = None):
         index_urls: The result of simpleapi_download.
         logger: A logger for printing diagnostic info.
     """
+
+    # Handle direct URLs in requirements
+    if requirement.srcs.url:
+        url = requirement.srcs.url
+        _, _, filename = url.rpartition("/")
+        direct_url_dist = struct(
+            url = url,
+            filename = filename,
+            sha256 = requirement.srcs.shas[0] if requirement.srcs.shas else "",
+            yanked = False,
+        )
+
+        if filename.endswith(".whl"):
+            return [direct_url_dist], None
+        else:
+            return [], direct_url_dist
+
     if not index_urls:
         return [], None
 
