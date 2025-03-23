@@ -57,7 +57,9 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* Do not try to run `chmod` when downloading non-windows hermetic toolchain
+  repositories on Windows. Fixes
+  [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
 
 {#v0-0-0-added}
 ### Added
