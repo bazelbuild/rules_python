@@ -23,6 +23,8 @@ lock(
     out = "bzlmod/requirements_lock_3_9.txt",
     args = [
         "--emit-index-url",
+        "--universal",
+        "--python-version=3.9",
     ],
     python_version = "3.9.19",
 )
