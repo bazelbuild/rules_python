@@ -53,7 +53,10 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (toolchain) The `exec` configuration toolchain now has the forwarded
+  `py3_runtime` field from the `target` configuration toolchain. This is for
+  increased compatibility with the `RBE` setups where access to the `exec`
+  configuration interpreter is needed.
 
 {#v0-0-0-fixed}
 ### Fixed
