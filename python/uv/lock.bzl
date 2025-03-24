@@ -40,7 +40,7 @@ native_test(
 )
 ```
 
-EXPERIMENTAL: This is experimental and may be removed without notice
+EXPERIMENTAL: This is experimental and may be changed without notice.
 """
 
 load("//python/uv/private:lock.bzl", _lock = "lock")
