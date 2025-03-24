@@ -57,10 +57,21 @@ Unreleased changes template.
   `py3_runtime` field from the `target` configuration toolchain. This is for
   increased compatibility with the `RBE` setups where access to the `exec`
   configuration interpreter is needed.
+* (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.9
+    * 3.13.2
+
+[20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (runfiles) ({obj}`--bootstrap_impl=script`) Follow symlinks when searching for runfiles.
+* Do not try to run `chmod` when downloading non-windows hermetic toolchain
+  repositories on Windows. Fixes
+  [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
 
 {#v0-0-0-added}
 ### Added
@@ -72,6 +83,8 @@ Unreleased changes template.
   it, there is no more automatic `test` target (but it can be added on the user
   side by using `native_test`). For customizing the `uv` version that is used,
   please check the {obj}`uv.configure` tag class.
+* Add support for riscv64 linux platform.
+* (toolchains) Add python 3.13.2 and 3.12.9 toolchains
 
 {#v0-0-0-removed}
 ### Removed

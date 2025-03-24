@@ -81,8 +81,7 @@ else
       if [[ ! -L "$stub_filename" ]]; then
         break
       fi
-      target=$(realpath $maybe_runfiles_root)
-      stub_filename="$target"
+      stub_filename=$(readlink $stub_filename)
     done
     echo >&2 "Unable to find runfiles directory for $1"
     exit 1
