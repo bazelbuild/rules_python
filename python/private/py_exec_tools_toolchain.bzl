@@ -80,6 +80,11 @@ handle all the necessary transitions and runtime setup to invoke a program.
 :::
 
 See {obj}`PyExecToolsInfo.exec_interpreter` for further docs.
+
+:::{versionchanged} VERSION_NEXT_FEATURE
+From now on the provided target also needs to provide `platform_common.ToolchainInfo`
+so that the toolchain `py_runtime` field can be correctly forwarded.
+:::
 """,
         ),
         "precompiler": attr.label(
