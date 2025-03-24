@@ -53,7 +53,14 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.9
+    * 3.13.2
+
+[20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -64,7 +71,8 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* Add support for riscv64 linux platform.
+* (toolchains) Add python 3.13.2 and 3.12.9 toolchains
 
 {#v0-0-0-removed}
 ### Removed
