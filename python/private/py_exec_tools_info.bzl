@@ -49,6 +49,9 @@ may be removed.
 :type: PyRuntimeInfo | None
 
 The forwarded {obj}`PyRuntimeInfo` field.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
 """,
         "precompiler": """
 :type: Target | None
