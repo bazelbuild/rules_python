@@ -59,6 +59,7 @@ Unreleased changes template.
     * 3.11.11
     * 3.12.9
     * 3.13.2
+* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
