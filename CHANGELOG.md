@@ -59,6 +59,7 @@ Unreleased changes template.
     * 3.11.11
     * 3.12.9
     * 3.13.2
+* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
@@ -89,7 +90,6 @@ Unreleased changes template.
 * (deps) platforms 0.0.4 -> 0.0.11
 * (py_wheel) Package `py_library.pyi_srcs` (`.pyi` files) in the wheel.
 * (py_package) Package `py_library.pyi_srcs` (`.pyi` files) in `py_package`.
-* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
 * (gazelle) The generated manifest file (default: `gazelle_python.yaml`) will now include the
   YAML document start `---` line. Implemented in
   [#2656](https://github.com/bazel-contrib/rules_python/pull/2656).
