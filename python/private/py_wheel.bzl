@@ -54,6 +54,10 @@ Workspace status keys are expanded using `{NAME}` format, for example:
 For the available keys, see https://bazel.build/docs/user-manual#workspace-status
 """,
     ),
+    "force_zip64": attr.bool(
+        default = False,
+        doc = "Force zip64.",
+    ),
     "platform": attr.string(
         default = "any",
         doc = """\
@@ -513,6 +517,8 @@ def _py_wheel_impl(ctx):
             "--data_files",
             filename + ";" + target_files[0].path,
         )
+    if ctx.attr.force_zip64:
+        args.add("--force_zip64")
 
     ctx.actions.run(
         mnemonic = "PyWheel",

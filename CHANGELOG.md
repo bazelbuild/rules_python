@@ -74,6 +74,7 @@ Unreleased changes template.
 ### Added
 * Add support for riscv64 linux platform.
 * (toolchains) Add python 3.13.2 and 3.12.9 toolchains
+* Add force_zip64 option for python wheel creation
 
 {#v0-0-0-removed}
 ### Removed
