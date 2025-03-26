@@ -102,7 +102,7 @@ Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
 The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
 :::
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 :::
 """,
         ),
@@ -146,7 +146,7 @@ information about running modules as the main program.
 
 This is mutually exclusive with {obj}`main`.
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 :::
 """,
         ),
@@ -1877,7 +1877,7 @@ def create_executable_rule_builder(implementation, **kwargs):
     and the output is something that can be run directly (e.g. `bazel run`,
     `exec(...)` etc)
 
-    :::{versionadded} VERSION_NEXT_FEATURE
+    :::{versionadded} 1.3.0
     :::
 
     Returns:

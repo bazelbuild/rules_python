@@ -92,7 +92,7 @@ def create_custom_foo_binary():
 custom_foo_binary = create_custom_foo_binary()
 ```
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 :::
 """
 

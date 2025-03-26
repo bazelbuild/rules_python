@@ -107,7 +107,7 @@ local_repository(
 # which we need to fetch in order to compile it.
 load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
-# See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# See: https://github.com/bazel-contrib/rules_python/blob/main/gazelle/README.md
 # This rule loads and compiles various go dependencies that running gazelle
 # for python requirements.
 _py_gazelle_deps()
@@ -118,7 +118,7 @@ interpreter = "@python_3_11_9_host//:python"
 #####################
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
-# https://github.com/bazelbuild/rules_python/issues/1016.
+# https://github.com/bazel-contrib/rules_python/issues/1016.
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(

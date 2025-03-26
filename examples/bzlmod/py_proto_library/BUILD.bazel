@@ -18,7 +18,7 @@ py_test(
     ],
 )
 
-# Regression test for https://github.com/bazelbuild/rules_python/issues/2515
+# Regression test for https://github.com/bazel-contrib/rules_python/issues/2515
 #
 # This test fails before protobuf 30.0 release
 # when ran with --legacy_external_runfiles=False (default in Bazel 8.0.0).

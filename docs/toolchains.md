@@ -273,7 +273,7 @@ transition period when some of the code is still defined in `WORKSPACE`.
 
 To import rules_python in your project, you first need to add it to your
 `WORKSPACE` file, using the snippet provided in the
-[release you choose](https://github.com/bazelbuild/rules_python/releases)
+[release you choose](https://github.com/bazel-contrib/rules_python/releases)
 
 To depend on a particular unreleased version, you can do the following:
 
@@ -282,7 +282,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 
 # Update the SHA and VERSION to the lastest version available here:
-# https://github.com/bazelbuild/rules_python/releases.
+# https://github.com/bazel-contrib/rules_python/releases.
 
 SHA="84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841"
 
@@ -292,7 +292,7 @@ http_archive(
     name = "rules_python",
     sha256 = SHA,
     strip_prefix = "rules_python-{}".format(VERSION),
-    url = "https://github.com/bazelbuild/rules_python/releases/download/{}/rules_python-{}.tar.gz".format(VERSION,VERSION),
+    url = "https://github.com/bazel-contrib/rules_python/releases/download/{}/rules_python-{}.tar.gz".format(VERSION,VERSION),
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -324,7 +324,7 @@ pip_parse(
 ```
 
 After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
-is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
+is still used to 'bootstrap' Python targets (see https://github.com/bazel-contrib/rules_python/issues/691).
 You may also find some quirks while using this toolchain. Please refer to [python-build-standalone documentation's _Quirks_ section](https://gregoryszorc.com/docs/python-build-standalone/main/quirks.html).
 
 ## Autodetecting toolchain

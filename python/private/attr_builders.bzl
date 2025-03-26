@@ -14,7 +14,7 @@
 
 """Builders for creating attributes et al.
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 :::
 """
 
