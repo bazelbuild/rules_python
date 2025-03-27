@@ -53,6 +53,10 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
+* (toolchain) The `exec` configuration toolchain now has the forwarded
+  `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
+  for increased compatibility with the `RBE` setups where access to the `exec`
+  configuration interpreter is needed.
 * (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
     * 3.9.21
     * 3.10.16
@@ -75,6 +79,14 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
+* (uv) A {obj}`lock` rule that is the replacement for the
+  {obj}`compile_pip_requirements`. This may still have rough corners
+  so please report issues with it in the
+  [#1975](https://github.com/bazel-contrib/rules_python/issues/1975).
+  Main highlights - the locking can be done within a build action or outside
+  it, there is no more automatic `test` target (but it can be added on the user
+  side by using `native_test`). For customizing the `uv` version that is used,
+  please check the {obj}`uv.configure` tag class.
 * Add support for riscv64 linux platform.
 * (toolchains) Add python 3.13.2 and 3.12.9 toolchains
 
