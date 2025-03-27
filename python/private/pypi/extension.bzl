@@ -16,13 +16,15 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "INTERPRETER_LABELS")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("//python/private:auth.bzl", "AUTH_ATTRS")
+load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:semver.bzl", "semver")
 load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
-load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
+load(":evaluate_markers.bzl", "evaluate_markers")
 load(":hub_repository.bzl", "hub_repository", "whl_config_settings_to_json")
 load(":parse_requirements.bzl", "parse_requirements")
 load(":parse_whl_name.bzl", "parse_whl_name")
@@ -166,31 +168,14 @@ def _create_whl_repos(
         ),
         extra_pip_args = pip_attr.extra_pip_args,
         get_index_urls = get_index_urls,
-        # NOTE @aignas 2024-08-02: , we will execute any interpreter that we find either
-        # in the PATH or if specified as a label. We will configure the env
-        # markers when evaluating the requirement lines based on the output
-        # from the `requirements_files_by_platform` which should have something
-        # similar to:
-        # {
-        #    "//:requirements.txt": ["cp311_linux_x86_64", ...]
-        # }
-        #
-        # We know the target python versions that we need to evaluate the
-        # markers for and thus we don't need to use multiple python interpreter
-        # instances to perform this manipulation. This function should be executed
-        # only once by the underlying code to minimize the overhead needed to
-        # spin up a Python interpreter.
-        evaluate_markers = lambda module_ctx, requirements: evaluate_markers(
-            module_ctx,
-            requirements = requirements,
-            python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = python_interpreter_target,
-            srcs = pip_attr._evaluate_markers_srcs,
-            logger = logger,
-        ),
+        # NOTE @aignas 2025-02-24: we will use the "cp3xx_os_arch" platform labels
+        # for converting to the PEP508 environment and will evaluate them in starlark
+        # without involving the interpreter at all.
+        evaluate_markers = evaluate_markers,
         logger = logger,
     )
 
+    platforms = {}
     for whl_name, requirements in requirements_by_platform.items():
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
@@ -251,6 +236,10 @@ def _create_whl_repos(
                     ))
 
                 whl_libraries[repo_name] = args
+
+                # TODO @aignas 2025-03-23: make this more efficient
+                for p in args.pop("experimental_target_platforms", []):
+                    platforms[p] = None
                 whl_map.setdefault(whl_name, {})[config_setting] = repo_name
 
     return struct(
@@ -262,6 +251,7 @@ def _create_whl_repos(
         },
         extra_aliases = extra_aliases,
         whl_libraries = whl_libraries,
+        platforms = platforms,
     )
 
 def _whl_repos(*, requirement, whl_library_args, download_only, netrc, auth_patterns, multiple_requirements_for_whl = False, python_version):
@@ -426,6 +416,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
     exposed_packages = {}
     extra_aliases = {}
     whl_libraries = {}
+    platforms = {}
 
     is_reproducible = True
 
@@ -503,6 +494,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 extra_aliases[hub_name].setdefault(whl_name, {}).update(aliases)
             exposed_packages.setdefault(hub_name, {}).update(out.exposed_packages)
             whl_libraries.update(out.whl_libraries)
+            platforms.setdefault(hub_name, {}).update(out.platforms)
 
             # TODO @aignas 2024-04-05: how do we support different requirement
             # cycles for different abis/oses? For now we will need the users to
@@ -538,6 +530,17 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 for whl_name, aliases in extra_whl_aliases.items()
             }
             for hub_name, extra_whl_aliases in extra_aliases.items()
+        },
+        platforms = {
+            hub_name: sorted(p)
+            for hub_name, p in platforms.items()
+        },
+        python_versions = {
+            hub_name: sorted({
+                full_version(version = v, minor_mapping = MINOR_MAPPING): None
+                for v in m.python_versions
+            })
+            for hub_name, m in pip_hub_map.items()
         },
         whl_libraries = {
             k: dict(sorted(args.items()))
@@ -630,6 +633,8 @@ def _pip_impl(module_ctx):
                 for key, values in whl_map.items()
             },
             packages = mods.exposed_packages.get(hub_name, []),
+            python_versions = mods.python_versions[hub_name],
+            platforms = mods.platforms.get(hub_name, ["host"]),
             groups = mods.hub_group_map.get(hub_name),
         )
 
@@ -764,13 +769,6 @@ a corresponding `python.toolchain()` configured.
             doc = """\
 A dict of labels to wheel names that is typically generated by the whl_modifications.
 The labels are JSON config files describing the modifications.
-""",
-        ),
-        "_evaluate_markers_srcs": attr.label_list(
-            default = EVALUATE_MARKERS_SRCS,
-            doc = """\
-The list of labels to use as SRCS for the marker evaluation code. This ensures that the
-code will be re-evaluated when any of files in the default changes.
 """,
         ),
     }, **ATTRS)

@@ -351,7 +351,7 @@ def _whl_library_impl(rctx):
         arguments = args + [
             "--whl-file",
             whl_path,
-        ] + ["--platform={}".format(p) for p in target_platforms],
+        ],
         srcs = rctx.attr._python_srcs,
         environment = environment,
         quiet = rctx.attr.quiet,
@@ -387,19 +387,28 @@ def _whl_library_impl(rctx):
         entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
-        name = whl_path.basename,
+        name = metadata["name"],
+        whl_name = whl_path.basename,
+        # TODO @aignas 2025-03-23: load the dep_template from the hub repository
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
-        dependencies = metadata["deps"],
-        dependencies_by_platform = metadata["deps_by_platform"],
+        # TODO @aignas 2025-03-23: store the `group_name` per package in the hub repo
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
+        # TODO @aignas 2025-03-23: store the pip_data_exclude in the hub repo.
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
             "pypi_name=" + metadata["name"],
             "pypi_version=" + metadata["version"],
         ],
         entry_points = entry_points,
+        # TODO @aignas 2025-03-23: store the annotation in the hub repo.
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+        requires_dist = metadata["requires_dist"],
+        # TODO @aignas 2025-03-23: we should just generate targets for all of the
+        # exposed extras and ask users to depend on this by `@pypi//foo:foo__extra`.
+        # Since all of the dependencies go through the `hub` repository, the extras
+        # that include packages that we don't
+        extras = metadata["extras"],
     )
     rctx.file("BUILD.bazel", build_file_contents)
 
