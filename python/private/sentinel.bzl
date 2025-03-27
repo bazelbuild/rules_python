@@ -27,7 +27,7 @@ def _sentinel_impl(ctx):
     _ = ctx  # @unused
     return [
         SentinelInfo(),
-        # Also output ToolchainInfo
+        # Also output ToolchainInfo to allow it to be used for noop toolchains
         platform_common.ToolchainInfo(),
     ]
 

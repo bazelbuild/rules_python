@@ -145,10 +145,7 @@ def _lock_impl(ctx):
             uv,
             python_files,
         ],
-        progress_message = "Creating a requirements.txt with uv: //{}:{}".format(
-            ctx.label.package,
-            ctx.label.name,
-        ),
+        progress_message = "Creating a requirements.txt with uv: %{label}",
         env = ctx.attr.env,
     )
 
@@ -189,6 +186,8 @@ _python_version_transition = transition(
 _lock = rule(
     implementation = _lock_impl,
     doc = """\
+The lock rule that does the locking in a build action (that makes it possible
+to use RBE) and also prepares information for a `bazel run` executable rule.
 """,
     attrs = {
         "args": attr.string_list(
