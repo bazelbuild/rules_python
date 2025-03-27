@@ -54,8 +54,8 @@ Unreleased changes template.
 {#v0-0-0-changed}
 ### Changed
 * (toolchain) The `exec` configuration toolchain now has the forwarded
-  `py3_runtime` field from the `target` configuration toolchain. This is for
-  increased compatibility with the `RBE` setups where access to the `exec`
+  `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
+  for increased compatibility with the `RBE` setups where access to the `exec`
   configuration interpreter is needed.
 * (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
     * 3.9.21

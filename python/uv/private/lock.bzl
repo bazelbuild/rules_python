@@ -107,7 +107,7 @@ def _lock_impl(ctx):
     args.add_all(ctx.attr.args)
 
     exec_tools = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools
-    runtime = exec_tools.exec_runtime.py3_runtime
+    runtime = exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
     python = runtime.interpreter or runtime.interpreter_path
     python_files = runtime.files
     args.add("--python", python)

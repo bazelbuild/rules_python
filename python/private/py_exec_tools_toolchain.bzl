@@ -29,14 +29,10 @@ def _py_exec_tools_toolchain_impl(ctx):
     if SentinelInfo in ctx.attr.exec_interpreter:
         exec_interpreter = None
 
-    # Forward the provider fields from the toolchain itself.
-    exec_runtime = ctx.attr.exec_interpreter[platform_common.ToolchainInfo]
-
     return [
         platform_common.ToolchainInfo(
             exec_tools = PyExecToolsInfo(
                 exec_interpreter = exec_interpreter,
-                exec_runtime = exec_runtime,
                 precompiler = ctx.attr.precompiler,
             ),
             **extra_kwargs

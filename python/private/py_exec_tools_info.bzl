@@ -45,14 +45,6 @@ Once https://github.com/bazelbuild/bazel/issues/23620 is resolved this warning
 may be removed.
 :::
 """,
-        "exec_runtime": """
-:type: PyRuntimeInfo | None
-
-The forwarded {obj}`PyRuntimeInfo` field.
-
-:::{versionadded} VERSION_NEXT_FEATURE
-:::
-""",
         "precompiler": """
 :type: Target | None
 
