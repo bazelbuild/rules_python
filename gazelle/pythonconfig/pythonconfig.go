@@ -134,12 +134,20 @@ type Configs map[string]*Config
 
 // ParentForPackage returns the parent Config for the given Bazel package.
 func (c *Configs) ParentForPackage(pkg string) *Config {
-	dir := path.Dir(pkg)
-	if dir == "." {
-		dir = ""
+	for {
+		dir := path.Dir(pkg)
+		if dir == "." {
+			dir = ""
+		}
+		parent := (map[string]*Config)(*c)[dir]
+		if parent != nil {
+			return parent
+		}
+		if dir == "" {
+			return nil
+		}
+		pkg = dir
 	}
-	parent := (map[string]*Config)(*c)[dir]
-	return parent
 }
 
 // Config represents a config extension for a specific Bazel package.
