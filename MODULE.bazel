@@ -131,7 +131,7 @@ dev_pip.parse(
     download_only = True,
     experimental_index_url = "https://pypi.org/simple",
     hub_name = "dev_pip",
-    python_version = "3.13.0",
+    python_version = "3.13",
     requirements_lock = "//docs:requirements.txt",
 )
 dev_pip.parse(
@@ -220,6 +220,13 @@ uv.default(
         "@platforms//cpu:s390x",
     ],
     platform = "s390x-unknown-linux-gnu",
+)
+uv.default(
+    compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:riscv64",
+    ],
+    platform = "riscv64-unknown-linux-gnu",
 )
 uv.default(
     compatible_with = [

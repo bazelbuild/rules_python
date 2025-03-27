@@ -53,15 +53,42 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (toolchain) The `exec` configuration toolchain now has the forwarded
+  `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
+  for increased compatibility with the `RBE` setups where access to the `exec`
+  configuration interpreter is needed.
+* (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.9
+    * 3.13.2
+* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
+* (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
+  reached EOL. If users still need other versions of the `3.8` interpreter, please supply
+  the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+
+[20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (runfiles) ({obj}`--bootstrap_impl=script`) Follow symlinks when searching for runfiles.
+* (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
+  repositories on Windows. Fixes
+  [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (uv) A {obj}`lock` rule that is the replacement for the
+  {obj}`compile_pip_requirements`. This may still have rough corners
+  so please report issues with it in the
+  [#1975](https://github.com/bazel-contrib/rules_python/issues/1975).
+  Main highlights - the locking can be done within a build action or outside
+  it, there is no more automatic `test` target (but it can be added on the user
+  side by using `native_test`). For customizing the `uv` version that is used,
+  please check the {obj}`uv.configure` tag class.
+* Add support for riscv64 linux platform.
+* (toolchains) Add python 3.13.2 and 3.12.9 toolchains
 
 {#v0-0-0-removed}
 ### Removed
