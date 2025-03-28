@@ -19,27 +19,7 @@ unnecessary files when all that are needed are flag definitions.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load(":enum.bzl", "enum")
-
-def _FlagEnum_flag_values(self):
-    return sorted(self.__members__.values())
-
-def FlagEnum(**kwargs):
-    """Define an enum specialized for flags.
-
-    Args:
-        **kwargs: members of the enum.
-
-    Returns:
-        {type}`FlagEnum` struct. This is an enum with the following extras:
-        * `flag_values`: A function that returns a sorted list of the
-          flag values (enum `__members__`). Useful for passing to the
-          `values` attribute for string flags.
-    """
-    return enum(
-        methods = dict(flag_values = _FlagEnum_flag_values),
-        **kwargs
-    )
+load(":enum.bzl", "FlagEnum", "enum")
 
 def _AddSrcsToRunfilesFlag_is_enabled(ctx):
     value = ctx.attr._add_srcs_to_runfiles_flag[BuildSettingInfo].value
@@ -137,6 +117,8 @@ VenvsUseDeclareSymlinkFlag = FlagEnum(
     NO = "no",
     get_value = _venvs_use_declare_symlink_flag_get_value,
 )
+
+VenvsCreateSitePackages
 
 # Used for matching freethreaded toolchains and would have to be used in wheels
 # as well.

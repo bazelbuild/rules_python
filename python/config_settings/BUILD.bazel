@@ -195,6 +195,13 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
+string_flag(
+    name = "pip_venv_site_packages",
+    build_setting_default = PipVenvSitePackages.NO,
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
 define_pypi_internal_flags(
     name = "define_pypi_internal_flags",
 )
