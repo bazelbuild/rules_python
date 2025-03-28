@@ -244,6 +244,10 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
 
+    # Add a PROJECT_ROOT environment variable
+    if rctx.attr.project_root:
+        environment["PROJECT_ROOT"] = str(rctx.path(rctx.attr.project_root).dirname)
+
     whl_path = None
     if rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
@@ -307,6 +311,17 @@ def _whl_library_impl(rctx):
             timeout = rctx.attr.timeout,
             logger = logger,
         )
+
+        # If the requirement was a local directory, then we need to watch its content
+        # to recreate the repository when it is modified.
+        # Assume that such packages are imported using a single line requirement
+        # of the form [<name> @] file://<path>
+        # We might have to perform some substitutions in the string before searching.
+        subst_req = envsubst(rctx.attr.requirement, environment.keys(), lambda x, dft: environment[x])
+        if subst_req.startswith("file://"):
+            _, path = subst_req.split("file://", 1)
+            logger.info(lambda: "watching tree {} for wheel library {}".format(path, rctx.name))
+            rctx.watch_tree(path)
 
         whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
         if not rctx.delete("whl_file.json"):
@@ -458,6 +473,9 @@ and the target that we need respectively.
     ),
     "group_name": attr.string(
         doc = "Name of the group, if any.",
+    ),
+    "project_root": attr.label(
+        doc = "Label of the file defining the project root. If present, this label will be expanded to a path and its parent directory will be made available in the PROJECT_ROOT environment variable when building the wheel.",
     ),
     "repo": attr.string(
         mandatory = True,
