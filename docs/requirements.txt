@@ -2,9 +2,9 @@
 #    bazel run //docs:requirements.update
 --index-url https://pypi.org/simple
 
-absl-py==2.1.0 \
-    --hash=sha256:526a04eadab8b4ee719ce68f204172ead1027549089702d99b9059f129ff1308 \
-    --hash=sha256:7820790efbb316739cde8b4e19357243fc3608a152024288513dd968d7d959ff
+absl-py==2.2.0 \
+    --hash=sha256:2aabeae1403380e338fba88d4f8c9bf9925c20ad04c1c96d4a26930d034c507b \
+    --hash=sha256:5c432cdf7b045f89c4ddc3bba196cabb389c0c321322f8dec68eecdfa732fdad
     # via rules-python-docs (docs/pyproject.toml)
 alabaster==1.0.0 \
     --hash=sha256:c00dca57bca26fa62a6d7d0a9fcce65f3e026e9bfe33e9c538fd3fbb2144fd9e \
