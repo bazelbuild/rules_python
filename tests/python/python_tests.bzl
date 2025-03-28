@@ -364,33 +364,6 @@ def _test_default_from_defaults_file(env):
 
 _tests.append(_test_default_from_defaults_file)
 
-def _test_default_from_defaults_implicit_file(env):
-    py = parse_modules(
-        module_ctx = _mock_mctx(
-            _mod(
-                name = "my_root_module",
-                defaults = [],
-                toolchain = [_toolchain("3.10"), _toolchain("3.11"), _toolchain("3.12")],
-                is_root = True,
-            ),
-            mocked_files = {Label("@@//:.python-version"): "3.12\n"},
-        ),
-    )
-
-    env.expect.that_str(py.default_python_version).equals("3.12")
-
-    want_toolchains = [
-        struct(
-            name = "python_3_" + minor_version,
-            python_version = "3." + minor_version,
-            register_coverage_tool = False,
-        )
-        for minor_version in ["10", "11", "12"]
-    ]
-    env.expect.that_collection(py.toolchains).contains_exactly(want_toolchains)
-
-_tests.append(_test_default_from_defaults_implicit_file)
-
 def _test_first_occurance_of_the_toolchain_wins(env):
     py = parse_modules(
         module_ctx = _mock_mctx(

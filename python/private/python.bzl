@@ -118,13 +118,6 @@ def parse_modules(*, module_ctx, _fail = fail):
                     default_python_version_env,
                     default_python_version,
                 )
-    if not default_python_version:
-        fallback_python_version_file = module_ctx.path(Label("@@//:.python-version"))
-        if fallback_python_version_file.exists:
-            default_python_version = module_ctx.read(
-                fallback_python_version_file,
-                watch = "yes",
-            ).strip()
 
     seen_versions = {}
     for mod in module_ctx.modules:
@@ -156,8 +149,7 @@ def parse_modules(*, module_ctx, _fail = fail):
                     is_default = default_python_version == toolchain_version
                     if toolchain_attr.is_default and not is_default:
                         fail("The 'is_default' attribute doesn't work if you set " +
-                             "the default Python version with the `defaults` tag " +
-                             "or the '.python-version' file.")
+                             "the default Python version with the `defaults` tag.")
                 else:
                     is_default = toolchain_attr.is_default
 
