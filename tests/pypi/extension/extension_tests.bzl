@@ -100,6 +100,7 @@ def _parse(
         requirements_linux = None,
         requirements_lock = None,
         requirements_windows = None,
+        simpleapi_skip = [],
         timeout = 600,
         whl_modifications = {},
         **kwargs):
@@ -136,6 +137,7 @@ def _parse(
         experimental_extra_index_urls = [],
         parallel_download = False,
         experimental_index_url_overrides = {},
+        simpleapi_skip = simpleapi_skip,
         **kwargs
     )
 

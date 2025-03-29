@@ -318,7 +318,10 @@ def _add_dists(*, requirement, index_urls, logger = None):
     # First try to find distributions by SHA256 if provided
     shas_to_use = requirement.srcs.shas
     if not shas_to_use:
-        shas_to_use = index_urls.sha256s_by_version.get(requirement.srcs.version, [])
+        version = requirement.srcs.version
+        shas_to_use = index_urls.sha256s_by_version.get(version, [])
+        if logger:
+            logger.warn(lambda: "requirement file has been generated without hashes, will use all hashes for the given version {} that could find on the index:\n    {}".format(version, shas_to_use))
 
     for sha256 in shas_to_use:
         # For now if the artifact is marked as yanked we just ignore it.
