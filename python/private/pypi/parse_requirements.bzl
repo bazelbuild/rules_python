@@ -184,7 +184,7 @@ def parse_requirements(
                 req.distribution: None
                 for reqs in requirements_by_platform.values()
                 for req in reqs.values()
-                if req.srcs.shas
+                if not req.srcs.url
             }),
         )
 
@@ -316,45 +316,27 @@ def _add_dists(*, requirement, index_urls, logger = None):
     sdist = None
 
     # First try to find distributions by SHA256 if provided
-    if requirement.srcs.shas:
-        for sha256 in requirement.srcs.shas:
-            # For now if the artifact is marked as yanked we just ignore it.
-            #
-            # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+    shas_to_use = requirement.srcs.shas
+    if not shas_to_use:
+        shas_to_use = index_urls.sha256s_by_version.get(requirement.srcs.version, [])
 
-            maybe_whl = index_urls.whls.get(sha256)
-            if maybe_whl and not maybe_whl.yanked:
-                whls.append(maybe_whl)
-                continue
+    for sha256 in shas_to_use:
+        # For now if the artifact is marked as yanked we just ignore it.
+        #
+        # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
 
-            maybe_sdist = index_urls.sdists.get(sha256)
-            if maybe_sdist and not maybe_sdist.yanked:
-                sdist = maybe_sdist
-                continue
+        maybe_whl = index_urls.whls.get(sha256)
+        if maybe_whl and not maybe_whl.yanked:
+            whls.append(maybe_whl)
+            continue
 
-            if logger:
-                logger.warn(lambda: "Could not find a whl or an sdist with sha256={}".format(sha256))
-    else:
-        # If no SHA256s provided, try to find distributions by version
-        version = requirement.srcs.version
-        if version:
-            # Look for wheels matching the version
-            for whl in index_urls.whls.values():
-                # Extract package name from wheel filename (format: package_name-version-python_tag-abi_tag-platform_tag.whl)
-                whl_name = whl.filename.split("-")[0]
-                if whl_name == requirement.distribution and whl.version == version and not whl.yanked:
-                    whls.append(whl)
+        maybe_sdist = index_urls.sdists.get(sha256)
+        if maybe_sdist and not maybe_sdist.yanked:
+            sdist = maybe_sdist
+            continue
 
-            # Look for source distributions matching the version
-            for sdist_dist in index_urls.sdists.values():
-                # Extract package name from sdist filename (format: package_name-version.tar.gz or package_name-version.zip)
-                sdist_name = sdist_dist.filename.split("-")[0]
-                if sdist_name == requirement.distribution and sdist_dist.version == version and not sdist_dist.yanked:
-                    sdist = sdist_dist
-                    break
-
-            if not whls and not sdist and logger:
-                logger.warn(lambda: "Could not find any distributions for version={}".format(version))
+        if logger:
+            logger.warn(lambda: "Could not find a whl or an sdist with sha256={}".format(sha256))
 
     yanked = {}
     for dist in whls + [sdist]:

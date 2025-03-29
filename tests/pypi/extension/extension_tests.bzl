@@ -461,6 +461,21 @@ def _test_simple_get_index(env):
                     ),
                 },
             ),
+            "some_other_pkg": struct(
+                whls = {
+                    "deadb33f": struct(
+                        yanked = False,
+                        filename = "some-other-pkg-0.0.1-py3-none-any.whl",
+                        sha256 = "deadb33f",
+                        url = "example2.org/index/some_other_pkg/",
+                    ),
+                },
+                sdists = {},
+                sha256s_by_version = {
+                    "0.0.1": ["deadb33f"],
+                    "0.0.3": ["deadbeef"],
+                },
+            ),
         }
 
     pypi = _parse_modules(
@@ -485,7 +500,10 @@ def _test_simple_get_index(env):
 simple==0.0.1 \
     --hash=sha256:deadbeef \
     --hash=sha256:deadb00f
-some_pkg==0.0.1
+some_pkg==0.0.1 @ example-direct.org/some_pkg-0.0.1-py3-none-any.whl \
+    --hash=sha256:deadbaaf
+some_other_pkg==0.0.1
+pip_fallback==0.0.1
 """,
             }[x],
         ),
@@ -496,42 +514,71 @@ some_pkg==0.0.1
     )
 
     pypi.is_reproducible().equals(False)
-    pypi.exposed_packages().contains_exactly({"pypi": ["simple", "some_pkg"]})
+    pypi.exposed_packages().contains_exactly({"pypi": ["pip_fallback", "simple", "some_other_pkg", "some_pkg"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({
         "pypi": {
+            "pip_fallback": {
+                "pypi_315_pip_fallback": [
+                    struct(
+                        config_setting = None,
+                        filename = None,
+                        target_platforms = None,
+                        version = "3.15",
+                    ),
+                ],
+            },
             "simple": {
                 "pypi_315_simple_py3_none_any_deadb00f": [
-                    whl_config_setting(
+                    struct(
+                        config_setting = None,
                         filename = "simple-0.0.1-py3-none-any.whl",
+                        target_platforms = None,
                         version = "3.15",
                     ),
                 ],
                 "pypi_315_simple_sdist_deadbeef": [
-                    whl_config_setting(
+                    struct(
+                        config_setting = None,
                         filename = "simple-0.0.1.tar.gz",
+                        target_platforms = None,
+                        version = "3.15",
+                    ),
+                ],
+            },
+            "some_other_pkg": {
+                "pypi_315_some_py3_none_any_deadb33f": [
+                    struct(
+                        config_setting = None,
+                        filename = "some-other-pkg-0.0.1-py3-none-any.whl",
+                        target_platforms = None,
                         version = "3.15",
                     ),
                 ],
             },
             "some_pkg": {
-                "pypi_315_some_pkg": [whl_config_setting(version = "3.15")],
+                "pypi_315_some_pkg_py3_none_any_deadbaaf": [
+                    struct(
+                        config_setting = None,
+                        filename = "some_pkg-0.0.1-py3-none-any.whl",
+                        target_platforms = None,
+                        version = "3.15",
+                    ),
+                ],
             },
         },
     })
     pypi.whl_libraries().contains_exactly({
+        "pypi_315_pip_fallback": {
+            "dep_template": "@pypi//{name}:{target}",
+            "extra_pip_args": ["--extra-args-for-sdist-building"],
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "pip_fallback==0.0.1",
+        },
         "pypi_315_simple_py3_none_any_deadb00f": {
             "dep_template": "@pypi//{name}:{target}",
-            "experimental_target_platforms": [
-                "cp315_linux_aarch64",
-                "cp315_linux_arm",
-                "cp315_linux_ppc",
-                "cp315_linux_s390x",
-                "cp315_linux_x86_64",
-                "cp315_osx_aarch64",
-                "cp315_osx_x86_64",
-                "cp315_windows_x86_64",
-            ],
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
             "filename": "simple-0.0.1-py3-none-any.whl",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
@@ -541,16 +588,7 @@ some_pkg==0.0.1
         },
         "pypi_315_simple_sdist_deadbeef": {
             "dep_template": "@pypi//{name}:{target}",
-            "experimental_target_platforms": [
-                "cp315_linux_aarch64",
-                "cp315_linux_arm",
-                "cp315_linux_ppc",
-                "cp315_linux_s390x",
-                "cp315_linux_x86_64",
-                "cp315_osx_aarch64",
-                "cp315_osx_x86_64",
-                "cp315_windows_x86_64",
-            ],
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
             "extra_pip_args": ["--extra-args-for-sdist-building"],
             "filename": "simple-0.0.1.tar.gz",
             "python_interpreter_target": "unit_test_interpreter_target",
@@ -559,29 +597,43 @@ some_pkg==0.0.1
             "sha256": "deadbeef",
             "urls": ["example.org"],
         },
-        # We are falling back to regular `pip`
-        "pypi_315_some_pkg": {
+        "pypi_315_some_pkg_py3_none_any_deadbaaf": {
             "dep_template": "@pypi//{name}:{target}",
-            "extra_pip_args": ["--extra-args-for-sdist-building"],
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
+            "filename": "some_pkg-0.0.1-py3-none-any.whl",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
-            "requirement": "some_pkg==0.0.1",
+            "requirement": "some_pkg==0.0.1 @ example-direct.org/some_pkg-0.0.1-py3-none-any.whl --hash=sha256:deadbaaf",
+            "sha256": "deadbaaf",
+            "urls": ["example-direct.org/some_pkg-0.0.1-py3-none-any.whl"],
+        },
+        "pypi_315_some_py3_none_any_deadb33f": {
+            "dep_template": "@pypi//{name}:{target}",
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
+            "filename": "some-other-pkg-0.0.1-py3-none-any.whl",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "some_other_pkg==0.0.1",
+            "sha256": "deadb33f",
+            "urls": ["example2.org/index/some_other_pkg/"],
         },
     })
     pypi.whl_mods().contains_exactly({})
-    env.expect.that_dict(got_simpleapi_download_kwargs).contains_exactly({
-        "attr": struct(
-            auth_patterns = {},
-            envsubst = {},
-            extra_index_urls = [],
-            index_url = "pypi.org",
-            index_url_overrides = {},
-            netrc = None,
-            sources = ["simple"],
-        ),
-        "cache": {},
-        "parallel_download": False,
-    })
+    env.expect.that_dict(got_simpleapi_download_kwargs).contains_exactly(
+        {
+            "attr": struct(
+                auth_patterns = {},
+                envsubst = {},
+                extra_index_urls = [],
+                index_url = "pypi.org",
+                index_url_overrides = {},
+                netrc = None,
+                sources = ["simple", "pip_fallback", "some_other_pkg"],
+            ),
+            "cache": {},
+            "parallel_download": False,
+        },
+    )
 
 _tests.append(_test_simple_get_index)
 

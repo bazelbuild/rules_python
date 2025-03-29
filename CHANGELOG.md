@@ -61,7 +61,11 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* (pypi) Added version-based fetching in `_add_dists` when SHA256 hashes are unavailable, with unit tests in `//tests/pypi/parse_requirements`[#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
+* (pypi) From now on `sha256` values in the `requirements.txt` is no longer
+  mandatory when enabling {attr}`pip.parse.experimental_index_url` feature.
+  This means that `rules_python` will attempt to fetch metadata for all
+  packages through SimpleAPI unless they are pulled through direct URL
+  references. Fixes [#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
 
 {#v0-0-0-removed}
 ### Removed
