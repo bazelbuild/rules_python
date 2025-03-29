@@ -17,7 +17,8 @@
 
 _platform_machine_values = {
     "aarch64": "arm64",
-    "ppc": "ppc64le",
+    "ppc": "ppc",
+    "ppc64le": "ppc64le",
     "s390x": "s390x",
     "x86_32": "i386",
     "x86_64": "x86_64",
