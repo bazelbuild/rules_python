@@ -71,6 +71,13 @@ sh_py_run_test(
 )
 
 sh_py_run_test(
+    name = "run_binary_find_runfiles_test",
+    py_src = "bin.py",
+    sh_src = "run_binary_find_runfiles_test.sh",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
+sh_py_run_test(
     name = "run_binary_bootstrap_script_zip_yes_test",
     bootstrap_impl = "script",
     build_python_zip = "yes",
@@ -85,6 +92,14 @@ sh_py_run_test(
     build_python_zip = "no",
     py_src = "bin.py",
     sh_src = "run_binary_zip_no_test.sh",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
+sh_py_run_test(
+    name = "run_binary_bootstrap_script_find_runfiles_test",
+    bootstrap_impl = "script",
+    py_src = "bin.py",
+    sh_src = "run_binary_find_runfiles_test.sh",
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
@@ -105,6 +120,15 @@ py_reconfig_test(
     env = {"BOOTSTRAP": "system_python"},
     imports = ["./site-packages"],
     main = "sys_path_order_test.py",
+)
+
+py_reconfig_test(
+    name = "main_module_test",
+    srcs = ["main_module.py"],
+    bootstrap_impl = "script",
+    imports = ["."],
+    main_module = "tests.bootstrap_impls.main_module",
+    target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
 )
 
 sh_py_run_test(

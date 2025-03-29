@@ -269,7 +269,7 @@ can be either of:
 
   NOTE: the runfiles of the target may not yet be properly respected/propagated
   to consumers of the toolchain/interpreter, see
-  bazelbuild/rules_python/issues/1612
+  bazel-contrib/rules_python/issues/1612
 
 For a platform runtime (i.e. `interpreter_path` being set) this attribute must
 not be set.

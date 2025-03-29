@@ -20,7 +20,7 @@ ATTRS = {
         doc = """
 If true, add the lib dir of the bundled interpreter to the library search path via `LDFLAGS`.
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 :::
 """,
     ),

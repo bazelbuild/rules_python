@@ -17,10 +17,8 @@ python.defaults(
 )
 python.toolchain(
     configure_coverage_tool = True,
-    python_version = "3.8",
-)
-python.toolchain(
-    configure_coverage_tool = True,
+    # Only set when you have mulitple toolchain versions.
+    is_default = True,
     python_version = "3.9",
 )
 python.toolchain(
@@ -39,11 +37,6 @@ use_repo(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 use_repo(pip, "pypi")
-pip.parse(
-    hub_name = "pypi",
-    python_version = "3.8",
-    requirements_lock = "//requirements:requirements_lock_3_8.txt",
-)
 pip.parse(
     hub_name = "pypi",
     python_version = "3.9",

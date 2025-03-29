@@ -24,7 +24,7 @@ python /path/to/debugger.py --port 12345 --file /path/to/file.py
 The {bzl:obj}`interpreter_args` attribute.
 :::
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 1.3.0
 
 ::::
 

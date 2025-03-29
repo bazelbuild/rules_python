@@ -26,7 +26,7 @@ go_library(
     # See following for more info:
     # https://github.com/bazelbuild/bazel-gazelle/issues/1513
     embedsrcs = ["stdlib_list.txt"],  # keep # TODO: use user-defined version?
-    importpath = "github.com/bazelbuild/rules_python/gazelle/python",
+    importpath = "github.com/bazel-contrib/rules_python/gazelle/python",
     visibility = ["//visibility:public"],
     deps = [
         "//manifest",
