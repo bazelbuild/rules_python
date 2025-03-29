@@ -1,0 +1,5 @@
+load(":evaluate_tests.bzl", "evaluate_test_suite")
+
+evaluate_test_suite(
+    name = "evaluate_tests",
+)
