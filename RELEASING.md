@@ -2,12 +2,16 @@
 
 Start from a clean checkout at `main`.
 
-Before running through the release it's good to run the build and the tests locally, and make sure CI is passing. You can
-also test-drive the commit in an existing Bazel workspace to sanity check functionality.
+Before running through the release it's good to run the build and the tests
+locally, and make sure CI is passing. You can also test-drive the commit in an
+existing Bazel workspace to sanity check functionality.
 
 ## Releasing from HEAD
 
+These are the steps for a regularly scheduled release from HEAD.
+
 ### Steps
+
 1. [Determine the next semantic version number](#determining-semantic-version).
 1. Update CHANGELOG.md: replace the `v0-0-0` and `0.0.0` with `X.Y.0`.
 1. Replace `VERSION_NEXT_*` strings with `X.Y.0`.
@@ -16,12 +20,26 @@ also test-drive the commit in an existing Bazel workspace to sanity check functi
    ```
    git branch --no-track release/X.Y upstream/main && git push upstream release/X.Y
    ```
-1. Create a tag and push:
+
+The next step is to create tags to trigger release workflow, **however**
+we start by using release candidate tags (`X.Y.Z-rcN`) before tagging the
+final release (`X.Y.Z`).
+
+1. Create release candidate tag and push. Increment `N` for each rc.
+   ```
+   git tag X.Y.0-rcN upstream/release/X.Y && git push upstream --tags
+   ```
+2. Announce the RC release: see [Announcing Releases]
+3. Wait a week for feedback.
+   * Follow [Patch release with cherry picks] to pull bug fixes into the
+     release branch.
+   * Repeat the RC tagging step, incrementing `N`.
+4. Finally, tag the final release tag:
    ```
    git tag X.Y.0 upstream/release/X.Y && git push upstream --tags
    ```
-   **NOTE:** Pushing the tag will trigger release automation.
-1. Release automation will create a GitHub release and BCR pull request.
+
+Release automation will create a GitHub release and BCR pull request.
 
 ### Determining Semantic Version
 
@@ -32,7 +50,7 @@ other minor changes bump the patch digit.
 To find if there were any features added or incompatible changes made, review
 [CHANGELOG.md](CHANGELOG.md) and the commit history. This can be done using
 github by going to the url:
-`https://github.com/bazelbuild/rules_python/compare/<VERSION>...main`.
+`https://github.com/bazel-contrib/rules_python/compare/<VERSION>...main`.
 
 ## Patch release with cherry picks
 
@@ -55,9 +73,22 @@ each.
 Once the release branch is in the desired state, use `git tag` to tag it, as
 done with a release from head. Release automation will do the rest.
 
-### After release creation in Github
+### Announcing releases
 
-1. Announce the release in the #python channel in the Bazel slack (bazelbuild.slack.com).
+We announce releases in the #python channel in the Bazel slack
+(bazelbuild.slack.com). Here's a template:
+
+```
+Greetings Pythonistas,
+
+rules_python X.Y.Z-rcN is now available
+Changelog: https://rules-python.readthedocs.io/en/X.Y.Z-rcN/changelog.html#vX-Y-Z
+
+It will be promoted to stable next week, pending feedback.
+```
+
+It's traditional to include notable changes from the changelog, but not
+required.
 
 ## Secrets
 

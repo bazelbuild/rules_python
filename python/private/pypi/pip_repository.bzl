@@ -228,7 +228,7 @@ pip_repository = repository_rule(
 Optional annotations to apply to packages. Keys should be package names, with
 capitalization matching the input requirements file, and values should be
 generated using the `package_name` macro. For example usage, see [this WORKSPACE
-file](https://github.com/bazelbuild/rules_python/blob/main/examples/pip_repository_annotations/WORKSPACE).
+file](https://github.com/bazel-contrib/rules_python/blob/main/examples/pip_repository_annotations/WORKSPACE).
 """,
         ),
         _template = attr.label(
@@ -336,7 +336,7 @@ In some cases you may not want to generate the requirements.bzl file as a reposi
 while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
 such as a ruleset, you may want to include the requirements.bzl file rather than make your users
 install the WORKSPACE setup to generate it.
-See https://github.com/bazelbuild/rules_python/issues/608
+See https://github.com/bazel-contrib/rules_python/issues/608
 
 This is the same workflow as Gazelle, which creates `go_repository` rules with
 [`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)

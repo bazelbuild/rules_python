@@ -23,7 +23,7 @@ import (
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
-	"github.com/bazelbuild/rules_python/gazelle/manifest"
+	"github.com/bazel-contrib/rules_python/gazelle/manifest"
 )
 
 // Directives

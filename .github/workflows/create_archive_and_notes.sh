@@ -72,7 +72,7 @@ http_archive(
     name = "rules_python",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
+    url = "https://github.com/bazel-contrib/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -90,7 +90,7 @@ http_archive(
     name = "rules_python_gazelle_plugin",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}/gazelle",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
+    url = "https://github.com/bazel-contrib/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 
 # To compile the rules_python gazelle extension from source,

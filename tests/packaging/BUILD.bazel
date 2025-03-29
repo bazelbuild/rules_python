@@ -32,7 +32,7 @@ py_reconfig_test(
     main = "bin.py",
     target_compatible_with = SUPPORTS_BOOTSTRAP_SCRIPT,
     # Needed until https://github.com/bazelbuild/rules_pkg/issues/929 is fixed
-    # See: https://github.com/bazelbuild/rules_python/issues/2489
+    # See: https://github.com/bazel-contrib/rules_python/issues/2489
     venvs_use_declare_symlink = "no",
 )
 

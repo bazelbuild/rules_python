@@ -26,9 +26,9 @@ def python_stdlib_list_deps():
     http_archive(
         name = "python_stdlib_list",
         build_file_content = """exports_files(glob(["stdlib_list/lists/*.txt"]))""",
-        sha256 = "3f6fc8fba0a99ce8fa76c1b794a24f38962f6275ea9d5cfb43a874abe472571e",
-        strip_prefix = "stdlib-list-0.10.0",
-        url = "https://github.com/pypi/stdlib-list/releases/download/v0.10.0/v0.10.0.tar.gz",
+        sha256 = "aa21a4f219530e85ecc364f0bbff2df4e6097a8954c63652af060f4e64afa65d",
+        strip_prefix = "stdlib-list-0.11.0",
+        url = "https://github.com/pypi/stdlib-list/releases/download/v0.11.0/v0.11.0.tar.gz",
     )
 
 def gazelle_deps():

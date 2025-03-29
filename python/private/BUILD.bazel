@@ -361,6 +361,7 @@ bzl_library(
     name = "py_exec_tools_toolchain_bzl",
     srcs = ["py_exec_tools_toolchain.bzl"],
     deps = [
+        ":common_bzl",
         ":py_exec_tools_info_bzl",
         ":sentinel_bzl",
         ":toolchain_types_bzl",

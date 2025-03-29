@@ -127,7 +127,9 @@ def _python_repository_impl(rctx):
     # pycs being generated at runtime:
     # * The pycs are not deterministic (they contain timestamps)
     # * Multiple processes trying to write the same pycs can result in errors.
-    if "windows" not in platform:
+    #
+    # Note, when on Windows the `chmod` may not work
+    if "windows" not in platform and "windows" != repo_utils.get_platforms_os_name(rctx):
         repo_utils.execute_checked(
             rctx,
             op = "python_repository.MakeReadOnly",
@@ -154,9 +156,9 @@ def _python_repository_impl(rctx):
             )
             uid = int(stdout.strip())
             if uid == 0:
-                fail_or_warn("The current user is root, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+                fail_or_warn("The current user is root, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazel-contrib/rules_python/pull/713.")
             else:
-                fail_or_warn("The current user has CAP_DAC_OVERRIDE set, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+                fail_or_warn("The current user has CAP_DAC_OVERRIDE set, which can cause spurious cache misses or build failures with the hermetic Python interpreter. See https://github.com/bazel-contrib/rules_python/pull/713.")
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
@@ -188,7 +190,7 @@ def _python_repository_impl(rctx):
             # These pycache files are created on first use of the associated python files.
             # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
             # the definition of this filegroup will change, and depending rules will get invalidated."
-            # See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
+            # See https://github.com/bazel-contrib/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
             "**/__pycache__/*.pyc",
             "**/__pycache__/*.pyo",
         ]
