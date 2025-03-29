@@ -128,6 +128,9 @@ Unreleased changes template.
 
 {#v1-3-0-added}
 ### Added
+* (python) {attr}`python.defaults` has been added to allow users to
+  set the default python version in the root module by reading the
+  default version number from a file or an environment variable.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
