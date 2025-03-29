@@ -32,6 +32,7 @@ load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_config_setting.bzl", "whl_config_setting")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "pypi_repo_name", "whl_repo_name")
+load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 def _major_minor_version(version):
     version = semver(version)
@@ -296,9 +297,18 @@ def _whl_repos(*, requirement, whl_library_args, download_only, netrc, auth_patt
 
         # Pure python wheels or sdists may need to have a platform here
         target_platforms = None
-        if distribution.filename.endswith("-any.whl") or not distribution.filename.endswith(".whl"):
-            if multiple_requirements_for_whl:
-                target_platforms = requirement.target_platforms
+        if distribution.filename.endswith(".whl") and not distribution.filename.endswith("-any.whl"):
+            parsed_whl = parse_whl_name(distribution.filename)
+            whl_platforms = whl_target_platforms(
+                platform_tag = parsed_whl.platform_tag,
+            )
+            args["experimental_target_platforms"] = [
+                p
+                for p in requirement.target_platforms
+                if [None for wp in whl_platforms if p.endswith(wp.target_platform)]
+            ]
+        elif multiple_requirements_for_whl:
+            target_platforms = requirement.target_platforms
 
         repo_name = whl_repo_name(
             distribution.filename,
