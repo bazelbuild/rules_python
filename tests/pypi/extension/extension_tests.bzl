@@ -77,7 +77,6 @@ def _parse(
         *,
         hub_name,
         python_version,
-        _evaluate_markers_srcs = [],
         add_libdir_to_library_search_path = False,
         auth_patterns = {},
         download_only = False,
@@ -105,7 +104,6 @@ def _parse(
         whl_modifications = {},
         **kwargs):
     return struct(
-        _evaluate_markers_srcs = _evaluate_markers_srcs,
         auth_patterns = auth_patterns,
         add_libdir_to_library_search_path = add_libdir_to_library_search_path,
         download_only = download_only,
@@ -276,14 +274,6 @@ torch==2.4.1 ; platform_machine != 'x86_64' \
         available_interpreters = {
             "python_3_15_host": "unit_test_interpreter_target",
         },
-        evaluate_markers = lambda _, requirements, **__: {
-            key: [
-                platform
-                for platform in platforms
-                if ("x86_64" in platform and "platform_machine ==" in key) or ("x86_64" not in platform and "platform_machine !=" in key)
-            ]
-            for key, platforms in requirements.items()
-        },
     )
 
     pypi.is_reproducible().equals(True)
@@ -408,15 +398,6 @@ torch==2.4.1+cpu ; platform_machine == 'x86_64' \
         ),
         available_interpreters = {
             "python_3_12_host": "unit_test_interpreter_target",
-        },
-        evaluate_markers = lambda _, requirements, **__: {
-            # todo once 2692 is merged, this is going to be easier to test.
-            key: [
-                platform
-                for platform in platforms
-                if ("x86_64" in platform and "platform_machine ==" in key) or ("x86_64" not in platform and "platform_machine !=" in key)
-            ]
-            for key, platforms in requirements.items()
         },
         simpleapi_download = mocksimpleapi_download,
     )
