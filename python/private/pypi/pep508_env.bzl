@@ -15,10 +15,12 @@
 """This module is for implementing PEP508 environment definition.
 """
 
+# See https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
 _platform_machine_values = {
-    "aarch64": "arm64",
+    "aarch64": "aarch64",
     "ppc": "ppc",
     "ppc64le": "ppc64le",
+    "riscv64": "riscv64",
     "s390x": "s390x",
     "x86_32": "i386",
     "x86_64": "x86_64",
@@ -73,7 +75,7 @@ def env(target_platform, *, extra = None):
         arch = target_platform.arch
         env = env | {
             "os_name": _os_name_values.get(os, ""),
-            "platform_machine": "aarch64" if (os, arch) == ("linux", "aarch64") else _platform_machine_values.get(arch, ""),
+            "platform_machine": _platform_machine_values.get(arch, ""),
             "platform_system": _platform_system_values.get(os, ""),
             "sys_platform": _sys_platform_values.get(os, ""),
         }

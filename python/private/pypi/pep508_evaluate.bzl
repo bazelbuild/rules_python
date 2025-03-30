@@ -56,6 +56,16 @@ _NON_VERSION_VAR_NAMES = [
 _AND = "and"
 _OR = "or"
 _NOT = "not"
+_VALUE_ALIASES = {
+    "platform_machine": {
+        # These pairs mean the same hardware, but different values may be used
+        # on different host platforms.
+        "amd64": "x86_64",
+        "arm64": "aarch64",
+        "i386": "x86_32",
+        "i686": "x86_32",
+    },
+}
 
 def tokenize(marker):
     """Tokenize the input string.
@@ -123,13 +133,17 @@ def tokenize(marker):
 
     return fail("BUG: failed to process the marker in allocated cycles: {}".format(marker))
 
-def evaluate(marker, *, env, strict = True, **kwargs):
+def evaluate(marker, *, env, strict = True, value_aliases = _VALUE_ALIASES, **kwargs):
     """Evaluate the marker against a given env.
 
     Args:
-        marker: {type}`str`: The string marker to evaluate.
-        env: {type}`dict`: The environment to evaluate the marker against.
-        strict: {type}`bool`: A setting to not fail on missing values in the env.
+        marker: {type}`str` The string marker to evaluate.
+        env: {type}`dict` The environment to evaluate the marker against.
+        strict: {type}`bool` A setting to not fail on missing values in the env.
+        value_aliases: {type}`dict` The value normalization to do for certain
+            fields to ensure that `aarch64` evaluation in the `platform_machine`
+            works the same way irrespective if the marker uses `arm64` or
+            `aarch64` value in the expression.
         **kwargs: Extra kwargs to be passed to the expression evaluator.
 
     Returns:
@@ -142,7 +156,7 @@ def evaluate(marker, *, env, strict = True, **kwargs):
         if not tokens:
             break
 
-        tokens = ast.parse(env = env, tokens = tokens, strict = strict)
+        tokens = ast.parse(env = env, tokens = tokens, strict = strict, value_aliases = value_aliases)
 
     if not tokens:
         return ast.value()
@@ -236,7 +250,7 @@ def _new_expr(
     )
     return self
 
-def _parse(self, *, env, tokens, strict = False):
+def _parse(self, *, env, tokens, strict = False, value_aliases = {}):
     """The parse function takes the consumed tokens and returns the remaining."""
     token, remaining = tokens[0], tokens[1:]
 
@@ -251,7 +265,7 @@ def _parse(self, *, env, tokens, strict = False):
     elif token == _NOT:
         expr = _not_expr(self)
     else:
-        expr = marker_expr(env = env, strict = strict, *tokens[:3])
+        expr = marker_expr(env = env, strict = strict, value_aliases = value_aliases, *tokens[:3])
         remaining = tokens[3:]
 
     _append(self, expr)
@@ -277,7 +291,7 @@ def _value(self):
 
     fail("BUG: invalid state: {}".format(self.tree))
 
-def marker_expr(left, op, right, *, env, strict = True):
+def marker_expr(left, op, right, *, env, strict = True, value_aliases = {}):
     """Evaluate a marker expression
 
     Args:
@@ -288,6 +302,7 @@ def marker_expr(left, op, right, *, env, strict = True):
             in the environment, otherwise returns the original expression.
         env: {type}`dict[str, str]` the `env` to substitute `env` identifiers in
             the `<left> <op> <right>` expression.
+        value_aliases: the value normalization used for certain fields.
 
     Returns:
         {type}`bool` if the expression evaluation result or {type}`str` if the expression
@@ -300,10 +315,20 @@ def marker_expr(left, op, right, *, env, strict = True):
         var_name = right
         right = env[right]
         left = left.strip("\"")
+
+        # On Windows, Linux, OSX different values may mean the same hardware,
+        # e.g. Python on Windows returns arm64, but on Linux returns aarch64.
+        # e.g. Python on Windows returns amd64, but on Linux returns x86_64.
+        #
+        # The following normalizes the values
+        left = value_aliases.get(var_name, {}).get(left, left)
     else:
         var_name = left
         left = env[left]
         right = right.strip("\"")
+
+        # See the note above on normalization
+        right = value_aliases.get(var_name, {}).get(right, right)
 
     if var_name in _NON_VERSION_VAR_NAMES:
         return _env_expr(left, op, right)
