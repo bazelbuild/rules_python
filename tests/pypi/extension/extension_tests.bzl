@@ -399,15 +399,6 @@ torch==2.4.1+cpu ; platform_machine == 'x86_64' \
         available_interpreters = {
             "python_3_12_host": "unit_test_interpreter_target",
         },
-        evaluate_markers = lambda _, requirements, **__: {
-            # todo once 2692 is merged, this is going to be easier to test.
-            key: [
-                platform
-                for platform in platforms
-                if ("x86_64" in platform and "platform_machine ==" in key) or ("x86_64" not in platform and "platform_machine !=" in key)
-            ]
-            for key, platforms in requirements.items()
-        },
         simpleapi_download = mocksimpleapi_download,
     )
 
