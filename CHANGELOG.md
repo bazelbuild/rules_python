@@ -64,6 +64,8 @@ Unreleased changes template.
     * 3.12.9
     * 3.13.2
 * (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
+* (pypi) The `bzlmod` extension will now generate smaller lock files for  when
+  using `experimental_index_url`.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
   the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
@@ -128,6 +130,9 @@ Unreleased changes template.
 
 {#v1-3-0-added}
 ### Added
+* (python) {attr}`python.defaults` has been added to allow users to
+  set the default python version in the root module by reading the
+  default version number from a file or an environment variable.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.
