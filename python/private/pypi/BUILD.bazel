@@ -93,6 +93,7 @@ bzl_library(
         ":whl_config_setting_bzl",
         ":whl_library_bzl",
         ":whl_repo_name_bzl",
+        ":whl_target_platforms_bzl",
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:semver_bzl",

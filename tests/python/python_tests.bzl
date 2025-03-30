@@ -20,8 +20,11 @@ load("//python/private:python.bzl", "parse_modules")  # buildifier: disable=bzl-
 
 _tests = []
 
-def _mock_mctx(*modules, environ = {}):
+def _mock_mctx(*modules, environ = {}, mocked_files = {}):
     return struct(
+        path = lambda x: struct(exists = x in mocked_files, _file = x),
+        read = lambda x, watch = None: mocked_files[x._file if "_file" in dir(x) else x],
+        getenv = environ.get,
         os = struct(environ = environ),
         modules = [
             struct(
@@ -39,16 +42,24 @@ def _mock_mctx(*modules, environ = {}):
         ],
     )
 
-def _mod(*, name, toolchain = [], override = [], single_version_override = [], single_version_platform_override = [], is_root = True):
+def _mod(*, name, defaults = [], toolchain = [], override = [], single_version_override = [], single_version_platform_override = [], is_root = True):
     return struct(
         name = name,
         tags = struct(
+            defaults = defaults,
             toolchain = toolchain,
             override = override,
             single_version_override = single_version_override,
             single_version_platform_override = single_version_platform_override,
         ),
         is_root = is_root,
+    )
+
+def _defaults(python_version = None, python_version_env = None, python_version_file = None):
+    return struct(
+        python_version = python_version,
+        python_version_env = python_version_env,
+        python_version_file = python_version_file,
     )
 
 def _toolchain(python_version, *, is_default = False, **kwargs):
@@ -272,6 +283,86 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
     ]).in_order()
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
+
+def _test_default_from_defaults(env):
+    py = parse_modules(
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "my_root_module",
+                defaults = [_defaults(python_version = "3.11")],
+                toolchain = [_toolchain("3.10"), _toolchain("3.11"), _toolchain("3.12")],
+                is_root = True,
+            ),
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.11")
+
+    want_toolchains = [
+        struct(
+            name = "python_3_" + minor_version,
+            python_version = "3." + minor_version,
+            register_coverage_tool = False,
+        )
+        for minor_version in ["10", "11", "12"]
+    ]
+    env.expect.that_collection(py.toolchains).contains_exactly(want_toolchains)
+
+_tests.append(_test_default_from_defaults)
+
+def _test_default_from_defaults_env(env):
+    py = parse_modules(
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "my_root_module",
+                defaults = [_defaults(python_version = "3.11", python_version_env = "PYENV_VERSION")],
+                toolchain = [_toolchain("3.10"), _toolchain("3.11"), _toolchain("3.12")],
+                is_root = True,
+            ),
+            environ = {"PYENV_VERSION": "3.12"},
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.12")
+
+    want_toolchains = [
+        struct(
+            name = "python_3_" + minor_version,
+            python_version = "3." + minor_version,
+            register_coverage_tool = False,
+        )
+        for minor_version in ["10", "11", "12"]
+    ]
+    env.expect.that_collection(py.toolchains).contains_exactly(want_toolchains)
+
+_tests.append(_test_default_from_defaults_env)
+
+def _test_default_from_defaults_file(env):
+    py = parse_modules(
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "my_root_module",
+                defaults = [_defaults(python_version_file = "@@//:.python-version")],
+                toolchain = [_toolchain("3.10"), _toolchain("3.11"), _toolchain("3.12")],
+                is_root = True,
+            ),
+            mocked_files = {"@@//:.python-version": "3.12\n"},
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.12")
+
+    want_toolchains = [
+        struct(
+            name = "python_3_" + minor_version,
+            python_version = "3." + minor_version,
+            register_coverage_tool = False,
+        )
+        for minor_version in ["10", "11", "12"]
+    ]
+    env.expect.that_collection(py.toolchains).contains_exactly(want_toolchains)
+
+_tests.append(_test_default_from_defaults_file)
 
 def _test_first_occurance_of_the_toolchain_wins(env):
     py = parse_modules(
