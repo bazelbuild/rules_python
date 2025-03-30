@@ -16,6 +16,14 @@
 """
 
 # See https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
+_platform_machine_aliases = {
+    # These pairs mean the same hardware, but different values may be used
+    # on different host platforms.
+    "amd64": "x86_64",
+    "arm64": "aarch64",
+    "i386": "x86_32",
+    "i686": "x86_32",
+}
 _platform_system_values = {
     "linux": "Linux",
     "osx": "Darwin",
@@ -74,7 +82,11 @@ def env(target_platform, *, extra = None):
         }
 
     # This is split by topic
-    return env
+    return env | {
+        "_aliases": {
+            "platform_machine": _platform_machine_aliases,
+        },
+    }
 
 def _platform(*, abi = None, os = None, arch = None):
     return struct(
