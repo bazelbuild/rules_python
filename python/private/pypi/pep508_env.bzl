@@ -16,15 +16,6 @@
 """
 
 # See https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
-_platform_machine_values = {
-    "aarch64": "aarch64",
-    "ppc": "ppc",
-    "ppc64le": "ppc64le",
-    "riscv64": "riscv64",
-    "s390x": "s390x",
-    "x86_32": "i386",
-    "x86_64": "x86_64",
-}
 _platform_system_values = {
     "linux": "Linux",
     "osx": "Darwin",
@@ -62,6 +53,9 @@ def env(target_platform, *, extra = None):
         "platform_release": "",
         "platform_version": "",
     }
+    if type(target_platform) == type(""):
+        target_platform = platform_from_str(target_platform, python_version = "")
+
     if target_platform.abi:
         minor_version, _, micro_version = target_platform.abi[3:].partition(".")
         micro_version = micro_version or "0"
@@ -72,10 +66,9 @@ def env(target_platform, *, extra = None):
         }
     if target_platform.os and target_platform.arch:
         os = target_platform.os
-        arch = target_platform.arch
         env = env | {
             "os_name": _os_name_values.get(os, ""),
-            "platform_machine": _platform_machine_values.get(arch, ""),
+            "platform_machine": target_platform.arch,
             "platform_system": _platform_system_values.get(os, ""),
             "sys_platform": _sys_platform_values.get(os, ""),
         }
