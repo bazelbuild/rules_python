@@ -70,7 +70,7 @@ Unreleased changes template.
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
   the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
 * (pypi) When running under `bazel test`, be sure that temporary `requirements` file
-  remains writeable.
+  remains writable.
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
