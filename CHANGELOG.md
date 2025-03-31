@@ -69,6 +69,8 @@ Unreleased changes template.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
   the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+* (pypi) When running under `bazel test`, be sure that temporary `requirements` file
+  remains writeable.
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
