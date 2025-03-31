@@ -31,6 +31,7 @@ def simpleapi_download(
         parallel_download = True,
         read_simpleapi = None,
         get_auth = None,
+        _print = print,
         _fail = fail):
     """Download Simple API HTML.
 
@@ -43,6 +44,8 @@ def simpleapi_download(
              separate packages.
            * extra_index_urls: Extra index URLs that will be looked up after
              the main is looked up.
+           * index_strategy: The string identifier representing the strategy
+             used here. Can be either "first-index" or "unsafe".
            * sources: list[str], the sources to download things for. Each value is
              the contents of requirements files.
            * envsubst: list[str], the envsubst vars for performing substitution in index url.
@@ -61,6 +64,7 @@ def simpleapi_download(
         read_simpleapi: a function for reading and parsing of the SimpleAPI contents.
             Used in tests.
         get_auth: A function to get auth information passed to read_simpleapi. Used in tests.
+        _print: a function to print. Used in tests.
         _fail: a function to print a failure. Used in tests.
 
     Returns:
@@ -71,6 +75,9 @@ def simpleapi_download(
         for p, i in (attr.index_url_overrides or {}).items()
     }
 
+    if attr.index_strategy not in ["unsafe", "first-index"]:
+        fail("TODO")
+
     download_kwargs = {}
     if bazel_features.external_deps.download_has_block_param:
         download_kwargs["block"] = not parallel_download
@@ -80,8 +87,12 @@ def simpleapi_download(
     contents = {}
     index_urls = [attr.index_url] + attr.extra_index_urls
     read_simpleapi = read_simpleapi or _read_simpleapi
+    sources = {
+        pkg: normalize_name(pkg)
+        for pkg in attr.sources
+    }
 
-    found_on_index = {}
+    found_on_indexes = {}
     warn_overrides = False
     for i, index_url in enumerate(index_urls):
         if i != 0:
@@ -89,45 +100,82 @@ def simpleapi_download(
             warn_overrides = True
 
         async_downloads = {}
-        sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
-        for pkg in sources:
+        for pkg, pkg_normalized in sources.items():
+            if pkg not in found_on_indexes:
+                # We have not found the pkg yet, let's search for it
+                pass
+            elif "first-index" == attr.index_strategy and pkg in found_on_indexes:
+                # We have found it and we are using a safe strategy, let's not
+                # search anymore.
+                continue
+            elif pkg in found_on_indexes and pkg_normalized in index_url_overrides:
+                # This pkg has been overriden, be strict and use `first-index` strategy
+                # implicitly.
+                continue
+            elif "unsafe" in attr.index_strategy:
+                # We can search for the packages
+                pass
+            else:
+                fail("BUG: Unknown state of searching of packages")
+
             pkg_normalized = normalize_name(pkg)
-            result = read_simpleapi(
-                ctx = ctx,
-                url = "{}/{}/".format(
-                    index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
-                    pkg,
-                ),
-                attr = attr,
-                cache = cache,
-                get_auth = get_auth,
-                **download_kwargs
-            )
-            if hasattr(result, "wait"):
-                # We will process it in a separate loop:
-                async_downloads[pkg] = struct(
-                    pkg_normalized = pkg_normalized,
-                    wait = result.wait,
+            override_urls = index_url_overrides.get(pkg_normalized, index_url)
+            for url in override_urls.split(","):
+                result = read_simpleapi(
+                    ctx = ctx,
+                    url = "{}/{}/".format(
+                        url.rstrip("/"),
+                        pkg,
+                    ),
+                    attr = attr,
+                    cache = cache,
+                    get_auth = get_auth,
+                    **download_kwargs
                 )
-            elif result.success:
-                contents[pkg_normalized] = result.output
-                found_on_index[pkg] = index_url
+                if hasattr(result, "wait"):
+                    # We will process it in a separate loop:
+                    async_downloads.setdefault(pkg, []).append(
+                        struct(
+                            pkg_normalized = pkg_normalized,
+                            wait = result.wait,
+                        ),
+                    )
+                elif result.success:
+                    current = contents.get(
+                        pkg_normalized,
+                        struct(sdists = {}, whls = {}),
+                    )
+                    contents[pkg_normalized] = struct(
+                        # Always prefer the current values, so that the first index wins
+                        sdists = result.output.sdists | current.sdists,
+                        whls = result.output.whls | current.whls,
+                    )
+                    found_on_indexes.setdefault(pkg, []).append(url)
 
         if not async_downloads:
             continue
 
         # If we use `block` == False, then we need to have a second loop that is
         # collecting all of the results as they were being downloaded in parallel.
-        for pkg, download in async_downloads.items():
-            result = download.wait()
+        for pkg, downloads in async_downloads.items():
+            for download in downloads:
+                result = download.wait()
 
-            if result.success:
-                contents[download.pkg_normalized] = result.output
-                found_on_index[pkg] = index_url
+                if result.success:
+                    current = contents.get(
+                        download.pkg_normalized,
+                        struct(sdists = {}, whls = {}),
+                    )
+                    contents[download.pkg_normalized] = struct(
+                        # Always prefer the current values, so that the first index wins
+                        sdists = result.output.sdists | current.sdists,
+                        whls = result.output.whls | current.whls,
+                    )
+                    found_on_indexes.setdefault(pkg, []).append(index_url)
 
-    failed_sources = [pkg for pkg in attr.sources if pkg not in found_on_index]
+    failed_sources = [pkg for pkg in attr.sources if pkg not in found_on_indexes]
     if failed_sources:
-        _fail("Failed to download metadata for {} for from urls: {}".format(
+        _fail("Failed to download metadata for {} from urls: {}".format(
             failed_sources,
             index_urls,
         ))
@@ -135,13 +183,12 @@ def simpleapi_download(
 
     if warn_overrides:
         index_url_overrides = {
-            pkg: found_on_index[pkg]
+            pkg: ",".join(found_on_indexes[pkg])
             for pkg in attr.sources
-            if found_on_index[pkg] != attr.index_url
+            if found_on_indexes[pkg] != attr.index_url
         }
 
-        # buildifier: disable=print
-        print("You can use the following `index_url_overrides` to avoid the 404 warnings:\n{}".format(
+        _print("You can use the following `index_url_overrides` to avoid the 404 warnings:\n{}".format(
             render.dict(index_url_overrides),
         ))
 

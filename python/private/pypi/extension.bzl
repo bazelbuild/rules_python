@@ -465,6 +465,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                         index_url = pip_attr.experimental_index_url,
                         extra_index_urls = pip_attr.experimental_extra_index_urls or [],
                         index_url_overrides = pip_attr.experimental_index_url_overrides or {},
+                        index_strategy = pip_attr.index_strategy,
                         sources = distributions,
                         envsubst = pip_attr.envsubst,
                         # Auth related info
@@ -678,6 +679,11 @@ stable.
 
 This is equivalent to `--index-url` `pip` option.
 
+:::{warn}
+`rules_python` will fallback to using `pip` to download wheels if the requirements
+files do not have hashes.
+:::
+
 :::{versionchanged} 0.37.0
 If {attr}`download_only` is set, then `sdist` archives will be discarded and `pip.parse` will
 operate in wheel-only mode.
@@ -685,13 +691,17 @@ operate in wheel-only mode.
 """,
         ),
         "experimental_index_url_overrides": attr.string_dict(
+            # TODO @aignas 2025-03-01: consider using string_list_dict so that
+            # we could have index_url_overrides per package for different
+            # platforms like what `uv` has.
+            # See https://docs.astral.sh/uv/configuration/indexes/#-index-url-and-extra-index-url
             doc = """\
 The index URL overrides for each package to use for downloading wheels using
 bazel downloader. This value is going to be subject to `envsubst` substitutions
 if necessary.
 
 The key is the package name (will be normalized before usage) and the value is the
-index URL.
+index URLs separated with `,`.
 
 This design pattern has been chosen in order to be fully deterministic about which
 packages come from which source. We want to avoid issues similar to what happened in
@@ -699,6 +709,11 @@ https://pytorch.org/blog/compromised-nightly-dependency/.
 
 The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
+
+:::{versionchanged} VERSION_NEXT_PATCH
+This can contain comma separated values per package to allow `torch` being
+indexed from multiple sources.
+:::
 """,
         ),
         "hub_name": attr.string(
@@ -721,6 +736,21 @@ is not required. Each hub is a separate resolution of pip dependencies. This
 means if different programs need different versions of some library, separate
 hubs can be created, and each program can use its respective hub's targets.
 Targets from different hubs should not be used together.
+""",
+        ),
+        "index_strategy": attr.string(
+            default = "first-index",
+            values = ["first-index", "unsafe"],
+            doc = """\
+The strategy used when fetching package locations from indexes. This is to allow fetching
+`torch` from the `torch` maintained and PyPI index so that on different platforms users
+can have different torch versions (e.g. gpu accelerated on linux and cpu on the
+rest of the platforms).
+
+See https://docs.astral.sh/uv/configuration/indexes/#searching-across-multiple-indexes.
+
+:::{versionadded} VERSION_NEXT_PATCH
+:::
 """,
         ),
         "parallel_download": attr.bool(
