@@ -57,7 +57,7 @@ Unreleased changes template.
   `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
   for increased compatibility with the `RBE` setups where access to the `exec`
   configuration interpreter is needed.
-* (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
+* (toolchains) Use the latest astral-sh toolchain release [20250317] for Python versions:
     * 3.9.21
     * 3.10.16
     * 3.11.11
