@@ -328,9 +328,9 @@ sphinx-autodoc2==0.5.0 \
     --hash=sha256:7d76044aa81d6af74447080182b6868c7eb066874edc835e8ddf810735b6565a \
     --hash=sha256:e867013b1512f9d6d7e6f6799f8b537d6884462acd118ef361f3f619a60b5c9e
     # via rules-python-docs (docs/pyproject.toml)
-sphinx-reredirects==0.1.5 \
-    --hash=sha256:444ae1438fba4418242ca76d6a6de3eaee82aaf0d8f2b0cac71a15d32ce6eba2 \
-    --hash=sha256:cfa753b441020a22708ce8eb17d4fd553a28fc87a609330092917ada2a6da0d8
+sphinx-reredirects==0.1.6 \
+    --hash=sha256:c491cba545f67be9697508727818d8626626366245ae64456fe29f37e9bbea64 \
+    --hash=sha256:efd50c766fbc5bf40cd5148e10c00f2c00d143027de5c5e48beece93cc40eeea
     # via rules-python-docs (docs/pyproject.toml)
 sphinx-rtd-theme==3.0.1 \
     --hash=sha256:921c0ece75e90633ee876bd7b148cfaad136b481907ad154ac3669b6fc957916 \
