@@ -118,10 +118,20 @@ VenvsUseDeclareSymlinkFlag = FlagEnum(
     get_value = _venvs_use_declare_symlink_flag_get_value,
 )
 
-# Decides if libraries
-VenvSitePackages = FlagEnum(
+def _venvs_site_packages_is_enabled(ctx):
+    if not ctx.attr.experimental_venvs_site_packages:
+        return False
+    flag_value = ctx.attr.experimental_venvs_site_packages[BuildSettingInfo].value
+    return flag_value == VenvsSitePackages.YES
+
+# Decides if libraries try to use a site-packages layout using site_packages_symlinks
+# buildifier: disable=name-conventions
+VenvsSitePackages = FlagEnum(
+    # Use site_packages_symlinks
     YES = "yes",
+    # Don't use site_packages_symlinks
     NO = "no",
+    is_enabled = _venvs_site_packages_is_enabled,
 )
 
 # Used for matching freethreaded toolchains and would have to be used in wheels

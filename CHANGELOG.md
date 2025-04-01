@@ -91,6 +91,10 @@ Unreleased changes template.
   please check the {obj}`uv.configure` tag class.
 * Add support for riscv64 linux platform.
 * (toolchains) Add python 3.13.2 and 3.12.9 toolchains
+* (providers) (experimental) {obj}`PyInfo.site_packages_symlinks` field added to
+  allow specifying links to create within the venv site packages (only
+  applicable with {obj}`--bootstrap_impl=script`)
+  ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
 
 {#v0-0-0-removed}
 ### Removed
@@ -156,10 +160,6 @@ Unreleased changes template.
   which allows pass arguments to the interpreter before the regular args.
 * (rules) Added {obj}`main_module` attribute to `py_binary` and `py_test`,
   which allows specifying a module name to run (i.e. `python -m <module>`).
-* (providers) (experimental) {obj}`PyInfo.site_packages_symlinks` field added to
-  allow specifying links to create within the venv site packages (only
-  applicable with {obj}`--bootstrap_impl=script`)
-  ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
 
 {#v1-3-0-removed}
 ### Removed

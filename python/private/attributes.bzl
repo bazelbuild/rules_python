@@ -236,8 +236,6 @@ that depend on this rule. The strings are repo-runfiles-root relative,
 
 Absolute paths (paths that start with `/`) and paths that references a path
 above the execution root are not allowed and will result in an error.
-
-This attribute is mutually exclusive with the {attr}`site_packages_root` attribute.
 """,
     ),
 }

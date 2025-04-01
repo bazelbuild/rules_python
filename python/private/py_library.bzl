@@ -39,9 +39,8 @@ load(
     "filter_to_py_srcs",
     "get_imports",
     "runfiles_root_path",
-    "union_attrs",
 )
-load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
+load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag", "VenvsSitePackages")
 load(":precompile.bzl", "maybe_precompile")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
@@ -59,38 +58,25 @@ LIBRARY_ATTRS = dicts.add(
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
     {
-        "experimental_venv_site_packages": lambda: attrb.Bool(
+        "experimental_venvs_site_packages": lambda: attrb.Label(
             doc = """
-Internal attribute. Should only be set by rules_python-internal code.
+**INTERNAL ATTRIBUTE. SHOULD ONLY BE SET BY rules_python-INTERNAL CODE.**
 
 :::{include} /_includes/experimental_api.md
 :::
 
-If true, the library consults {flag}`//python/config_settings:venv_site_packages`
-to decide if `srcs` is a site-packages relative layout.
-""",
-            default = False,
-        ),
-        "XXsite_packages_root": lambda: attrb.String(
-            doc = """
-Package relative prefix to remove from `srcs` for site-packages layouts.
+A flag that decides whether the library should treat its sources as a
+site-packages layout.
 
-This attribute is mutually exclusive with the {attr}`imports` attribute.
+When the flag is `yes`, then the `srcs` files are treated as a site-packages
+layout that is relative to the `imports` attribute. The `imports` attribute
+can have only a single element. It is a repo-relative runfiles path.
 
-When set, `srcs` are interpreted to have a file layout as if they were installed
-in site-packages. This attribute specifies the directory within `srcs` to treat
-as the site-packages root so the correct site-packages relative paths for
-the files can be computed.
-
-:::{note}
-This string is relative to the target's *Bazel package*. e.g. Relative to the
-directory with the BUILD file that defines the target (the same as how e.g.
-`srcs`).
-:::
-
-For example, given `srcs=["site-packages/foo/bar.py"]`, specifying
-`site_packages_root="site-packages/" means `foo/bar.py` is the file path
-under the binary's venv site-packages directory that should be made available.
+For example, in the `my/pkg/BUILD.bazel` file, given
+`srcs=["site-packages/foo/bar.py"]`, specifying
+`imports=["my/pkg/site-packages"]` means `foo/bar.py` is the file path
+under the binary's venv site-packages directory that should be made available (i.e.
+`import foo.bar` will work).
 
 `__init__.py` files are treated specially to provide basic support for [implicit
 namespace packages](
@@ -169,17 +155,7 @@ def py_library_impl(ctx, *, semantics):
     imports = []
     site_packages_symlinks = []
 
-    ##if ctx.attr.imports and ctx.attr.site_packages_root:
-    ##    fail(("Only one of the `imports` or `site_packages_root` attributes " +
-    ##          "can be set: site_packages_root={}, imports={}").format(
-    ##        ctx.attr.site_packages_root,
-    ##        ctx.attr.imports,
-    ##    ))
-    ##elif ctx.attr.site_packages_root:
-    ##    site_packages_symlinks = _get_site_packages_symlinks(ctx)
-    ##elif ctx.attr.imports:
-    ##    imports = collect_imports(ctx, semantics)
-    imports, site_packages_symlinks = _get_imports_and_site_packages_symlinks(ctx)
+    imports, site_packages_symlinks = _get_imports_and_site_packages_symlinks(ctx, semantics)
 
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
@@ -231,8 +207,7 @@ Source files are no longer added to the runfiles directly.
 def _get_imports_and_site_packages_symlinks(ctx, semantics):
     imports = depset()
     site_packages_symlinks = depset()
-    if (ctx.attr.experimental_venv_site_packages and
-        ctx.attr._venv_site_packages_flag[BuildSettingInfo].value):
+    if VenvsSitePackages.is_enabled(ctx):
         site_packages_symlinks = _get_site_packages_symlinks(ctx)
     else:
         imports = collect_imports(ctx, semantics)
@@ -246,6 +221,14 @@ def _get_site_packages_symlinks(ctx):
         fail("Too many imports paths")
     else:
         site_packages_root = imports[0]
+
+    if site_packages_root.endswith("/"):
+        fail("should not end in slash")
+    if site_packages_root.startswith("/"):
+        fail("cannot start with slash")
+
+    # Append slash to prevent incorrectly prefix-string matches
+    site_packages_root += "/"
 
     # We have to build a list of (runfiles path, site-packages path) pairs of
     # the files to create in the consuming binary's venv site-packages directory.
@@ -262,7 +245,7 @@ def _get_site_packages_symlinks(ctx):
     # directories that _do_ have an `__init__.py` file and treat those as
     # the path to symlink to.
 
-    site_packages_root = paths.join(ctx.label.package, site_packages_root)
+    ##site_packages_root = paths.join(ctx.label.package, site_packages_root)
     repo_runfiles_dirname = None
     dirs_with_init = {}  # dirname -> runfile path
     for src in ctx.files.srcs:
@@ -302,6 +285,8 @@ def _get_site_packages_symlinks(ctx):
             paths.join(repo_runfiles_dirname, site_packages_root, dirname),
             dirname,
         ))
+    if not site_packages_symlinks:
+        fail("empty?", ctx.label, site_packages_root, ctx.files.srcs[0])
     return site_packages_symlinks
 
 def _repo_relative_short_path(short_path):

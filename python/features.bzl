@@ -31,15 +31,6 @@ def _features_typedef():
     :::
     ::::
 
-    ::::{field} site_packages_root_attr
-    :type: bool
-
-    True if the {obj}`site_packages_root` attribute is available.
-
-    :::{versionadded} VERSION_NEXT_FEATURE
-    :::
-    ::::
-
     ::::{field} uses_builtin_rules
     :type: bool
 
@@ -61,7 +52,6 @@ def _features_typedef():
 features = struct(
     TYPEDEF = _features_typedef,
     precompile = True,
-    site_packages_root_attr = True,
     uses_builtin_rules = not config.enable_pystar,
     version = _VERSION_PRIVATE if "$Format" not in _VERSION_PRIVATE else "",
 )

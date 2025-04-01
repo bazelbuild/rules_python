@@ -158,6 +158,9 @@ Tuples of `(runfiles_path, site_packages_path)`. Where
   the code in `runfiles_path` available for import. Note that this
   is created as a "raw" symlink (via `declare_symlink`).
 
+:::{include} /_includes/experimental_api.md
+:::
+
 :::{tip}
 The topological ordering means dependencies earlier and closer to the consumer
 have precedence. This allows e.g. a binary to add dependencies that override
