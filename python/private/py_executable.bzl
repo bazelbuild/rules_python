@@ -92,7 +92,7 @@ Only supported for {obj}`--bootstrap_impl=script`. Ignored otherwise.
 :::
 
 :::{seealso}
-The {obj}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
+The {any}`RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS` environment variable
 :::
 
 :::{versionadded} 1.3.0

@@ -68,7 +68,7 @@ Unreleased changes template.
   using `experimental_index_url`.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
-  the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+  the URLs manually {bzl:obj}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
