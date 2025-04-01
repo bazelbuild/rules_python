@@ -60,13 +60,6 @@ load(":py_runtime_info.bzl", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 load(":rule_builders.bzl", "ruleb")
 load(
-    ":semantics.bzl",
-    "ALLOWED_MAIN_EXTENSIONS",
-    "BUILD_DATA_SYMLINK_PATH",
-    "IS_BAZEL",
-    "PY_RUNTIME_ATTR_NAME",
-)
-load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
@@ -1116,19 +1109,12 @@ def _get_runtime_details(ctx, semantics):
     #
     # TOOD(bazelbuild/bazel#7901): Remove this once --python_path flag is removed.
 
-    if IS_BAZEL:
-        flag_interpreter_path = ctx.fragments.bazel_py.python_path
-        toolchain_runtime, effective_runtime = _maybe_get_runtime_from_ctx(ctx)
-        if not effective_runtime:
-            # Clear these just in case
-            toolchain_runtime = None
-            effective_runtime = None
-
-    else:  # Google code path
-        flag_interpreter_path = None
-        toolchain_runtime, effective_runtime = _maybe_get_runtime_from_ctx(ctx)
-        if not effective_runtime:
-            fail("Unable to find Python runtime")
+    flag_interpreter_path = ctx.fragments.bazel_py.python_path
+    toolchain_runtime, effective_runtime = _maybe_get_runtime_from_ctx(ctx)
+    if not effective_runtime:
+        # Clear these just in case
+        toolchain_runtime = None
+        effective_runtime = None
 
     if effective_runtime:
         direct = []  # List of files
@@ -1207,7 +1193,7 @@ def _maybe_get_runtime_from_ctx(ctx):
         effective_runtime = toolchain_runtime
     else:
         toolchain_runtime = None
-        attr_target = getattr(ctx.attr, PY_RUNTIME_ATTR_NAME)
+        attr_target = ctx.attr._py_interpreter
 
         # In Bazel, --python_top is null by default.
         if attr_target and PyRuntimeInfo in attr_target:
@@ -1335,9 +1321,9 @@ def _create_runfiles_with_build_data(
         central_uncachable_version_file,
         extra_write_build_data_env,
     )
-    build_data_runfiles = ctx.runfiles(symlinks = {
-        BUILD_DATA_SYMLINK_PATH: build_data_file,
-    })
+    build_data_runfiles = ctx.runfiles(files = [
+        build_data_file,
+    ])
     return build_data_file, build_data_runfiles
 
 def _write_build_data(ctx, central_uncachable_version_file, extra_write_build_data_env):
@@ -1552,7 +1538,7 @@ def determine_main(ctx):
     """
     if ctx.attr.main:
         proposed_main = ctx.attr.main.label.name
-        if not proposed_main.endswith(tuple(ALLOWED_MAIN_EXTENSIONS)):
+        if not proposed_main.endswith(".py"):
             fail("main must end in '.py'")
     else:
         if ctx.label.name.endswith(".py"):
