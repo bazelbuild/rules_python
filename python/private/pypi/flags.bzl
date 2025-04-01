@@ -44,11 +44,6 @@ UniversalWhlFlag = enum(
     UNIVERSAL = "universal",
 )
 
-PipVenvSitePackages = FlagEnum(
-    YES = "yes"
-    NO = "no",
-)
-
 _STRING_FLAGS = [
     "dist",
     "whl_plat",

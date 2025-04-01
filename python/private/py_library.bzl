@@ -59,7 +59,19 @@ LIBRARY_ATTRS = dicts.add(
     PY_SRCS_ATTRS,
     IMPORTS_ATTRS,
     {
-        "site_packages_root": lambda: attrb.String(
+        "experimental_venv_site_packages": lambda: attrb.Bool(
+            doc = """
+Internal attribute. Should only be set by rules_python-internal code.
+
+:::{include} /_includes/experimental_api.md
+:::
+
+If true, the library consults {flag}`//python/config_settings:venv_site_packages`
+to decide if `srcs` is a site-packages relative layout.
+""",
+            default = False,
+        ),
+        "XXsite_packages_root": lambda: attrb.String(
             doc = """
 Package relative prefix to remove from `srcs` for site-packages layouts.
 
@@ -156,16 +168,18 @@ def py_library_impl(ctx, *, semantics):
 
     imports = []
     site_packages_symlinks = []
-    if ctx.attr.imports and ctx.attr.site_packages_root:
-        fail(("Only one of the `imports` or `site_packages_root` attributes " +
-              "can be set: site_packages_root={}, imports={}").format(
-            ctx.attr.site_packages_root,
-            ctx.attr.imports,
-        ))
-    elif ctx.attr.site_packages_root:
-        site_packages_symlinks = _get_site_packages_symlinks(ctx)
-    elif ctx.attr.imports:
-        imports = collect_imports(ctx, semantics)
+
+    ##if ctx.attr.imports and ctx.attr.site_packages_root:
+    ##    fail(("Only one of the `imports` or `site_packages_root` attributes " +
+    ##          "can be set: site_packages_root={}, imports={}").format(
+    ##        ctx.attr.site_packages_root,
+    ##        ctx.attr.imports,
+    ##    ))
+    ##elif ctx.attr.site_packages_root:
+    ##    site_packages_symlinks = _get_site_packages_symlinks(ctx)
+    ##elif ctx.attr.imports:
+    ##    imports = collect_imports(ctx, semantics)
+    imports, site_packages_symlinks = _get_imports_and_site_packages_symlinks(ctx)
 
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
@@ -214,9 +228,24 @@ Source files are no longer added to the runfiles directly.
 :::
 """
 
+def _get_imports_and_site_packages_symlinks(ctx, semantics):
+    imports = depset()
+    site_packages_symlinks = depset()
+    if (ctx.attr.experimental_venv_site_packages and
+        ctx.attr._venv_site_packages_flag[BuildSettingInfo].value):
+        site_packages_symlinks = _get_site_packages_symlinks(ctx)
+    else:
+        imports = collect_imports(ctx, semantics)
+    return imports, site_packages_symlinks
+
 def _get_site_packages_symlinks(ctx):
-    if not ctx.attr.site_packages_root:
-        return []
+    imports = ctx.attr.imports
+    if len(imports) == 0:
+        fail("Must specify imports attr")
+    elif len(imports) > 1:
+        fail("Too many imports paths")
+    else:
+        site_packages_root = imports[0]
 
     # We have to build a list of (runfiles path, site-packages path) pairs of
     # the files to create in the consuming binary's venv site-packages directory.
@@ -233,7 +262,7 @@ def _get_site_packages_symlinks(ctx):
     # directories that _do_ have an `__init__.py` file and treat those as
     # the path to symlink to.
 
-    site_packages_root = paths.join(ctx.label.package, ctx.attr.site_packages_root)
+    site_packages_root = paths.join(ctx.label.package, site_packages_root)
     repo_runfiles_dirname = None
     dirs_with_init = {}  # dirname -> runfile path
     for src in ctx.files.srcs:

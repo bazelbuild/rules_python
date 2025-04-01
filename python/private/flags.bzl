@@ -118,7 +118,11 @@ VenvsUseDeclareSymlinkFlag = FlagEnum(
     get_value = _venvs_use_declare_symlink_flag_get_value,
 )
 
-VenvsCreateSitePackages
+# Decides if libraries
+VenvSitePackages = FlagEnum(
+    YES = "yes",
+    NO = "no",
+)
 
 # Used for matching freethreaded toolchains and would have to be used in wheels
 # as well.

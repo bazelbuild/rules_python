@@ -213,6 +213,17 @@ Values:
 ::::
 
 
+::::
+
+:::{flag} venv_site_packages
+
+Determines if
+
+Values:
+* `no` (default)
+* `yes`
+::::
+
 ::::{bzl:flag} bootstrap_impl
 Determine how programs implement their startup process.
 

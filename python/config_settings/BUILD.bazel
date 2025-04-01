@@ -9,6 +9,7 @@ load(
     "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
+    "VenvSitePackages",
     "VenvsUseDeclareSymlinkFlag",
 )
 load(
@@ -196,8 +197,8 @@ string_flag(
 )
 
 string_flag(
-    name = "pip_venv_site_packages",
-    build_setting_default = PipVenvSitePackages.NO,
+    name = "venv_site_packages",
+    build_setting_default = VenvSitePackages.NO,
     # NOTE: Only public because it is used in pip hub repos.
     visibility = ["//visibility:public"],
 )
