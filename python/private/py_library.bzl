@@ -216,16 +216,20 @@ def _get_imports_and_site_packages_symlinks(ctx, semantics):
 def _get_site_packages_symlinks(ctx):
     imports = ctx.attr.imports
     if len(imports) == 0:
-        fail("Must specify imports attr")
+        fail("When venvs_site_packages is enabled, exactly one `imports` " +
+             "value must be specified, got 0")
     elif len(imports) > 1:
-        fail("Too many imports paths")
+        fail("When venvs_site_packages is enabled, exactly one `imports` " +
+             "value must be specified, got {}".format(imports))
     else:
         site_packages_root = imports[0]
 
     if site_packages_root.endswith("/"):
-        fail("should not end in slash")
+        fail("The site packages root value from `imports` cannot end in " +
+             "slash, got {}".format(site_packages_root))
     if site_packages_root.startswith("/"):
-        fail("cannot start with slash")
+        fail("The site packages root value from `imports` cannot start with " +
+             "slash, got {}".format(site_packages_root))
 
     # Append slash to prevent incorrectly prefix-string matches
     site_packages_root += "/"
@@ -245,7 +249,6 @@ def _get_site_packages_symlinks(ctx):
     # directories that _do_ have an `__init__.py` file and treat those as
     # the path to symlink to.
 
-    ##site_packages_root = paths.join(ctx.label.package, site_packages_root)
     repo_runfiles_dirname = None
     dirs_with_init = {}  # dirname -> runfile path
     for src in ctx.files.srcs:
@@ -257,8 +260,10 @@ def _get_site_packages_symlinks(ctx):
         path = path.removeprefix(site_packages_root)
         dir_name, _, filename = path.rpartition("/")
         if not dir_name:
-            # This would be e.g. `site-packages/__init__.py`, which isn't valid.
-            # Apparently, the pypi integration adds such a file?
+            # This would be e.g. `site-packages/__init__.py`, which isn't valid
+            # because it's not within a directory for an importable Python package.
+            # However, the pypi integration over-eagerly adds a pkgutil-style
+            # __init__.py file during the repo phase. Just ignore them for now.
             continue
 
         if filename.startswith("__init__."):
@@ -285,12 +290,12 @@ def _get_site_packages_symlinks(ctx):
             paths.join(repo_runfiles_dirname, site_packages_root, dirname),
             dirname,
         ))
-    if not site_packages_symlinks:
-        fail("empty?", ctx.label, site_packages_root, ctx.files.srcs[0])
     return site_packages_symlinks
 
 def _repo_relative_short_path(short_path):
+    # Convert `../+pypi+foo/some/file.py` to `some/file.py`
     if short_path.startswith("../"):
+        fail(short_path)
         return short_path[3:].partition("/")[2]
     else:
         return short_path
