@@ -23,11 +23,6 @@ load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(":reexports.bzl", "BuiltinPyInfo")
 load(":rule_builders.bzl", "ruleb")
-load(
-    ":semantics.bzl",
-    "DEPS_ATTR_ALLOW_RULES",
-    "SRCS_ATTR_ALLOW_FILES",
-)
 
 _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
@@ -250,9 +245,6 @@ PY_SRCS_ATTRS = dicts.add(
                 [PyInfo],
                 [CcInfo],
             ] + _MaybeBuiltinPyInfo,
-            # TODO(b/228692666): Google-specific; remove these allowances once
-            # the depot is cleaned up.
-            allow_rules = DEPS_ATTR_ALLOW_RULES,
             doc = """
 List of additional libraries to be linked in to the target.
 See comments about
@@ -359,8 +351,7 @@ as part of a runnable program (packaging rules may include them, however).
             allow_files = True,
         ),
         "srcs": lambda: attrb.LabelList(
-            # Google builds change the set of allowed files.
-            allow_files = SRCS_ATTR_ALLOW_FILES,
+            allow_files = [".py", ".py3"],
             # Necessary for --compile_one_dependency to work.
             flags = ["DIRECT_COMPILE_TIME_INPUT"],
             doc = """

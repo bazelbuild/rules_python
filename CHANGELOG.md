@@ -57,7 +57,7 @@ Unreleased changes template.
   `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
   for increased compatibility with the `RBE` setups where access to the `exec`
   configuration interpreter is needed.
-* (toolchains) Use the latest astrahl-sh toolchain release [20250317] for Python versions:
+* (toolchains) Use the latest astral-sh toolchain release [20250317] for Python versions:
     * 3.9.21
     * 3.10.16
     * 3.11.11
@@ -84,6 +84,14 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
+* (pypi) From now on `sha256` values in the `requirements.txt` is no longer
+  mandatory when enabling {attr}`pip.parse.experimental_index_url` feature.
+  This means that `rules_python` will attempt to fetch metadata for all
+  packages through SimpleAPI unless they are pulled through direct URL
+  references. Fixes [#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
+  In case you see issues with `rules_python` being too eager to fetch the SimpleAPI
+  metadata, you can use the newly added {attr}`pip.parse.experimental_skip_sources`
+  to skip metadata fetching for those packages.
 * (uv) A {obj}`lock` rule that is the replacement for the
   {obj}`compile_pip_requirements`. This may still have rough corners
   so please report issues with it in the
