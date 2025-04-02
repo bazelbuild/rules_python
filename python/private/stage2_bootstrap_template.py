@@ -365,6 +365,16 @@ def main():
     print_verbose("initial environ:", mapping=os.environ)
     print_verbose("initial sys.path:", values=sys.path)
 
+    if bool(os.environ.get("RULES_PYTHON_BOOTSTRAP_REPL")):
+        global MAIN_PATH
+        global MAIN_MODULE
+        MAIN_PATH = ""
+        # TODO(philsc): Can we point at python.bin.repl instead? That would mean
+        # adding it as a dependency to all binaries.
+        MAIN_MODULE = "code"
+        # Prevent subprocesses from also entering the REPL.
+        del os.environ["RULES_PYTHON_BOOTSTRAP_REPL"]
+
     main_rel_path = None
     # todo: things happen to work because find_runfiles_root
     # ends up using stage2_bootstrap, and ends up computing the proper
@@ -438,7 +448,6 @@ def main():
             _run_py_path(main_filename, args=sys.argv[1:])
         else:
             _run_py_module(MAIN_MODULE)
-        sys.exit(0)
 
 
 main()

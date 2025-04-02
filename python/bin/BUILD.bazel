@@ -1,4 +1,5 @@
 load("//python/private:interpreter.bzl", _interpreter_binary = "interpreter_binary")
+load("//python:py_binary.bzl", "py_binary")
 
 filegroup(
     name = "distribution",
@@ -20,5 +21,30 @@ _interpreter_binary(
 # `python` target above.
 label_flag(
     name = "python_src",
+    build_setting_default = "//python:none",
+)
+
+py_binary(
+    name = "repl",
+    srcs = ["repl.py"],
+    deps = [
+        ":repl_dep",
+        ":repl_lib_dep",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# The user can modify this flag to make arbitrary libraries available for import
+# on the REPL. Anything that exposes PyInfo can be used here.
+label_flag(
+    name = "repl_dep",
+    build_setting_default = "//python:none",
+)
+
+# The user can modify this flag to make additional libraries available
+# specifically for the purpose of interacting with the REPL. For example, point
+# this at ipython in your .bazelrc file.
+label_flag(
+    name = "repl_lib_dep",
     build_setting_default = "//python:none",
 )
