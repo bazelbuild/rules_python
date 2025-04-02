@@ -696,7 +696,7 @@ pip_fallback==0.0.1
     pypi.hub_whl_map().contains_exactly({
         "pypi": {
             "direct_without_sha": {
-                "pypi_315_direct_without_sha_py3_none_any_00000000": [
+                "pypi_315_direct_without_sha_0_0_1_py3_none_any": [
                     struct(
                         config_setting = None,
                         filename = "direct_without_sha-0.0.1-py3-none-any.whl",
@@ -756,7 +756,7 @@ pip_fallback==0.0.1
         },
     })
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_direct_without_sha_py3_none_any_00000000": {
+        "pypi_315_direct_without_sha_0_0_1_py3_none_any": {
             "dep_template": "@pypi//{name}:{target}",
             "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
             "filename": "direct_without_sha-0.0.1-py3-none-any.whl",
