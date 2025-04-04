@@ -215,16 +215,22 @@ def parse_requirements(
                 logger = logger,
             )
             
+            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
+
             if sdist:
                 sha = sdist.sha256
                 if sha not in sdists_by_sha:
                     sdists_by_sha[sha] = struct(
+                        distribution = r.distribution,
+                        srcs = r.srcs,
+                        extra_pip_args = r.extra_pip_args,
                         sdist = sdist,
                         platforms = [],
                     )
-                sdists_by_sha[sha].platforms.extend(r.target_platforms)
-
-            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
+                sdists_by_sha[sha].platforms.extend(target_platforms)
+            
+                if len(whls) == 0:
+                    continue
 
             ret_requirements.append(
                 struct(
@@ -241,10 +247,10 @@ def parse_requirements(
         for sha, sdist_info in sdists_by_sha.items():
             ret_requirements.append(
                 struct(
-                    distribution = r.distribution,
-                    srcs = r.srcs,
+                    distribution = sdist_info.distribution,
+                    srcs = sdist_info.srcs,
                     target_platforms = sorted(sdist_info.platforms),
-                    extra_pip_args = r.extra_pip_args,
+                    extra_pip_args = sdist_info.extra_pip_args,
                     whls = [],
                     sdist = sdist_info.sdist,
                     is_exposed = is_exposed,
