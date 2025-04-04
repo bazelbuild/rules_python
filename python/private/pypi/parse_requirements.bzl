@@ -219,15 +219,14 @@ def parse_requirements(
 
             if sdist:
                 sha = sdist.sha256
-                if sha not in sdists_by_sha:
-                    sdists_by_sha[sha] = struct(
-                        distribution = r.distribution,
-                        srcs = r.srcs,
-                        extra_pip_args = r.extra_pip_args,
-                        sdist = sdist,
-                        platforms = [],
-                    )
-                sdists_by_sha[sha].platforms.extend(target_platforms)
+                sdist_info = sdists_by_sha.setdefault(sha, struct(
+                    distribution = r.distribution,
+                    srcs = r.srcs,
+                    extra_pip_args = r.extra_pip_args,
+                    sdist = sdist,
+                    platforms = [],
+                ))
+                sdist_info.platforms.extend(target_platforms)
 
                 if len(whls) == 0:
                     continue
@@ -244,7 +243,7 @@ def parse_requirements(
                 ),
             )
 
-        for sha, sdist_info in sdists_by_sha.items():
+        for sdist_info in sdists_by_sha.values():
             ret_requirements.append(
                 struct(
                     distribution = sdist_info.distribution,
