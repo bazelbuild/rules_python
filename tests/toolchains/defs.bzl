@@ -14,9 +14,9 @@
 
 ""
 
-load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "DEFAULT_PYTHON_VERSION")
+load("@pythons_hub//:versions.bzl", "DEFAULT_PYTHON_VERSION", "MINOR_MAPPING")
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
-load("//python/private:full_version.bzl", "full_version")
+load("//python/private:full_version.bzl", "full_version")  # buildifier: disable=bzl-visibility
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
 def define_toolchain_tests(name):
@@ -61,7 +61,7 @@ def define_toolchain_tests(name):
         minor_mapping = MINOR_MAPPING,
     )
     default_version_tests = {
-        (None, default_version): "default_version_test"
+        (None, default_version): "default_version_test",
     }
     tests = exact_version_tests | minor_mapping_tests | default_version_tests
 
