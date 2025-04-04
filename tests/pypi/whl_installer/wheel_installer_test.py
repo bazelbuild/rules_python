@@ -96,7 +96,7 @@ class TestWhlFilegroup(unittest.TestCase):
             name="example-minimal-package",
             entry_points=[],
             extras=[],
-            python_version="3.11.1",
+            python_version="3.11.11",
             requires_dist=[],
         )
         self.assertEqual(want, metadata_file_content)
