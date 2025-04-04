@@ -394,53 +394,59 @@ def _whl_library_impl(rctx):
         )
         entry_points[entry_point_without_py] = entry_point_script_name
 
-    # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in
-    # the analysis phase. This means that we need to get the target platform abi
-    # from the python version/versions we are setting the package up for. We can
-    # potentially get this from the python toolchain interpreter.
+    # TODO @aignas 2025-04-04: move this to whl_library_targets.bzl to have
+    # this in the analysis phase.
+    #
+    # This means that whl_library_targets will have to accept the following args:
+    # * name - the name of the package in the METADATA.
+    # * requires_dist - the list of METADATA RequiresDist.
+    # * platforms - the list of target platforms. The target_platforms
+    #   should come from the hub repo via a 'load' statement so that they don't
+    #   need to be passed as an argument to `whl_library`.
+    # * extras - the list of required extras. This comes from the
+    #   `rctx.attr.requirement` for now. In the future the required extras could
+    #   stay in the hub repo, where we calculate the extra aliases that we need
+    #   to create automatically and this way expose the targets for the specific
+    #   extras. The first step will be to generate a target per extra for the
+    #   `py_library` and `filegroup`. Maybe we need to have a special provider
+    #   or an output group so that we can return the `whl` file from the
+    #   `py_library` target? filegroup can use output groups to expose files.
+    # * host_python_version/versons - the list of python versions to support
+    #   should come from the hub, similar to how the target platforms are specified.
+    #
+    # Extra things that we should move at the same time:
+    # * group_name, group_deps - this info can stay in the hub repository so that
+    #   it is piped at the analysis time and changing the requirement groups does
+    #   cause to re-fetch the deps.
     package_deps = deps(
-        # TODO @aignas 2025-02-24:  get the data here by parsing the METADATA
-        # file manually without involving python interpreter at all.
+        # TODO @aignas 2025-04-04: get the following from manually parsing
+        # METADATA to avoid Python dependency:
+        # * name of the package
+        # * version of the package
+        # * RequiresDist
+        # * ProvidesExtras
         name = metadata["name"],
         requires_dist = metadata["requires_dist"],
-        # target the host platform if the target platform is not specified in the rule.
-        # TODO @aignas 2025-03-23: we should materialize this inside the
-        # hub_repository `requirements.bzl` file as `TARGET_PLATFORMS` with a
-        # note, that this is internal and will be only for usage of the
-        # `whl_library`
         platforms = target_platforms or [
             "{}_{}".format(metadata["abi"], host_platform(rctx)),
         ],
-        # TODO @aignas 2025-03-23: we should expose the requested extras via a
-        # dict in `requirements.bzl` `EXTRAS` where the key is the package name
-        # and the value is the list of requested extras. like the above, for
-        # internal usage only.
         extras = metadata["extras"],
-        # TODO @aignas 2025-03-23: we should expose full python version via the
-        # TARGET_PYTHON_VERSIONS list so that we can correctly calculate the
-        # deps. This would be again, internal only stuff.
         host_python_version = metadata["python_version"],
     )
 
     build_file_contents = generate_whl_library_build_bazel(
         name = whl_path.basename,
-        # TODO @aignas 2025-03-23: load the dep_template from the hub repository
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
-        # TODO @aignas 2025-03-23: replace `dependencies` and
-        # `dependencies_by_platform` with `requires_dist`.
         dependencies = package_deps.deps,
         dependencies_by_platform = package_deps.deps_select,
-        # TODO @aignas 2025-03-23: store the `group_name` per package in the hub repo
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
-        # TODO @aignas 2025-03-23: store the pip_data_exclude in the hub repo.
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
             "pypi_name=" + metadata["name"],
             "pypi_version=" + metadata["version"],
         ],
         entry_points = entry_points,
-        # TODO @aignas 2025-03-23: store the annotation in the hub repo.
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
     )
     rctx.file("BUILD.bazel", build_file_contents)
