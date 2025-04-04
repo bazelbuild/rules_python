@@ -243,6 +243,18 @@ def parse_modules(*, module_ctx, _fail = fail):
     if len(toolchains) > _MAX_NUM_TOOLCHAINS:
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
+    # sort the toolchains so that the toolchain versions that are in the
+    # `minor_mapping` are coming first. This ensures that `python_version =
+    # "3.X"` transitions work as expected.
+    minor_version_toolchains = []
+    other_toolchains = []
+    for t in toolchains:
+        if t.python_version in config.minor_mapping:
+            minor_version_toolchains.append(t)
+        else:
+            other_toolchains.append(t)
+    toolchains = minor_version_toolchains + other_toolchains
+
     return struct(
         config = config,
         debug_info = debug_info,
