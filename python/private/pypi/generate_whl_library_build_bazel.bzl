@@ -14,7 +14,6 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:text_util.bzl", "render")
 
 _RENDER = {
@@ -27,8 +26,7 @@ _RENDER = {
     "entry_points": render.dict,
     "extras": render.list,
     "group_deps": render.list,
-    "host_python_version": str,
-    "platforms": str,
+    "platforms": render.list,
     "requires_dist": render.list,
     "srcs_exclude": render.list,
     "tags": render.list,
@@ -38,7 +36,7 @@ _RENDER = {
 # this repository can be publicly visible without the need for
 # export_files
 _TEMPLATE = """\
-{loads}
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -63,17 +61,6 @@ def generate_whl_library_build_bazel(
     """
 
     additional_content = []
-    loads = {
-        "@rules_python//python/private/pypi:whl_library_targets.bzl": ('"whl_library_targets"',),
-    }
-    if BZLMOD_ENABLED:
-        dep_template = kwargs["dep_template"]
-        loads[dep_template.format(
-            name = "",
-            target = "requirements.bzl",
-        )] = ("hub_settings = \"private\"",)
-        kwargs["platforms"] = "hub_settings.platforms"
-        kwargs["host_python_version"] = "hub_settings.python_versions[0]"
     if annotation:
         kwargs["data"] = annotation.data
         kwargs["copy_files"] = annotation.copy_files
@@ -86,13 +73,6 @@ def generate_whl_library_build_bazel(
     contents = "\n".join(
         [
             _TEMPLATE.format(
-                loads = "\n".join([
-                    "load({}, {})".format(
-                        repr(path),
-                        ", ".join([s for s in symbols]),
-                    )
-                    for path, symbols in loads.items()
-                ]),
                 kwargs = render.indent("\n".join([
                     "{} = {},".format(k, _RENDER.get(k, repr)(v))
                     for k, v in sorted(kwargs.items())

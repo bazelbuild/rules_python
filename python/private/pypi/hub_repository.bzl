@@ -15,7 +15,6 @@
 ""
 
 load("//python/private:text_util.bzl", "render")
-load(":parse_requirements.bzl", "host_platform")
 load(":render_pkg_aliases.bzl", "render_multiplatform_pkg_aliases")
 load(":whl_config_setting.bzl", "whl_config_setting")
 
@@ -45,11 +44,6 @@ def _impl(rctx):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    platforms = [
-        host_platform(rctx) if p == "host" else p
-        for p in rctx.attr.platforms
-    ]
-
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
@@ -65,8 +59,6 @@ def _impl(rctx):
             for p in bzl_packages
         }),
         "%%MACRO_TMPL%%": macro_tmpl,
-        "%%PLATFORMS%%": render.indent(render.list(sorted(platforms))).lstrip(),
-        "%%PYTHON_VERSIONS%%": render.indent(render.list(sorted(rctx.attr.python_versions))).lstrip(),
     })
 
 hub_repository = repository_rule(
@@ -82,24 +74,6 @@ hub_repository = repository_rule(
             mandatory = False,
             doc = """\
 The list of packages that will be exposed via all_*requirements macros. Defaults to whl_map keys.
-""",
-        ),
-        # TODO @aignas 2025-03-23: get the `platforms` and `python_versions`
-        # from the aliases? This requires us to only create aliases for the
-        # target platforms and python_versions we care about. Python versions
-        # probably still need to be passed in.
-        "platforms": attr.string_list(
-            mandatory = True,
-            doc = """\
-The list of target platforms that are supported in this hub repository. This
-can contain 'abi_os_arch' tuples or 'host' to keep the lock files os/arch
-agnostic.
-""",
-        ),
-        "python_versions": attr.string_list(
-            mandatory = True,
-            doc = """\
-The list of python versions that are supported in this hub repository.
 """,
         ),
         "repo_name": attr.string(
