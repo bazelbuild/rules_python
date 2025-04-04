@@ -307,7 +307,7 @@ def _test_toolchain_ordering(env):
         for t in py.toolchains
     ]
 
-    env.expect.that_str(py.default_python_version).equals("3.11")
+    env.expect.that_str(py.default_python_version).equals("3.11.11")
     env.expect.that_dict(py.config.minor_mapping).contains_exactly({
         "3.10": "3.10.16",
         "3.11": "3.11.11",
