@@ -228,7 +228,7 @@ def parse_requirements(
                         platforms = [],
                     )
                 sdists_by_sha[sha].platforms.extend(target_platforms)
-            
+
                 if len(whls) == 0:
                     continue
 
@@ -243,7 +243,7 @@ def parse_requirements(
                     is_exposed = is_exposed,
                 ),
             )
-        
+
         for sha, sdist_info in sdists_by_sha.items():
             ret_requirements.append(
                 struct(
