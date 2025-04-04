@@ -14,7 +14,9 @@
 
 ""
 
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "DEFAULT_PYTHON_VERSION")
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+load("//python/private:full_version.bzl", "full_version")
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
 def define_toolchain_tests(name):
@@ -30,7 +32,41 @@ def define_toolchain_tests(name):
             constraint_values = platform_info.compatible_with,
         )
 
-    for python_version, meta in TOOL_VERSIONS.items():
+    # First we expect the transitions with a specific version to always
+    # give us that specific version
+    exact_version_tests = {
+        (v, v): "python_{}_test".format(v)
+        for v in TOOL_VERSIONS
+    }
+    native.test_suite(
+        name = "exact_version_tests",
+        tests = exact_version_tests.values(),
+    )
+
+    # Then we expect to get the version in the MINOR_MAPPING if we provide
+    # the version from the MINOR_MAPPING
+    minor_mapping_tests = {
+        (minor, full): "python_{}_test".format(minor)
+        for minor, full in MINOR_MAPPING.items()
+    }
+    native.test_suite(
+        name = "minor_mapping_tests",
+        tests = minor_mapping_tests.values(),
+    )
+
+    # Lastly, if we don't provide any version to the transition, we should
+    # get the default version
+    default_version = full_version(
+        version = DEFAULT_PYTHON_VERSION,
+        minor_mapping = MINOR_MAPPING,
+    )
+    default_version_tests = {
+        (None, default_version): "default_version_test"
+    }
+    tests = exact_version_tests | minor_mapping_tests | default_version_tests
+
+    for (input_python_version, expect_python_version), test_name in tests.items():
+        meta = TOOL_VERSIONS[expect_python_version]
         target_compatible_with = {
             "//conditions:default": ["@platforms//:incompatible"],
         }
@@ -39,12 +75,12 @@ def define_toolchain_tests(name):
             target_compatible_with[is_platform] = []
 
         py_reconfig_test(
-            name = "python_{}_test".format(python_version),
+            name = test_name,
             srcs = ["python_toolchain_test.py"],
             main = "python_toolchain_test.py",
-            python_version = python_version,
+            python_version = input_python_version,
             env = {
-                "EXPECT_PYTHON_VERSION": python_version,
+                "EXPECT_PYTHON_VERSION": expect_python_version,
             },
             deps = ["//python/runfiles"],
             data = ["//tests/support:current_build_settings"],
