@@ -78,6 +78,9 @@ Unreleased changes template.
 * (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
   repositories on Windows. Fixes
   [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
+* (toolchains) The toolchain matching is has been fixed when writing
+  transitions transitioning on the `python_version` flag.
+  Fixes [#2685](https://github.com/bazel-contrib/rules_python/issues/2685).
 
 {#v0-0-0-added}
 ### Added
