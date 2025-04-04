@@ -106,7 +106,6 @@ def _lock_impl(ctx):
 
     exec_tools = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools
     runtime = exec_tools.exec_interpreter[platform_common.ToolchainInfo].py3_runtime
-    fail(runtime.interpreter_version_info)
     python = runtime.interpreter or runtime.interpreter_path
     python_files = runtime.files
     args.add("--python", python)
