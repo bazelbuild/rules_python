@@ -214,7 +214,7 @@ def parse_requirements(
                 index_urls = index_urls.get(whl_name),
                 logger = logger,
             )
-            
+
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
 
             if sdist:
