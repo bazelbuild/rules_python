@@ -29,6 +29,44 @@ PyWheelInfo = provider(
         "wheel": "File: The wheel file itself.",
     },
 )
+DistInfo = provider(
+    """Information about the requirements of a Python package.""",
+    fields = ["metadata"],
+)
+
+def _aspect_impl(target, ctx):
+    """
+    The main implementation of the aspect, orchestrating the collection and archiving of files.
+
+    Args:
+        target: The target being processed.
+        ctx: The context for this aspect's execution.
+
+    Returns:
+        A list of `TarInfo` providers indicating the tar archives created by this aspect.
+    """
+
+    metadata = []
+    if target.label.workspace_root == "":
+        for dep in getattr(ctx.rule.attr, "deps", []):
+            if dep.label.workspace_root == "":
+                continue
+            workspace_root = dep.label.workspace_root
+            for file in dep[DefaultInfo].data_runfiles.files.to_list():
+                if file.path.startswith(workspace_root) and file.path.endswith(".dist-info/METADATA"):
+                    metadata.append(file)
+
+    return [DistInfo(metadata = metadata)]
+
+# The aspect itself, specifying how it applies to targets and what attributes it uses.
+distinfo_aspect = aspect(
+    implementation = _aspect_impl,
+    attr_aspects = ["deps"],  # Indicates that this aspect should propagate along 'deps' attributes.
+    toolchains = [
+        str(Label("@bazel_tools//tools/python:toolchain_type")),
+    ],
+    doc = "An aspect for creating tar archives of transitive external dependencies, facilitating the bundling of these dependencies for container images or other deployment artifacts.",
+)
 
 _distribution_attrs = {
     "abi": attr.string(
@@ -231,6 +269,44 @@ _DESCRIPTION_FILE_EXTENSION_TO_TYPE = {
 }
 _DEFAULT_DESCRIPTION_FILE_TYPE = "text/plain"
 
+def create_requirements_file(ctx):
+    """Write requirements to a file
+
+    Args:
+        ctx: The context object.
+    Returns:
+        The file containing the requirements.
+
+    """
+    all_metadatafiles = []
+    args = ctx.actions.args()
+    for dep in ctx.attr.deps:
+        if DistInfo in dep:
+            all_metadatafiles.extend(dep[DistInfo].metadata)
+
+    if len(all_metadatafiles) == 0:
+        return None
+
+    for m in all_metadatafiles:
+        args.add("--metadata_file", m)
+    args.use_param_file(param_file_arg = "--param-file=%s", use_always = True)
+
+    if hasattr(ctx.outputs, "out"):
+        requirements_file = ctx.outputs.out
+    else:
+        requirements_file = ctx.actions.declare_file(ctx.attr.name + "_requirements.txt")
+    args.add("--output", requirements_file)
+
+    ctx.actions.run(
+        inputs = depset(direct = all_metadatafiles),
+        outputs = [requirements_file],
+        arguments = [args],
+        use_default_shell_env = True,
+        executable = ctx.executable._extract_requirements,
+        progress_message = "Building requirements",
+    )
+    return requirements_file
+
 def _escape_filename_distribution_name(name):
     """Escape the distribution name component of a filename.
 
@@ -358,6 +434,10 @@ def _py_wheel_impl(ctx):
         other_inputs.extend([ctx.version_file, ctx.info_file])
 
     args.add("--input_file_list", packageinputfile)
+    requirements_file = create_requirements_file(ctx)
+    if requirements_file:
+        args.add("--requirements", requirements_file)
+        other_inputs.append(requirements_file)
 
     # Note: Description file and version are not embedded into metadata.txt yet,
     # it will be done later by wheelmaker script.
@@ -547,6 +627,7 @@ py_wheel_lib = struct(
     attrs = _concat_dicts(
         {
             "deps": attr.label_list(
+                aspects = [distinfo_aspect],
                 doc = """\
 Targets to be included in the distribution.
 
