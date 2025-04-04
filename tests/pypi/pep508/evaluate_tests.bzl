@@ -14,6 +14,7 @@
 """Tests for construction of Python version matching config settings."""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("//python/private/pypi:pep508_env.bzl", pep508_env = "env")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:pep508_evaluate.bzl", "evaluate", "tokenize")  # buildifier: disable=bzl-visibility
 
 _tests = []
@@ -233,6 +234,35 @@ def _evaluate_partial_only_extra(env):
         env.expect.that_bool(got).equals(want)
 
 _tests.append(_evaluate_partial_only_extra)
+
+def _evaluate_with_aliases(env):
+    # When
+    for target_platform, tests in {
+        # buildifier: @unsorted-dict-items
+        "osx_aarch64": {
+            "platform_system == 'Darwin' and platform_machine == 'arm64'": True,
+            "platform_system == 'Darwin' and platform_machine == 'aarch64'": True,
+            "platform_system == 'Darwin' and platform_machine == 'amd64'": False,
+        },
+        "osx_x86_64": {
+            "platform_system == 'Darwin' and platform_machine == 'amd64'": True,
+            "platform_system == 'Darwin' and platform_machine == 'x86_64'": True,
+        },
+        "osx_x86_32": {
+            "platform_system == 'Darwin' and platform_machine == 'i386'": True,
+            "platform_system == 'Darwin' and platform_machine == 'i686'": True,
+            "platform_system == 'Darwin' and platform_machine == 'x86_32'": True,
+            "platform_system == 'Darwin' and platform_machine == 'x86_64'": False,
+        },
+    }.items():  # buildifier: @unsorted-dict-items
+        for input, want in tests.items():
+            got = evaluate(
+                input,
+                env = pep508_env(target_platform),
+            )
+            env.expect.that_bool(got).equals(want)
+
+_tests.append(_evaluate_with_aliases)
 
 def evaluate_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(

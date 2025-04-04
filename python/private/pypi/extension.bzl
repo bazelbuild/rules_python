@@ -32,6 +32,7 @@ load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_config_setting.bzl", "whl_config_setting")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "pypi_repo_name", "whl_repo_name")
+load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 def _major_minor_version(version):
     version = semver(version)
@@ -278,9 +279,18 @@ def _whl_repos(*, requirement, whl_library_args, download_only, netrc, auth_patt
 
         # Pure python wheels or sdists may need to have a platform here
         target_platforms = None
-        if distribution.filename.endswith("-any.whl") or not distribution.filename.endswith(".whl"):
-            if multiple_requirements_for_whl:
-                target_platforms = requirement.target_platforms
+        if distribution.filename.endswith(".whl") and not distribution.filename.endswith("-any.whl"):
+            parsed_whl = parse_whl_name(distribution.filename)
+            whl_platforms = whl_target_platforms(
+                platform_tag = parsed_whl.platform_tag,
+            )
+            args["experimental_target_platforms"] = [
+                p
+                for p in requirement.target_platforms
+                if [None for wp in whl_platforms if p.endswith(wp.target_platform)]
+            ]
+        elif multiple_requirements_for_whl:
+            target_platforms = requirement.target_platforms
 
         repo_name = whl_repo_name(
             distribution.filename,
@@ -449,13 +459,21 @@ You cannot use both the additive_build_content and additive_build_content_file a
             get_index_urls = None
             if pip_attr.experimental_index_url:
                 is_reproducible = False
+                skip_sources = [
+                    normalize_name(s)
+                    for s in pip_attr.simpleapi_skip
+                ]
                 get_index_urls = lambda ctx, distributions: simpleapi_download(
                     ctx,
                     attr = struct(
                         index_url = pip_attr.experimental_index_url,
                         extra_index_urls = pip_attr.experimental_extra_index_urls or [],
                         index_url_overrides = pip_attr.experimental_index_url_overrides or {},
-                        sources = distributions,
+                        sources = [
+                            d
+                            for d in distributions
+                            if normalize_name(d) not in skip_sources
+                        ],
                         envsubst = pip_attr.envsubst,
                         # Auth related info
                         netrc = pip_attr.netrc,
@@ -672,6 +690,11 @@ This is equivalent to `--index-url` `pip` option.
 If {attr}`download_only` is set, then `sdist` archives will be discarded and `pip.parse` will
 operate in wheel-only mode.
 :::
+
+:::{versionchanged} VERSION_NEXT_FEATURE
+Index metadata will be used to deduct `sha256` values for packages even if the
+`sha256` values are not present in the requirements.txt lock file.
+:::
 """,
         ),
         "experimental_index_url_overrides": attr.string_dict(
@@ -739,6 +762,18 @@ The Python version the dependencies are targetting, in Major.Minor format
 If an interpreter isn't explicitly provided (using `python_interpreter` or
 `python_interpreter_target`), then the version specified here must have
 a corresponding `python.toolchain()` configured.
+""",
+        ),
+        "simpleapi_skip": attr.string_list(
+            doc = """\
+The list of packages to skip fetching metadata for from SimpleAPI index. You should
+normally not need this attribute, but in case you do, please report this as a bug
+to `rules_python` and use this attribute until the bug is fixed.
+
+EXPERIMENTAL: this may be removed without notice.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
 """,
         ),
         "whl_modifications": attr.label_keyed_string_dict(

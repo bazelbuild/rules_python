@@ -53,15 +53,52 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing changed.
+* (toolchain) The `exec` configuration toolchain now has the forwarded
+  `exec_interpreter` now also forwards the `ToolchainInfo` provider. This is
+  for increased compatibility with the `RBE` setups where access to the `exec`
+  configuration interpreter is needed.
+* (toolchains) Use the latest astral-sh toolchain release [20250317] for Python versions:
+    * 3.9.21
+    * 3.10.16
+    * 3.11.11
+    * 3.12.9
+    * 3.13.2
+* (pypi) Use `xcrun xcodebuild --showsdks` to find XCode root.
+* (pypi) The `bzlmod` extension will now generate smaller lock files for  when
+  using `experimental_index_url`.
+* (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
+  reached EOL. If users still need other versions of the `3.8` interpreter, please supply
+  the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+
+[20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing fixed.
+* (runfiles) ({obj}`--bootstrap_impl=script`) Follow symlinks when searching for runfiles.
+* (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
+  repositories on Windows. Fixes
+  [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
 
 {#v0-0-0-added}
 ### Added
-* Nothing added.
+* (pypi) From now on `sha256` values in the `requirements.txt` is no longer
+  mandatory when enabling {attr}`pip.parse.experimental_index_url` feature.
+  This means that `rules_python` will attempt to fetch metadata for all
+  packages through SimpleAPI unless they are pulled through direct URL
+  references. Fixes [#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
+  In case you see issues with `rules_python` being too eager to fetch the SimpleAPI
+  metadata, you can use the newly added {attr}`pip.parse.experimental_skip_sources`
+  to skip metadata fetching for those packages.
+* (uv) A {obj}`lock` rule that is the replacement for the
+  {obj}`compile_pip_requirements`. This may still have rough corners
+  so please report issues with it in the
+  [#1975](https://github.com/bazel-contrib/rules_python/issues/1975).
+  Main highlights - the locking can be done within a build action or outside
+  it, there is no more automatic `test` target (but it can be added on the user
+  side by using `native_test`). For customizing the `uv` version that is used,
+  please check the {obj}`uv.configure` tag class.
+* Add support for riscv64 linux platform.
+* (toolchains) Add python 3.13.2 and 3.12.9 toolchains
 
 {#v0-0-0-removed}
 ### Removed
@@ -101,6 +138,9 @@ Unreleased changes template.
 
 {#v1-3-0-added}
 ### Added
+* (python) {attr}`python.defaults` has been added to allow users to
+  set the default python version in the root module by reading the
+  default version number from a file or an environment variable.
 * {obj}`//python/bin:python`: convenience target for directly running an
   interpreter. {obj}`--//python/bin:python_src` can be used to specify a
   binary whose interpreter to use.

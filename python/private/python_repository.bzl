@@ -127,7 +127,9 @@ def _python_repository_impl(rctx):
     # pycs being generated at runtime:
     # * The pycs are not deterministic (they contain timestamps)
     # * Multiple processes trying to write the same pycs can result in errors.
-    if "windows" not in platform:
+    #
+    # Note, when on Windows the `chmod` may not work
+    if "windows" not in platform and "windows" != repo_utils.get_platforms_os_name(rctx):
         repo_utils.execute_checked(
             rctx,
             op = "python_repository.MakeReadOnly",

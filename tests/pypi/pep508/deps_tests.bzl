@@ -14,7 +14,7 @@
 """Tests for construction of Python version matching config settings."""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private/pypi:pep508_env.bzl", "deps")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:pep508_deps.bzl", "deps")  # buildifier: disable=bzl-visibility
 
 _tests = []
 

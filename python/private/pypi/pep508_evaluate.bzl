@@ -56,6 +56,7 @@ _NON_VERSION_VAR_NAMES = [
 _AND = "and"
 _OR = "or"
 _NOT = "not"
+_ENV_ALIASES = "_aliases"
 
 def tokenize(marker):
     """Tokenize the input string.
@@ -127,9 +128,9 @@ def evaluate(marker, *, env, strict = True, **kwargs):
     """Evaluate the marker against a given env.
 
     Args:
-        marker: {type}`str`: The string marker to evaluate.
-        env: {type}`dict`: The environment to evaluate the marker against.
-        strict: {type}`bool`: A setting to not fail on missing values in the env.
+        marker: {type}`str` The string marker to evaluate.
+        env: {type}`dict` The environment to evaluate the marker against.
+        strict: {type}`bool` A setting to not fail on missing values in the env.
         **kwargs: Extra kwargs to be passed to the expression evaluator.
 
     Returns:
@@ -287,7 +288,11 @@ def marker_expr(left, op, right, *, env, strict = True):
         strict: {type}`bool` if false, only evaluates the values that are present
             in the environment, otherwise returns the original expression.
         env: {type}`dict[str, str]` the `env` to substitute `env` identifiers in
-            the `<left> <op> <right>` expression.
+            the `<left> <op> <right>` expression. Note, if `env` has a key
+            "_aliases", then we will do normalization so that we can ensure
+            that e.g. `aarch64` evaluation in the `platform_machine` works the
+            same way irrespective if the marker uses `arm64` or `aarch64` value
+            in the expression.
 
     Returns:
         {type}`bool` if the expression evaluation result or {type}`str` if the expression
@@ -300,10 +305,23 @@ def marker_expr(left, op, right, *, env, strict = True):
         var_name = right
         right = env[right]
         left = left.strip("\"")
+
+        if _ENV_ALIASES in env:
+            # On Windows, Linux, OSX different values may mean the same hardware,
+            # e.g. Python on Windows returns arm64, but on Linux returns aarch64.
+            # e.g. Python on Windows returns amd64, but on Linux returns x86_64.
+            #
+            # The following normalizes the values
+            left = env.get(_ENV_ALIASES, {}).get(var_name, {}).get(left, left)
+
     else:
         var_name = left
         left = env[left]
         right = right.strip("\"")
+
+        if _ENV_ALIASES in env:
+            # See the note above on normalization
+            right = env.get(_ENV_ALIASES, {}).get(var_name, {}).get(right, right)
 
     if var_name in _NON_VERSION_VAR_NAMES:
         return _env_expr(left, op, right)
