@@ -709,7 +709,7 @@ pip_fallback==0.0.1
                     struct(
                         config_setting = None,
                         filename = "simple-0.0.1.tar.gz",
-                        target_platforms = None,
+                        target_platforms = ("cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"),
                         version = "3.15",
                     ),
                 ],
@@ -766,7 +766,7 @@ pip_fallback==0.0.1
         },
         "pypi_315_simple_sdist_deadbeef": {
             "dep_template": "@pypi//{name}:{target}",
-            "experimental_target_platforms": [],
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
             "extra_pip_args": ["--extra-args-for-sdist-building"],
             "filename": "simple-0.0.1.tar.gz",
             "python_interpreter_target": "unit_test_interpreter_target",

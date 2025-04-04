@@ -227,6 +227,7 @@ def parse_requirements(
                         sdist = sdist,
                         platforms = [],
                     )
+                sdists_by_sha[sha].platforms.extend(target_platforms)
             
                 if len(whls) == 0:
                     continue
