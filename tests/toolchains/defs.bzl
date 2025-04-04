@@ -16,6 +16,7 @@
 
 load("@pythons_hub//:versions.bzl", "DEFAULT_PYTHON_VERSION", "MINOR_MAPPING")
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:full_version.bzl", "full_version")  # buildifier: disable=bzl-visibility
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
@@ -57,7 +58,8 @@ def define_toolchain_tests(name):
     # Lastly, if we don't provide any version to the transition, we should
     # get the default version
     default_version = full_version(
-        version = DEFAULT_PYTHON_VERSION,
+        # note, this hard codes the version that is in //:WORKSPACE
+        version = DEFAULT_PYTHON_VERSION if BZLMOD_ENABLED else "3.11",
         minor_mapping = MINOR_MAPPING,
     )
     default_version_tests = {
