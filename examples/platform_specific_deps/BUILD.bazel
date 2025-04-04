@@ -1,0 +1,22 @@
+load("@pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_uv//uv:pip.bzl", "pip_compile")
+
+pip_compile(
+    name = "generate_requirements",
+    extra_args = [
+        "--index-strategy=unsafe-best-match",  # NOTE: required because torch's index contains requests and that is preferred over pypi
+        "--universal",
+    ],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements.txt",
+)
+
+py_test(
+    name = "test",
+    srcs = ["test_load.py"],
+    main = "test_load.py",
+    deps = [
+        requirement("torch"),
+    ],
+)
