@@ -248,10 +248,10 @@ def parse_modules(*, module_ctx, _fail = fail):
     # "3.X"` transitions work as expected.
     minor_version_toolchains = []
     other_toolchains = []
-    minor_mapping = config.minor_mapping
+    minor_mapping = list(config.minor_mapping.values())
     for t in toolchains:
         # TODO @aignas 2025-04-04: I am getting lost here when unit testing
-        if t.python_version == minor_mapping.get(t.python_version):
+        if config.minor_mapping.get(t.python_version, t.python_version) in minor_mapping:
             minor_version_toolchains.append(t)
         else:
             other_toolchains.append(t)
