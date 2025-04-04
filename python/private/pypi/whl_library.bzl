@@ -24,6 +24,7 @@ load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel"
 load(":parse_requirements.bzl", "host_platform")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
+load(":pep508_env.bzl", "deps")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
@@ -353,22 +354,13 @@ def _whl_library_impl(rctx):
         )
         entry_points[entry_point_without_py] = entry_point_script_name
 
-    build_file_contents = generate_whl_library_build_bazel(
-        whl_name = whl_path.basename,
-        # TODO @aignas 2025-03-23: load the dep_template from the hub repository
-        dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
-        # TODO @aignas 2025-03-23: store the `group_name` per package in the hub repo
-        group_name = rctx.attr.group_name,
-        group_deps = rctx.attr.group_deps,
-        # TODO @aignas 2025-03-23: store the pip_data_exclude in the hub repo.
-        data_exclude = rctx.attr.pip_data_exclude,
-        tags = [
-            "pypi_name=" + metadata["name"],
-            "pypi_version=" + metadata["version"],
-        ],
-        entry_points = entry_points,
-        # TODO @aignas 2025-03-23: store the annotation in the hub repo.
-        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+    # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in
+    # the analysis phase. This means that we need to get the target platform abi
+    # from the python version/versions we are setting the package up for. We can
+    # potentially get this from the python toolchain interpreter.
+    package_deps = deps(
+        # TODO @aignas 2025-02-24:  get the data here by parsing the METADATA
+        # file manually without involving python interpreter at all.
         name = metadata["name"],
         requires_dist = metadata["requires_dist"],
         # target the host platform if the target platform is not specified in the rule.
@@ -388,6 +380,28 @@ def _whl_library_impl(rctx):
         # TARGET_PYTHON_VERSIONS list so that we can correctly calculate the
         # deps. This would be again, internal only stuff.
         host_python_version = metadata["python_version"],
+    )
+
+    build_file_contents = generate_whl_library_build_bazel(
+        name = whl_path.basename,
+        # TODO @aignas 2025-03-23: load the dep_template from the hub repository
+        dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
+        # TODO @aignas 2025-03-23: replace `dependencies` and
+        # `dependencies_by_platform` with `requires_dist`.
+        dependencies = package_deps.deps,
+        dependencies_by_platform = package_deps.deps_select,
+        # TODO @aignas 2025-03-23: store the `group_name` per package in the hub repo
+        group_name = rctx.attr.group_name,
+        group_deps = rctx.attr.group_deps,
+        # TODO @aignas 2025-03-23: store the pip_data_exclude in the hub repo.
+        data_exclude = rctx.attr.pip_data_exclude,
+        tags = [
+            "pypi_name=" + metadata["name"],
+            "pypi_version=" + metadata["version"],
+        ],
+        entry_points = entry_points,
+        # TODO @aignas 2025-03-23: store the annotation in the hub repo.
+        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
     )
     rctx.file("BUILD.bazel", build_file_contents)
 

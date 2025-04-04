@@ -24,10 +24,7 @@ _RENDER = {
     "dependencies": render.list,
     "dependencies_by_platform": lambda x: render.dict(x, value_repr = render.list),
     "entry_points": render.dict,
-    "extras": render.list,
     "group_deps": render.list,
-    "platforms": render.list,
-    "requires_dist": render.list,
     "srcs_exclude": render.list,
     "tags": render.list,
 }

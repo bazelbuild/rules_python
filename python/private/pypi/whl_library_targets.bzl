@@ -29,12 +29,10 @@ load(
     "WHEEL_FILE_IMPL_LABEL",
     "WHEEL_FILE_PUBLIC_LABEL",
 )
-load(":pep508_env.bzl", "deps")
 
 def whl_library_targets(
         *,
         name,
-        whl_name,
         dep_template,
         data_exclude = [],
         srcs_exclude = [],
@@ -43,16 +41,14 @@ def whl_library_targets(
             DIST_INFO_LABEL: ["site-packages/*.dist-info/**"],
             DATA_LABEL: ["data/**"],
         },
+        dependencies = [],
+        dependencies_by_platform = {},
         group_deps = [],
         group_name = "",
         data = [],
         copy_files = {},
         copy_executables = {},
         entry_points = {},
-        requires_dist = [],
-        platforms,
-        extras = [],
-        host_python_version,
         native = native,
         rules = struct(
             copy_file = copy_file,
@@ -62,12 +58,14 @@ def whl_library_targets(
     """Create all of the whl_library targets.
 
     Args:
-        name: {type}`str` the name of the distribution.
-        whl_name: {type}`str` The file to match for including it into the `whl`
+        name: {type}`str` The file to match for including it into the `whl`
             filegroup. This may be also parsed to generate extra metadata.
         dep_template: {type}`str` The dep_template to use for dependency
             interpolation.
         tags: {type}`list[str]` The tags set on the `py_library`.
+        dependencies: {type}`list[str]` A list of dependencies.
+        dependencies_by_platform: {type}`dict[str, list[str]]` A list of
+            dependencies by platform key.
         filegroups: {type}`dict[str, list[str]]` A dictionary of the target
             names and the glob matches.
         group_name: {type}`str` name of the dependency group (if any) which
@@ -89,29 +87,9 @@ def whl_library_targets(
         data: {type}`list[str]` A list of labels to include as part of the `data` attribute in `py_library`.
         entry_points: {type}`dict[str, str]` The mapping between the script
             name and the python file to use. DEPRECATED.
-        requires_dist: TODO
-        platforms: TODO
-        extras: TODO
-        host_python_version: TODO
         native: {type}`native` The native struct for overriding in tests.
         rules: {type}`struct` A struct with references to rules for creating targets.
     """
-
-    # TODO @aignas 2025-02-24: move this to pkg_aliases layer to have this in
-    # the analysis phase. This means that we need to get the target platform abi
-    # from the python version/versions we are setting the package up for. We can
-    # potentially get this from the python toolchain interpreter.
-    package_deps = deps(
-        name = name,
-        requires_dist = requires_dist,
-        platforms = platforms,
-        extras = extras,
-        host_python_version = host_python_version,
-    )
-
-    dependencies = package_deps.deps
-    dependencies_by_platform = package_deps.deps_select
-
     dependencies = sorted([normalize_name(d) for d in dependencies])
     dependencies_by_platform = {
         platform: sorted([normalize_name(d) for d in deps])
@@ -225,7 +203,7 @@ def whl_library_targets(
     if hasattr(native, "filegroup"):
         native.filegroup(
             name = whl_file_label,
-            srcs = [whl_name],
+            srcs = [name],
             data = _deps(
                 deps = dependencies,
                 deps_by_platform = dependencies_by_platform,
