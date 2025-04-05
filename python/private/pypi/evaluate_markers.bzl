@@ -14,8 +14,9 @@
 
 """A simple function that evaluates markers using a python interpreter."""
 
-load(":pep508_env.bzl", "env", _platform_from_str = "platform_from_str")
+load(":pep508_env.bzl", "env")
 load(":pep508_evaluate.bzl", "evaluate")
+load(":pep508_platform.bzl", "platform_from_str")
 load(":pep508_requirement.bzl", "requirement")
 
 def evaluate_markers(requirements):
@@ -31,7 +32,7 @@ def evaluate_markers(requirements):
     for req_string, platforms in requirements.items():
         req = requirement(req_string)
         for platform in platforms:
-            if evaluate(req.marker, env = env(_platform_from_str(platform, None))):
+            if evaluate(req.marker, env = env(platform_from_str(platform, None))):
                 ret.setdefault(req_string, []).append(platform)
 
     return ret

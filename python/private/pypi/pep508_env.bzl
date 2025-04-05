@@ -15,6 +15,8 @@
 """This module is for implementing PEP508 environment definition.
 """
 
+load(":pep508_platform.bzl", "platform_from_str")
+
 # See https://stackoverflow.com/a/45125525
 _platform_machine_aliases = {
     # These pairs mean the same hardware, but different values may be used
@@ -116,31 +118,3 @@ def env(target_platform, *, extra = None):
             "platform_machine": _platform_machine_aliases,
         },
     }
-
-def platform(*, abi = None, os = None, arch = None):
-    return struct(
-        abi = abi,
-        os = os,
-        arch = arch,
-    )
-
-def platform_from_str(p, python_version):
-    """Return a platform from a string.
-
-    Args:
-        p: {type}`str` the actual string.
-        python_version: {type}`str` the python version to add to platform if needed.
-
-    Returns:
-        A struct that is returned by the `_platform` function.
-    """
-    if p.startswith("cp"):
-        abi, _, p = p.partition("_")
-    elif python_version:
-        major, _, tail = python_version.partition(".")
-        abi = "cp{}{}".format(major, tail)
-    else:
-        abi = None
-
-    os, _, arch = p.partition("_")
-    return platform(abi = abi, os = os or None, arch = arch or None)

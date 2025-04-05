@@ -16,8 +16,9 @@
 """
 
 load("//python/private:normalize_name.bzl", "normalize_name")
-load(":pep508_env.bzl", "env", "platform", "platform_from_str")
+load(":pep508_env.bzl", "env")
 load(":pep508_evaluate.bzl", "evaluate")
+load(":pep508_platform.bzl", "platform", "platform_from_str")
 load(":pep508_requirement.bzl", "requirement")
 
 _ALL_OS_VALUES = [
