@@ -310,7 +310,7 @@ def _py_wheel_impl(ctx):
 
     filename_segments = [
         _escape_filename_distribution_name(ctx.attr.distribution),
-        normalize_pep440(version),
+        _escape_filename_segment(normalize_pep440(version)),
         _escape_filename_segment(python_tag),
         _escape_filename_segment(abi),
         _escape_filename_segment(ctx.attr.platform),
