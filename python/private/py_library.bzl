@@ -295,7 +295,6 @@ def _get_site_packages_symlinks(ctx):
 def _repo_relative_short_path(short_path):
     # Convert `../+pypi+foo/some/file.py` to `some/file.py`
     if short_path.startswith("../"):
-        fail(short_path)
         return short_path[3:].partition("/")[2]
     else:
         return short_path
