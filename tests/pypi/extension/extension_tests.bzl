@@ -662,6 +662,8 @@ some_pkg==0.0.1 @ example-direct.org/some_pkg-0.0.1-py3-none-any.whl \
 direct_without_sha==0.0.1 @ example-direct.org/direct_without_sha-0.0.1-py3-none-any.whl
 some_other_pkg==0.0.1
 pip_fallback==0.0.1
+direct_sdist_without_sha @ some-archive/any-name.tar.gz
+git_dep @ git+https://git.server/repo/project@deadbeefdeadbeef
 """,
             }[x],
         ),
@@ -672,15 +674,43 @@ pip_fallback==0.0.1
     )
 
     pypi.is_reproducible().equals(False)
-    pypi.exposed_packages().contains_exactly({"pypi": ["direct_without_sha", "pip_fallback", "simple", "some_other_pkg", "some_pkg"]})
+    pypi.exposed_packages().contains_exactly({"pypi": [
+        "direct_sdist_without_sha",
+        "direct_without_sha",
+        "git_dep",
+        "pip_fallback",
+        "simple",
+        "some_other_pkg",
+        "some_pkg",
+    ]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({
         "pypi": {
+            "direct_sdist_without_sha": {
+                "pypi_315_any_name": [
+                    struct(
+                        config_setting = None,
+                        filename = "any-name.tar.gz",
+                        target_platforms = None,
+                        version = "3.15",
+                    ),
+                ],
+            },
             "direct_without_sha": {
                 "pypi_315_direct_without_sha_0_0_1_py3_none_any": [
                     struct(
                         config_setting = None,
                         filename = "direct_without_sha-0.0.1-py3-none-any.whl",
+                        target_platforms = None,
+                        version = "3.15",
+                    ),
+                ],
+            },
+            "git_dep": {
+                "pypi_315_git_dep": [
+                    struct(
+                        config_setting = None,
+                        filename = None,
                         target_platforms = None,
                         version = "3.15",
                     ),
@@ -737,6 +767,17 @@ pip_fallback==0.0.1
         },
     })
     pypi.whl_libraries().contains_exactly({
+        "pypi_315_any_name": {
+            "dep_template": "@pypi//{name}:{target}",
+            "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
+            "extra_pip_args": ["--extra-args-for-sdist-building"],
+            "filename": "any-name.tar.gz",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "direct_sdist_without_sha @ some-archive/any-name.tar.gz",
+            "sha256": "",
+            "urls": ["some-archive/any-name.tar.gz"],
+        },
         "pypi_315_direct_without_sha_0_0_1_py3_none_any": {
             "dep_template": "@pypi//{name}:{target}",
             "experimental_target_platforms": ["cp315_linux_aarch64", "cp315_linux_arm", "cp315_linux_ppc", "cp315_linux_s390x", "cp315_linux_x86_64", "cp315_osx_aarch64", "cp315_osx_x86_64", "cp315_windows_x86_64"],
@@ -746,6 +787,13 @@ pip_fallback==0.0.1
             "requirement": "direct_without_sha==0.0.1 @ example-direct.org/direct_without_sha-0.0.1-py3-none-any.whl",
             "sha256": "",
             "urls": ["example-direct.org/direct_without_sha-0.0.1-py3-none-any.whl"],
+        },
+        "pypi_315_git_dep": {
+            "dep_template": "@pypi//{name}:{target}",
+            "extra_pip_args": ["--extra-args-for-sdist-building"],
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "git_dep @ git+https://git.server/repo/project@deadbeefdeadbeef",
         },
         "pypi_315_pip_fallback": {
             "dep_template": "@pypi//{name}:{target}",
