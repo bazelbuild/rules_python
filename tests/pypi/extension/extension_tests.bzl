@@ -667,7 +667,6 @@ git_dep @ git+https://git.server/repo/project@deadbeefdeadbeef
         simpleapi_download = mocksimpleapi_download,
     )
 
-
     pypi.exposed_packages().contains_exactly({"pypi": [
         "direct_sdist_without_sha",
         "direct_without_sha",
