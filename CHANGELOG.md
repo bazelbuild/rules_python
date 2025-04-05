@@ -78,6 +78,10 @@ Unreleased changes template.
 * (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
   repositories on Windows. Fixes
   [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
+* (logging) Allow repo rule logging level to be set to `FAIL` via the `RULES_PYTHON_REPO_DEBUG_VERBOSITY` environment variable.
+* (toolchains) The toolchain matching is has been fixed when writing
+  transitions transitioning on the `python_version` flag.
+  Fixes [#2685](https://github.com/bazel-contrib/rules_python/issues/2685).
 
 {#v0-0-0-added}
 ### Added
