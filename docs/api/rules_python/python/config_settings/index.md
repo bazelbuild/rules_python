@@ -46,7 +46,7 @@ of builtin, known versions.
 
 If you need to match a version that isn't present, then you have two options:
 1. Manually define a `config_setting` and have it match {obj}`--python_version`
-   or {ob}`python_version_major_minor`. This works best when you don't control the
+   or {obj}`python_version_major_minor`. This works best when you don't control the
    root module, or don't want to rely on the MODULE.bazel configuration. Such
    a config settings would look like:
    ```

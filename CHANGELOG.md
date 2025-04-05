@@ -68,7 +68,7 @@ Unreleased changes template.
   using `experimental_index_url`.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
-  the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+  the URLs manually {bzl:obj}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
 * (pypi) The PyPI extension will no longer write the lock file entries as the
   extension has been marked reproducible.
   Fixes [#2434](https://github.com/bazel-contrib/rules_python/issues/2434).
