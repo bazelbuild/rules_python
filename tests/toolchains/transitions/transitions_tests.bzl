@@ -116,6 +116,10 @@ def _test_transitions(*, name, tests, skip = False):
 def _test_transition_impl(env, targets):
     # Check that the forwarded version from the PyRuntimeInfo is correct
     for target in dir(targets):
+        if not target.startswith("python"):
+            # Skip other attributes that might be not the ones we set (e.g. to_json, to_proto).
+            continue
+
         test_info = env.expect.that_target(getattr(targets, target)).provider(
             TestInfo,
             factory = lambda v, meta: v,
