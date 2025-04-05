@@ -78,9 +78,21 @@ Unreleased changes template.
 * (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
   repositories on Windows. Fixes
   [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
+* (logging) Allow repo rule logging level to be set to `FAIL` via the `RULES_PYTHON_REPO_DEBUG_VERBOSITY` environment variable.
+* (toolchains) The toolchain matching is has been fixed when writing
+  transitions transitioning on the `python_version` flag.
+  Fixes [#2685](https://github.com/bazel-contrib/rules_python/issues/2685).
 
 {#v0-0-0-added}
 ### Added
+* (pypi) From now on `sha256` values in the `requirements.txt` is no longer
+  mandatory when enabling {attr}`pip.parse.experimental_index_url` feature.
+  This means that `rules_python` will attempt to fetch metadata for all
+  packages through SimpleAPI unless they are pulled through direct URL
+  references. Fixes [#2023](https://github.com/bazel-contrib/rules_python/issues/2023).
+  In case you see issues with `rules_python` being too eager to fetch the SimpleAPI
+  metadata, you can use the newly added {attr}`pip.parse.experimental_skip_sources`
+  to skip metadata fetching for those packages.
 * (uv) A {obj}`lock` rule that is the replacement for the
   {obj}`compile_pip_requirements`. This may still have rough corners
   so please report issues with it in the

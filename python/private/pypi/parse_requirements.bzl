@@ -184,7 +184,7 @@ def parse_requirements(
                 req.distribution: None
                 for reqs in requirements_by_platform.values()
                 for req in reqs.values()
-                if req.srcs.shas
+                if not req.srcs.url
             }),
         )
 
@@ -315,10 +315,15 @@ def _add_dists(*, requirement, index_urls, logger = None):
     whls = []
     sdist = None
 
-    # TODO @aignas 2024-05-22: it is in theory possible to add all
-    # requirements by version instead of by sha256. This may be useful
-    # for some projects.
-    for sha256 in requirement.srcs.shas:
+    # First try to find distributions by SHA256 if provided
+    shas_to_use = requirement.srcs.shas
+    if not shas_to_use:
+        version = requirement.srcs.version
+        shas_to_use = index_urls.sha256s_by_version.get(version, [])
+        if logger:
+            logger.warn(lambda: "requirement file has been generated without hashes, will use all hashes for the given version {} that could find on the index:\n    {}".format(version, shas_to_use))
+
+    for sha256 in shas_to_use:
         # For now if the artifact is marked as yanked we just ignore it.
         #
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
