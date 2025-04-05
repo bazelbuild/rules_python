@@ -69,6 +69,10 @@ Unreleased changes template.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
   the URLs manually {bzl:obj}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+* (toolchains) Previously [#2636](https://github.com/bazel-contrib/rules_python/pull/2636)
+  changed the semantics of `ignore_root_user_error` from "ignore" to "warning". This is now
+  flipped back to ignoring the issue, and will only emit a warning when the attribute is set
+  `False`.  
 * (pypi) The PyPI extension will no longer write the lock file entries as the
   extension has been marked reproducible.
   Fixes [#2434](https://github.com/bazel-contrib/rules_python/issues/2434).
