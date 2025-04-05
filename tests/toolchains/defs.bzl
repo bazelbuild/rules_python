@@ -44,28 +44,33 @@ def define_toolchain_tests(name):
         tests = exact_version_tests.values(),
     )
 
-    # Then we expect to get the version in the MINOR_MAPPING if we provide
-    # the version from the MINOR_MAPPING
-    minor_mapping_tests = {
-        (minor, full): "python_{}_test".format(minor)
-        for minor, full in MINOR_MAPPING.items()
-    }
-    native.test_suite(
-        name = "minor_mapping_tests",
-        tests = minor_mapping_tests.values(),
-    )
+    if BZLMOD_ENABLED:
+        # Then we expect to get the version in the MINOR_MAPPING if we provide
+        # the version from the MINOR_MAPPING
+        minor_mapping_tests = {
+            (minor, full): "python_{}_test".format(minor)
+            for minor, full in MINOR_MAPPING.items()
+        }
+        native.test_suite(
+            name = "minor_mapping_tests",
+            tests = minor_mapping_tests.values(),
+        )
 
-    # Lastly, if we don't provide any version to the transition, we should
-    # get the default version
-    default_version = full_version(
-        # note, this hard codes the version that is in //:WORKSPACE
-        version = DEFAULT_PYTHON_VERSION if BZLMOD_ENABLED else "3.11",
-        minor_mapping = MINOR_MAPPING,
-    )
-    default_version_tests = {
-        (None, default_version): "default_version_test",
-    }
-    tests = exact_version_tests | minor_mapping_tests | default_version_tests
+        # Lastly, if we don't provide any version to the transition, we should
+        # get the default version
+        default_version = full_version(
+            version = DEFAULT_PYTHON_VERSION,
+            minor_mapping = MINOR_MAPPING,
+        )
+        default_version_tests = {
+            (None, default_version): "default_version_test",
+        }
+        tests = exact_version_tests | minor_mapping_tests | default_version_tests
+    else:
+        # Outside bzlmod the default version and the minor mapping tests do not
+        # make sense because the user loading things in the WORKSPACE ultimately defines
+        # the matching order.
+        tests = exact_version_tests
 
     for (input_python_version, expect_python_version), test_name in tests.items():
         meta = TOOL_VERSIONS[expect_python_version]
