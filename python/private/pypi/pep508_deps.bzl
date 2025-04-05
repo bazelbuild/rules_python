@@ -111,7 +111,7 @@ def _platform_str(self):
 
     minor_version = self.abi[3:]
     if self.arch == None and self.os == None:
-        return "@//python/config_settings:is_python_3.{}".format(minor_version)
+        return str(Label("//python/config_settings:is_python_3.{}".format(minor_version)))
 
     return "cp3{}_{}_{}".format(
         minor_version,

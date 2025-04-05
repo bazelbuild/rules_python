@@ -15,7 +15,7 @@
 """This module is for implementing PEP508 environment definition.
 """
 
-# See https://stackoverflow.com/questions/45125516/possible-values-for-uname-m
+# See https://stackoverflow.com/a/45125525
 _platform_machine_aliases = {
     # These pairs mean the same hardware, but different values may be used
     # on different host platforms.
@@ -24,13 +24,41 @@ _platform_machine_aliases = {
     "i386": "x86_32",
     "i686": "x86_32",
 }
+
+# Platform system returns results from the `uname` call.
 _platform_system_values = {
     "linux": "Linux",
     "osx": "Darwin",
     "windows": "Windows",
 }
+
+# The copy of SO [answer](https://stackoverflow.com/a/13874620) containing
+# all of the platforms:
+# ┍━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━┑
+# │ System              │ Value               │
+# ┝━━━━━━━━━━━━━━━━━━━━━┿━━━━━━━━━━━━━━━━━━━━━┥
+# │ Linux               │ linux or linux2 (*) │
+# │ Windows             │ win32               │
+# │ Windows/Cygwin      │ cygwin              │
+# │ Windows/MSYS2       │ msys                │
+# │ Mac OS X            │ darwin              │
+# │ OS/2                │ os2                 │
+# │ OS/2 EMX            │ os2emx              │
+# │ RiscOS              │ riscos              │
+# │ AtheOS              │ atheos              │
+# │ FreeBSD 7           │ freebsd7            │
+# │ FreeBSD 8           │ freebsd8            │
+# │ FreeBSD N           │ freebsdN            │
+# │ OpenBSD 6           │ openbsd6            │
+# │ AIX                 │ aix (**)            │
+# ┕━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━┙
+#
+# (*) Prior to Python 3.3, the value for any Linux version is always linux2; after, it is linux.
+# (**) Prior Python 3.8 could also be aix5 or aix7; use sys.platform.startswith()
+#
+# We are using only the subset that we actually support.
 _sys_platform_values = {
-    "linux": "posix",
+    "linux": "linux",
     "osx": "darwin",
     "windows": "win32",
 }

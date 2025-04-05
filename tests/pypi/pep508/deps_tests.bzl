@@ -264,9 +264,9 @@ def _test_can_get_version_select(env):
 
     env.expect.that_collection(got.deps).contains_exactly(["bar"])
     env.expect.that_dict(got.deps_select).contains_exactly({
-        "@//python/config_settings:is_python_3.7": ["baz"],
-        "@//python/config_settings:is_python_3.8": ["baz_new"],
-        "@//python/config_settings:is_python_3.9": ["baz_new"],
+        str(Label("//python/config_settings:is_python_3.7")): ["baz"],
+        str(Label("//python/config_settings:is_python_3.8")): ["baz_new"],
+        str(Label("//python/config_settings:is_python_3.9")): ["baz_new"],
         "@platforms//os:linux": ["baz", "posix_dep"],
         "cp37_linux_anyarch": ["baz", "posix_dep"],
         "cp37_linux_x86_64": ["arch_dep", "baz", "posix_dep"],
@@ -370,7 +370,7 @@ def _test_deps_are_not_duplicated_when_encountering_platform_dep_first(env):
     # I am not sure why. The starlark version behaviour looks more correct.
     env.expect.that_collection(got.deps).contains_exactly([])
     env.expect.that_dict(got.deps_select).contains_exactly({
-        "@//python/config_settings:is_python_3.10": ["bar"],
+        str(Label("//python/config_settings:is_python_3.10")): ["bar"],
         "cp310_linux_aarch64": ["bar"],
         "cp37_linux_aarch64": ["bar"],
         "linux_aarch64": ["bar"],
