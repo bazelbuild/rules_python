@@ -64,7 +64,6 @@ def _parse_modules(env, **kwargs):
     return env.expect.that_struct(
         parse_modules(**kwargs),
         attrs = dict(
-            is_reproducible = subjects.bool,
             exposed_packages = subjects.dict,
             hub_group_map = subjects.dict,
             hub_whl_map = subjects.dict,
@@ -160,7 +159,6 @@ def _test_simple(env):
         },
     )
 
-    pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
@@ -209,7 +207,6 @@ def _test_simple_multiple_requirements(env):
         },
     )
 
-    pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
@@ -278,7 +275,6 @@ torch==2.4.1 ; platform_machine != 'x86_64' \
         },
     )
 
-    pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": ["torch"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
@@ -404,7 +400,6 @@ torch==2.4.1+cpu ; platform_machine == 'x86_64' \
         simpleapi_download = mocksimpleapi_download,
     )
 
-    pypi.is_reproducible().equals(False)
     pypi.exposed_packages().contains_exactly({"pypi": ["torch"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
@@ -535,7 +530,6 @@ simple==0.0.3 \
         },
     )
 
-    pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
@@ -673,7 +667,6 @@ git_dep @ git+https://git.server/repo/project@deadbeefdeadbeef
         simpleapi_download = mocksimpleapi_download,
     )
 
-    pypi.is_reproducible().equals(False)
     pypi.exposed_packages().contains_exactly({"pypi": [
         "direct_sdist_without_sha",
         "direct_without_sha",
