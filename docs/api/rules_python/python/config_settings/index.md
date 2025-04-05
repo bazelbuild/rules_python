@@ -213,6 +213,23 @@ Values:
 ::::
 
 
+::::
+
+:::{flag} venvs_site_packages
+
+Determines if libraries use a site-packages layout for their files.
+
+Note this flag only affects PyPI dependencies of `--bootstrap_impl=script` binaries
+
+:::{include} /_includes/experimental_api.md
+:::
+
+
+Values:
+* `no` (default): Make libraries importable by adding to `sys.path`
+* `yes`: Make libraries importable by creating paths in a binary's site-packages directory.
+::::
+
 ::::{bzl:flag} bootstrap_impl
 Determine how programs implement their startup process.
 
