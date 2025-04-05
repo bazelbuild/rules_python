@@ -16,6 +16,19 @@
 """
 
 def platform(*, abi = None, os = None, arch = None):
+    """platform returns a struct for the platform.
+
+    Args:
+        abi: {type}`str | None` the target ABI, e.g. `"cp39"`.
+        os: {type}`str | None` the target os, e.g. `"linux"`.
+        arch: {type}`str | None` the target CPU, e.g. `"aarch64"`.
+
+    Returns:
+        A struct.
+    """
+
+    # Note, this is used a lot as a key in dictionaries, so it cannot contain
+    # methods.
     return struct(
         abi = abi,
         os = os,
