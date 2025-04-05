@@ -78,6 +78,7 @@ Unreleased changes template.
 * (toolchains) Do not try to run `chmod` when downloading non-windows hermetic toolchain
   repositories on Windows. Fixes
   [#2660](https://github.com/bazel-contrib/rules_python/issues/2660).
+* (logging) Allow repo rule logging level to be set to `FAIL` via the `RULES_PYTHON_REPO_DEBUG_VERBOSITY` environment variable.
 
 {#v0-0-0-added}
 ### Added
