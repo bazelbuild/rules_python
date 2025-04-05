@@ -68,8 +68,14 @@ Unreleased changes template.
   using `experimental_index_url`.
 * (toolchains) Remove all but `3.8.20` versions of the Python `3.8` interpreter who has
   reached EOL. If users still need other versions of the `3.8` interpreter, please supply
-  the URLs manually {bzl:ob}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
-* (toolchains) Previously [#2636](https://github.com/bazel-contrib/rules_python/pull/2636) changed the semantics of `ignore_root_user_error` from "ignore" to "warning". This is now flipped back to ignoring the issue, and will only emit a warning when the attribute is set `False`.
+  the URLs manually {bzl:obj}`python.toolchain` or {bzl:obj}`python_register_toolchains` calls.
+* (toolchains) Previously [#2636](https://github.com/bazel-contrib/rules_python/pull/2636)
+  changed the semantics of `ignore_root_user_error` from "ignore" to "warning". This is now
+  flipped back to ignoring the issue, and will only emit a warning when the attribute is set
+  `False`.  
+* (pypi) The PyPI extension will no longer write the lock file entries as the
+  extension has been marked reproducible.
+  Fixes [#2434](https://github.com/bazel-contrib/rules_python/issues/2434).
 
 [20250317]: https://github.com/astral-sh/python-build-standalone/releases/tag/20250317
 
@@ -83,6 +89,7 @@ Unreleased changes template.
 * (toolchains) The toolchain matching is has been fixed when writing
   transitions transitioning on the `python_version` flag.
   Fixes [#2685](https://github.com/bazel-contrib/rules_python/issues/2685).
+* (toolchains) Run the check on the Python interpreter in isolated mode, to ensure it's not affected by userland environment variables, such as `PYTHONPATH`.
 
 {#v0-0-0-added}
 ### Added
@@ -104,6 +111,10 @@ Unreleased changes template.
   please check the {obj}`uv.configure` tag class.
 * Add support for riscv64 linux platform.
 * (toolchains) Add python 3.13.2 and 3.12.9 toolchains
+* (providers) (experimental) {obj}`PyInfo.site_packages_symlinks` field added to
+  allow specifying links to create within the venv site packages (only
+  applicable with {obj}`--bootstrap_impl=script`)
+  ([#2156](https://github.com/bazelbuild/rules_python/issues/2156)).
 
 {#v0-0-0-removed}
 ### Removed
