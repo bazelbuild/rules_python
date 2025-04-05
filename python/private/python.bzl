@@ -248,8 +248,11 @@ def parse_modules(*, module_ctx, _fail = fail):
     # "3.X"` transitions work as expected.
     minor_version_toolchains = []
     other_toolchains = []
+    minor_mapping = list(config.minor_mapping.values())
     for t in toolchains:
-        if t.python_version in config.minor_mapping:
+        # FIXME @aignas 2025-04-04: How can we unit test that this ordering is
+        # consistent with what would actually work?
+        if config.minor_mapping.get(t.python_version, t.python_version) in minor_mapping:
             minor_version_toolchains.append(t)
         else:
             other_toolchains.append(t)
@@ -258,7 +261,7 @@ def parse_modules(*, module_ctx, _fail = fail):
     return struct(
         config = config,
         debug_info = debug_info,
-        default_python_version = toolchains[-1].python_version,
+        default_python_version = default_toolchain.python_version,
         toolchains = [
             struct(
                 python_version = t.python_version,
