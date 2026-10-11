@@ -23,6 +23,8 @@ pytest_test(
     ],
     shard_count = 2,
     target_compatible_with = SUPPORTS_BZLMOD,
+    # Verify that pytest_test handles select() expressions in deps when
+    # appending default and sharding dependencies.
     deps = select({
         "//conditions:default": [],
     }),
