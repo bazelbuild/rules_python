@@ -15,7 +15,6 @@ runs:
         # downloaded wheels.
         repository-cache: |
           - MODULE.bazel
-          - dev/requirements.txt
           - dev/uv.lock
           - tools/publish/requirements_linux.txt
         bazelrc: |
