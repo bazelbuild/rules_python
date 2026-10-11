@@ -63,7 +63,7 @@ def define_runtime_env_toolchain(name):
         python_version = "PY3",
         visibility = ["//visibility:private"],
         tags = ["manual"],
-        supports_build_time_venv = False,
+        supports_build_time_venv = supports_build_time_venv,
     )
 
     py_runtime_pair(

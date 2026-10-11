@@ -556,6 +556,7 @@ bzl_library(
         ":py_executable_info",
         ":py_info",
         ":py_internal",
+        ":py_runtime_info",
         ":reexports",
         ":rule_builders",
         ":toolchain_types",
