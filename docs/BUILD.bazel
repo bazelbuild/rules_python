@@ -120,6 +120,7 @@ sphinx_stardocs(
         "//python:py_runtime",
         "//python:py_runtime_info",
         "//python:py_test",
+        "//python:pytest_test",
         "//python:repositories",
         "//python/api",
         "//python/api:attr_builders",

@@ -19,6 +19,9 @@ def pytest_test(
         **kwargs):
     """Run pytest tests.
 
+    :::{versionadded} VERSION_NEXT_FEATURE
+    :::
+
     Args:
         name: A unique name for this target.
         srcs: List of source files (test files). These are the files that
@@ -29,12 +32,13 @@ def pytest_test(
         pytest_shard: The pytest-shard target to use. Defaults to
             `@pypi//pytest_shard`.
         pytest_randomly: The pytest-randomly target to use. Defaults to
-            `@pypi//pytest_randomly`.
+            `@pypi//pytest_randomly`. Pass `@rules_python//python:none` or
+            another empty {obj}`py_library` target to disable it.
         python_versions: List of Python versions to test against. If specified,
             a test is created for each version and grouped under a test_suite
             named `name`.
-        **kwargs: Additional arguments passed to {obj}`py_test`. Note that `main` is
-            not a supported argument.
+        **kwargs: Additional arguments passed to {obj}`py_test`. Note that
+            `main` is not a supported argument.
     """
     if python_versions != None:
         _multi_pytest_test(
@@ -110,6 +114,7 @@ def _single_pytest_test(
         pytest_shard = None,
         pytest_randomly = None,
         **kwargs):
+    deps = kwargs.pop("deps", None) or []
     if pytest == None:
         pytest = _DEFAULT_PYTEST
     if pytest_bazel == None:
@@ -125,24 +130,23 @@ def _single_pytest_test(
         name = bootstrap_target,
         srcs = srcs,
         output_name = main_file,
+        tags = ["manual"],
     )
 
-    deps = kwargs.pop("deps", [])
-    deps = deps + [
+    extra_deps = [
         pytest,
         pytest_bazel,
+        pytest_randomly,
     ]
-    if pytest_randomly != None:
-        deps.append(pytest_randomly)
     if kwargs.get("shard_count"):
-        deps.append(pytest_shard)
+        extra_deps.append(pytest_shard)
 
     kwargs = dict(kwargs)
     py_test(
         name = name,
         main = main_file,
         srcs = [bootstrap_target] + srcs,
-        deps = deps,
+        deps = deps + extra_deps,
         **kwargs
     )
 

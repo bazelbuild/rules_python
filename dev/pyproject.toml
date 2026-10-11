@@ -22,4 +22,5 @@ dependencies = [
     "pytest-bazel",
     "pytest-mock",
     "pytest-randomly",
+    "pytest-shard",
 ]

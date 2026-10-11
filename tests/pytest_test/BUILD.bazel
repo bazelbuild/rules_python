@@ -21,6 +21,19 @@ pytest_test(
     srcs = [
         "basic_test.py",
     ],
+    shard_count = 2,
+    target_compatible_with = SUPPORTS_BZLMOD,
+    deps = select({
+        "//conditions:default": [],
+    }),
+)
+
+pytest_test(
+    name = "pytest_no_randomly_test",
+    srcs = [
+        "basic_test.py",
+    ],
+    pytest_randomly = "//python:none",
     target_compatible_with = SUPPORTS_BZLMOD,
 )
 
