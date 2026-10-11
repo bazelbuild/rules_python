@@ -415,15 +415,12 @@ def _set_get_index_urls(self, mctx, pip_attr):
     return True
 
 def _select_default_index(index, default):
+    # We will use the value from the requirements file by default
     index = (index or default).rstrip("/")
     default = default.rstrip("/")
 
-    if index == "https://pypi.org/simple" or index == default:
-        # We are already setting it as default, so if it was changed by the user, change it here as
-        # well.
-        return default
-
-    return index
+    # If the default is set to something else than the public mirror, use that
+    return index if default == "https://pypi.org/simple" else default
 
 def _host_interpreter_name(python_version):
     return "python_{}_host".format(python_version.replace(".", "_"))
