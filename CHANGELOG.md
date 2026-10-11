@@ -29,6 +29,141 @@ Unreleased changes are tracked as individual files in the [news/](./news)
 directory, or view the [latest generated
 changelog](https://rules-python.readthedocs.io/en/latest/changelog.html).
 
+{#v2-4-2}
+## [2.4.2] - 2026-10-10
+
+[2.4.2]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.2
+
+{#v2-4-2-fixed}
+### Fixed
+* (zipapp) Shared libraries that a {obj}`py_zipapp_binary` reaches through
+  Bazel's `_solib` symlinks are stored as files again, instead of as symlinks to
+  absolute paths in the build machine's output base that dangle wherever the
+  zipapp runs.
+
+
+{#v2-4-1}
+## [2.4.1] - 2026-10-06
+
+[2.4.1]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.1
+
+{#v2-4-1-changed}
+### Changed
+* (toolchain) Updated default Python 3.15 runtime from `3.15.0rc2` to
+  `3.15.0rc3`.
+
+
+{#v2-4-0}
+## [2.4.0] - 2026-09-22
+
+[2.4.0]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.0
+
+{#v2-4-0-changed}
+### Changed
+* (bootstrap) {obj}`sys.path` adds the Python runtime in runfiles instead
+  of the underlying Bazel repository cache directory
+  ([#4104](https://github.com/bazel-contrib/rules_python/pull/4104)).
+* (gazelle) Deprecate the `requirements` argument of `gazelle_python_manifest`
+  in favor of the format-agnostic `lockfiles` argument, which supports `uv.lock`.
+* (toolchain) Updated default Python 3.15 runtime from `3.15.0a8` to `3.15.0rc1`
+  ([#4122](https://github.com/bazel-contrib/rules_python/pull/4122)).
+* (toolchain) Updated default Python 3.15 runtime from `3.15.0rc1` to
+  `3.15.0rc2`.
+* (toolchain) Updated the default Python toolchain version from `3.11` to `3.14`
+  in {obj}`python.defaults`, {obj}`python_register_toolchains`, and
+  {obj}`python_register_multi_toolchains`
+  ([#4023](https://github.com/bazel-contrib/rules_python/pull/4023)).
+* (toolchains) Shared `libpython*.so*` files are now excluded by default from
+  hermetic Python runtime files for recognized Astral `python-build-standalone`
+  builds (`20250517` and newer), which statically link `libpython` into the
+  interpreter. Older, custom, or unrecognized runtimes retain them. Set
+  `libpython = "include"` or `"exclude"` on {obj}`python.override`,
+  {obj}`python.single_version_override`,
+  {obj}`python.single_version_platform_override`, or
+  {obj}`python_register_toolchains` to override this behavior
+  ([#4165](https://github.com/bazel-contrib/rules_python/pull/4165)).
+
+{#v2-4-0-fixed}
+### Fixed
+* Include the Python toolchain's static libraries when `current_py_cc_libs` is used
+  as a dependency of `cc_shared_library`.
+* (bzlmod) Fixed a type mismatch error when using {obj}`coverage_tool` with
+  {obj}`python.single_version_platform_override`
+  ([#2570](https://github.com/bazel-contrib/rules_python/issues/2570)).
+* (precompile) Fixed handling of directory and `.pyc` file inputs in
+  {obj}`srcs` when {obj}`precompile` is enabled on {obj}`py_library`,
+  {obj}`py_binary`, and {obj}`py_test` targets
+  ([#4113](https://github.com/bazel-contrib/rules_python/pull/4113)).
+* (pypi) Fixed wheel RECORD file generation on Windows so that rewritten shebang
+  scripts correctly include the `.bat` extension
+  ([#4114](https://github.com/bazel-contrib/rules_python/pull/4114)).
+* (pypi) Fixed {obj}`RECORD` file paths for extracted `.data` directory contents
+  so that {obj}`importlib.metadata.files()` correctly locates installed
+  distribution files ([#4025](https://github.com/bazel-contrib/rules_python/pull/4025)).
+* (pypi) Venv mode now works on NixOS and no longer requires coreutils to process
+  wheel scripts and RECORD files
+  ([#4125](https://github.com/bazel-contrib/rules_python/pull/4125)).
+* (rules) Fixed loading Python extension modules from paths longer than `MAX_PATH` on Windows.
+* (runfiles) Updated {obj}`runfiles.Path` method signatures for Python 3.14
+  typeshed compatibility and fixed {obj}`runfiles.Path.match` on Python 3.12+.
+  ([#4023](https://github.com/bazel-contrib/rules_python/issues/4023))
+* (stamping) The build data spawn action is now skipped when `--stamp=false` and,
+  instead the metadata file is written at analysis time via `ctx.actions.write()`.
+* (toolchain) Fixed a crash in {obj}`py_test` main validation
+  ({obj}`validate_test_main`) on Windows: the interpreter used for the check
+  couldn't find its DLLs or its stdlib once relocated
+  ([#4079](https://github.com/bazel-contrib/rules_python/issues/4079)).
+* (toolchain) Fixed a crash on Windows when precompiling is enabled:
+  the precompiler's interpreter couldn't find its DLLs once relocated
+  ([#4082](https://github.com/bazel-contrib/rules_python/issues/4082)).
+* (zipapp) Reduced self-contained archive sizes by preserving Python executable
+  symlinks instead of storing each alias as another copy of the interpreter, and
+  by omitting shared `libpython` files from recognized statically linked Astral
+  runtime builds.
+
+{#v2-4-0-added}
+### Added
+* (pypi) `py.typed` files from wheels are now included in the `pyi_srcs` of the
+  wheel's `py_library`, alongside `.pyi` files. The `py.typed` file of
+  `//python/runfiles` is now included in its `pyi_srcs` as well.
+* (runfiles) Added {obj}`Runfiles.CreateOrRaise` to return a `Runfiles` instance
+  or raise an error if runfiles cannot be found.
+* (uv) Added {obj}`directory` attribute to {obj}`lock` to support running `uv`
+  commands within subdirectories when generating lock files. Defaults to the
+  package directory, set it to `None` or `""` to set it to the root of the repo
+  ([#4029](https://github.com/bazel-contrib/rules_python/issues/4029)).
+
+
+
+
+{#v2-3-4}
+## [2.3.4] - 2026-09-21
+
+[2.3.4]: https://github.com/bazel-contrib/rules_python/releases/tag/2.3.4
+
+{#v2-3-4-added}
+### Added
+* (toolchains) Added win32 (`i686-pc-windows-msvc`) Python runtimes for
+  versions 3.9.25, 3.10.20, 3.11.15, 3.12.13, 3.13.13, and 3.14.4
+  ([#4156](https://github.com/bazel-contrib/rules_python/pull/4156)).
+
+{#v2-3-3}
+## [2.3.3] - 2026-09-04
+
+[2.3.3]: https://github.com/bazel-contrib/rules_python/releases/tag/2.3.3
+
+{#v2-3-3-changed}
+### Changed
+* (publish): The twine packages are now configured for three major platforms.
+
+{#v2-3-3-fixed}
+### Fixed
+* (gazelle) Fixed a regression from version 1.8.0 which broke module map
+  generation for old-style namespace packages.
+  ([#4135](https://github.com/bazel-contrib/rules_python/pull/4135)).
+* (zipapp) Fixed handling of {obj}`PyRuntimeInfo` with `files = None` so creating
+  zipapp archives does not error.
+
 {#v2-3-2}
 ## [2.3.2] - 2026-08-22
 

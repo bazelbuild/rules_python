@@ -17,7 +17,7 @@ Before drafting any pull request description, strictly adhere to the rules in
 ## Commit & PR Types
 * `fix:` / `feat:`: User-visible changes ONLY.
 * `build:` / `build(release):`: Internal release tooling
-  (`tools/private/release/`), developer workflows, and build scripts. Always
+  (`dev/release/`), developer workflows, and build scripts. Always
   prefer `build(release):` over `chore:` or `chore(release):`.
 * `docs:`: Documentation and issue templates (`.github/ISSUE_TEMPLATE/`).
 * `ci:`: `.bazelci` and Buildkite CI configurations.
@@ -43,3 +43,5 @@ Before drafting any pull request description, strictly adhere to the rules in
   conceptual level. Link related issues (e.g. `Work towards #<issue>`).
 * **Conciseness & Style (Strunk & White)**: Omit needless words. Use clear,
   active, and direct phrasing for *why* and *how*.
+* **Preserve Existing Descriptions**: Preserve the author's wording unless
+  instructed to change it. Wrap bodies at 72 columns.

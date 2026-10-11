@@ -32,6 +32,7 @@ def _override(**kwargs):
         "available_python_versions": [],
         "base_urls": ["https://github.com/astral-sh/python-build-standalone/releases/download"],
         "ignore_root_user_error": True,
+        "libpython": "auto",
         "minor_mapping": {},
         "register_all_versions": False,
         "runtime_manifest_sha": "",
@@ -53,6 +54,7 @@ def _single_version_override(**kwargs):
     attrs = {
         "distutils": None,
         "distutils_content": "",
+        "libpython": "auto",
         "patch_strip": 0,
         "patches": [],
         "python_version": "",
@@ -68,6 +70,7 @@ def _single_version_platform_override(**kwargs):
     attrs = {
         "arch": "",
         "coverage_tool": None,
+        "libpython": "auto",
         "os_name": "",
         "patch_strip": 0,
         "patches": [],
@@ -108,7 +111,7 @@ _DEFAULT_RUNTIMES_MANIFEST = """
 9999999999999999999999999999999999999999999999999999999999999999  20241016/cpython-3.13.0+20241016-x86_64-unknown-linux-gnu-install_only.tar.gz
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  20260414/cpython-3.14.4+20260414-x86_64-unknown-linux-gnu-install_only.tar.gz
 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb  20251031/cpython-3.14.0+20251031-x86_64-unknown-linux-gnu-install_only.tar.gz
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  20260804/cpython-3.15.0rc1+20260804-x86_64-unknown-linux-gnu-install_only.tar.gz
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  20261003/cpython-3.15.0rc3+20261003-x86_64-unknown-linux-gnu-install_only.tar.gz
 dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  20241205/cpython-3.13.1+20241205-x86_64-unknown-linux-gnu-install_only.tar.gz
 """
 

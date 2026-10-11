@@ -19,7 +19,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python/private:version_label.bzl", "version_label")
 
-# START: maintained by 'bazel run //tools/private/update_deps:update_coverage_deps <version>'
+# START: maintained by 'bazel run //dev/update_deps:update_coverage_deps <version>'
 _default = (
     "https://files.pythonhosted.org/packages/ec/16/114df1c291c22cac3b0c127a73e0af5c12ed7bbb6558d310429a0ae24023/coverage-7.10.7-py3-none-any.whl",
     "f7941f6f2fe6dd6807a1208737b8a0cbcf1cc6d7b07d24998ad2d63590868260",
@@ -166,7 +166,7 @@ _coverage_deps = {
         ),
     },
 }
-# END: maintained by 'bazel run //tools/private/update_deps:update_coverage_deps <version>'
+# END: maintained by 'bazel run //dev/update_deps:update_coverage_deps <version>'
 
 _coverage_patch = Label("//python/private:coverage.patch")
 

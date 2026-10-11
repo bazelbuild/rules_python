@@ -10,8 +10,11 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
 * In macro implementations, internal repository target references **MUST** be
   canonicalized using `str(Label("//path/to:target"))` so they resolve in the
   macro's module context rather than the caller's repository context.
-* Note that `python/private/common_labels.bzl` defines `labels`, a struct
-  containing common canonicalized label strings used across the project.
+* **Reuse `python/private/common_labels.bzl`**: When a target label is listed in
+  `python/private/common_labels.bzl` (or shared across multiple `.bzl` files
+  such as `flags.bzl` and `config_settings.bzl`), load `labels` from
+  `:common_labels.bzl` and use `labels.<NAME>` (or `Label(labels.<NAME>)`)
+  instead of redefining duplicate `Label("//...")` values.
 
 ## Manual Tag on Internal Macro Helper Targets
 * When macros instantiate internal helper targets (such as private rule targets
@@ -32,6 +35,11 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   (e.g., `deps = deps or []`, `copts = copts or []`).
 * **Why**: This avoids inlining the normalization as part of a complex
   expression later in the macro expansion.
+
+## `executable = True` Attributes
+* Use `allow_files = True` (with an explanatory comment), not
+  `allow_single_file = True`, when the attribute may accept `py_binary` (whose
+  `DefaultInfo.files` has multiple files).
 
 ## native.test_suite API
 * Don't forward target `tags` to `native.test_suite`; tags on test suites filter
@@ -56,6 +64,9 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
 ## Code Style & Conventions
 * **Dict union (`|`)**: Use `|` instead of `dicts.add(...)` from
   `@bazel_skylib//lib:dicts.bzl` when merging dictionaries.
+* **Type Checks (`@bazel_skylib//lib:types.bzl`)**: Prefer `types.is_*` helpers
+  (e.g., `types.is_dict(x)`, `types.is_list(x)`, `types.is_string(x)`) from
+  `@bazel_skylib//lib:types.bzl` instead of `type(x)` comparisons.
 * **Non-Info Provider Naming**: Add `# buildifier: disable=name-conventions`
   above `provider()` declarations that do not end in `Info` (e.g. `*Fileset`).
 * **Docstring Formatting Invariants**: Use triple-quoted strings for multi-line
@@ -64,6 +75,8 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   existing files unless explicitly directed by the user.
 * **Line Length & Wrapping**: Wrap Markdown and Starlark lines to 80 columns in
   accordance with `.editorconfig`.
+  * **Long ternaries**: Use `if`/`else` statements when `a if cond else b`
+    exceeds 80 columns (`buildifier` collapses multi-line ternaries).
 
 ## Starlark Testing (`rules_testing`)
 * **`rules_testing` over `bazel_skylib`**: Always use `@rules_testing` (analysis

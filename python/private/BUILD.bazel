@@ -17,6 +17,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 load(":bazel_config_mode.bzl", "bazel_config_mode")
+load(":distribution_filegroup.bzl", "distribution_filegroup")
 load(":py_exec_tools_toolchain.bzl", "current_interpreter_executable")
 load(":py_interpreter_program.bzl", "py_interpreter_program")
 load(":sentinel_impl.bzl", "sentinel")
@@ -38,23 +39,14 @@ exports_files([
     "runtimes_manifest_workspace.bzl",
 ])
 
-filegroup(
+distribution_filegroup(
     name = "distribution",
-    srcs = glob(["**"]) + [
-        "//python/private/api:distribution",
-        "//python/private/cc:distribution",
-        "//python/private/pypi:distribution",
-        "//python/private/whl_filegroup:distribution",
-        "//python/private/zipapp:distribution",
-        "//tools/build_defs/python/private:distribution",
-    ],
-    visibility = ["//python:__pkg__"],
 )
 
 filegroup(
     name = "coverage_deps_filegroup",
     srcs = ["coverage_deps.bzl"],
-    visibility = ["//tools/private/update_deps:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
@@ -330,6 +322,7 @@ bzl_library(
     deps = [
         ":builders",
         ":cc_helper",
+        ":flags",
         ":py_cc_link_params_info",
         ":py_info",
         ":py_internal",
@@ -346,6 +339,7 @@ bzl_library(
     name = "config_settings",
     srcs = ["config_settings.bzl"],
     deps = [
+        ":common_labels",
         ":text_util",
         ":version",
         ":visibility",
@@ -777,6 +771,7 @@ bzl_library(
     deps = [
         ":coverage_deps",
         ":full_version",
+        ":pbs_manifest",
         ":python_repository",
         ":toolchains_repo",
         "//python:versions",
@@ -788,6 +783,7 @@ bzl_library(
     srcs = ["python_repository.bzl"],
     deps = [
         ":auth",
+        ":pbs_manifest",
         ":repo_utils",
         ":text_util",
         "//python:versions",
@@ -881,6 +877,7 @@ bzl_library(
     name = "toolchains_repo",
     srcs = ["toolchains_repo.bzl"],
     deps = [
+        ":pbs_manifest",
         ":repo_utils",
         ":text_util",
         "//python:versions",
@@ -940,6 +937,11 @@ bzl_library(
 bzl_library(
     name = "common_labels",
     srcs = ["common_labels.bzl"],
+)
+
+bzl_library(
+    name = "distribution_filegroup",
+    srcs = ["distribution_filegroup.bzl"],
 )
 
 bzl_library(

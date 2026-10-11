@@ -58,4 +58,6 @@
 * Module-level functions delegating to class methods should have a docstring
   referring to the class method (e.g. `"""Refer to \`Class.method\`."""`).
 
-
+## Context Managers
+* Implement temporary state changes (e.g., `Git.checkout()`, `os.chdir()`) as
+  context managers that restore prior state on exit.
