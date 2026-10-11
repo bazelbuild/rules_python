@@ -76,4 +76,8 @@ file from `.agents/skills/review-code/`:
 - Once all sub-agents finish, finalize `code-review-results.md` and provide a
   concise summary with the overall verdict and a clickable markdown link to
   `code-review-results.md` in the response.
-
+- If a PR is being reviewed, ask the user if they want to post comments to the
+  PR.
+- When posting comments to the PR, add a note in italics at the end of each
+  comment identifying it as an agent-generated comment and referring to yourself
+  using a magnanimous title.
