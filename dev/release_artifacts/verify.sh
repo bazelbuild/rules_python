@@ -21,17 +21,24 @@ while IFS= read -r bin; do
         echo "::error::$bin isn't statically linked: $info"
         exit 1
       fi
-      # Some Linux files are cross-compiled, so check that they're for the
-      # right CPU.
+      # Most Linux files are cross-compiled, so check that they're for the
+      # right CPU, as `file` describes it. It's a glob because file 5.46
+      # renamed "Intel 80386" to "Intel i386".
       case "$triple" in
         aarch64-*) cpu="ARM aarch64" ;;
+        armv7-*) cpu="ARM" ;;
+        i686-*) cpu="Intel *386" ;;
+        powerpc64le-*) cpu="64-bit PowerPC or cisco 7500" ;;
+        riscv64gc-*) cpu="UCB RISC-V" ;;
         x86_64-*) cpu="x86-64" ;;
         *)
           echo "::error::$bin: no CPU check for $triple"
           exit 1
           ;;
       esac
-      if [[ "$info" != *", $cpu,"* ]]; then
+      pattern="*, $cpu,*"
+      # shellcheck disable=SC2053 # The pattern is a glob.
+      if [[ "$info" != $pattern ]]; then
         echo "::error::$bin isn't for $cpu: $info"
         exit 1
       fi
