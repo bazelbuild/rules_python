@@ -21,4 +21,5 @@ dependencies = [
     "pytest",
     "pytest-bazel",
     "pytest-mock",
+    "pytest-randomly",
 ]

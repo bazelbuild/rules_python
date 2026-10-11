@@ -1,8 +1,8 @@
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//python:py_library.bzl", "py_library")
+load("//python:pytest_test.bzl", "pytest_test")
 load("//tests/support:py_reconfig.bzl", "py_reconfig_test")
 load("//tests/support:support.bzl", "SUPPORTS_BZLMOD")
-load("//tests/support/pytest_test:pytest_test.bzl", "pytest_test")
 
 py_library(
     name = "user_lib",
