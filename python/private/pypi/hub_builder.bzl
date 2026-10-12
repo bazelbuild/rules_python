@@ -393,7 +393,7 @@ def _set_get_index_urls(self, mctx, pip_attr):
     self._get_index_urls[python_version] = lambda ctx, distributions, *, index_url = None, extra_index_urls = None: self._simpleapi_download_fn(
         ctx,
         attr = struct(
-            index_url = (index_url or default_index_url).rstrip("/"),
+            index_url = _select_default_index(index_url, default_index_url).rstrip("/"),
             extra_index_urls = [
                 x.rstrip("/")
                 for x in (extra_index_urls or default_extra_index_urls)
@@ -413,6 +413,14 @@ def _set_get_index_urls(self, mctx, pip_attr):
         parallel_download = pip_attr.parallel_download,
     )
     return True
+
+def _select_default_index(index, default):
+    # We will use the value from the requirements file by default
+    index = (index or default).rstrip("/")
+    default = default.rstrip("/")
+
+    # If the default is set to something else than the public mirror, use that
+    return index if default == "https://pypi.org/simple" else default
 
 def _host_interpreter_name(python_version):
     return "python_{}_host".format(python_version.replace(".", "_"))
