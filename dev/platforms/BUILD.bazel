@@ -1,8 +1,9 @@
 # Platforms that rules_python's release artifacts are built for, named after
 # their Rust target triples; see dev/release_artifacts/build.sh. They cover the
 # platforms that python-build-standalone supports: the Linux files are static,
-# so they also run on Linux platforms with other libcs. s390x isn't covered yet:
-# Rust has no musl std for it, and a static glibc build needs a C toolchain.
+# so they also run on Linux platforms with other libcs, and arm64e Macs run the
+# aarch64 macOS file. s390x isn't covered yet: Rust ships no musl std for it,
+# and a static glibc build needs a C cross toolchain.
 #
 # Linux x86_64 hosts cross-compile for the musl ones, and Windows x86_64 hosts
 # for i686-pc-windows-msvc, with the Rust toolchains in MODULE.bazel. The

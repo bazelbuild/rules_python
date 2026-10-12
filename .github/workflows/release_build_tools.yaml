@@ -1,8 +1,8 @@
-# Builds `//dev/release_artifacts:artifacts_for_release` for each platform that
-# python-build-standalone supports; see dev/release_artifacts/build.sh and
-# dev/platforms. Linux x86_64 runners cross-compile the files for other Linux
-# CPUs. macOS and Windows files need those OSes' SDKs, so they're built on
-# those OSes.
+# Builds `//dev/release_artifacts:artifacts_for_release` for the platforms in
+# dev/platforms, which cover python-build-standalone's platforms except s390x;
+# see dev/release_artifacts/build.sh. Linux x86_64 runners cross-compile the
+# files for other Linux CPUs. macOS and Windows files need those OSes' SDKs, so
+# they're built on those OSes.
 #
 # For now, this only verifies that the artifacts build; they aren't attached to
 # releases yet.
@@ -80,8 +80,9 @@ jobs:
           bazelisk-version: 1.29.0
 
       # Release commands run main's workflows, even for patch releases of older
-      # release branches. Skip refs without the platforms that build.sh takes,
-      # since their scripts don't build for the job's platform, or don't exist.
+      # release branches. Skip refs without dev/platforms, since their scripts
+      # don't build for the job's platform, or don't exist. Refs whose
+      # dev/platforms lacks the job's platform fail the build, which only warns.
       - name: Build artifacts
         id: build
         if: hashFiles('dev/platforms/BUILD.bazel') != ''

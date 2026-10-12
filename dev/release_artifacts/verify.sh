@@ -22,7 +22,7 @@ while IFS= read -r bin; do
         exit 1
       fi
       # Most Linux files are cross-compiled, so check that they're for the
-      # right CPU, as `file` describes it. It's a glob because file 5.46
+      # right CPU, as `file` describes it. `cpu` is a glob because file 5.46
       # renamed "Intel 80386" to "Intel i386".
       case "$triple" in
         aarch64-*) cpu="ARM aarch64" ;;
