@@ -110,10 +110,10 @@ rust_crates.spec(
     version = "0.10.8",
 )
 
-# The crates must build for every platform in dev/platforms, so this extends
-# crate_universe's default triples. Conditional dependencies are resolved for
-# these triples; rules_rust matches them by CPU and OS, e.g.
-# i686-unknown-linux-gnu also matches the i686-unknown-linux-musl platform.
+# The crates must build for every platform in dev/platforms. Conditional
+# dependencies are resolved for these triples; rules_rust matches them by CPU
+# and OS, e.g. i686-unknown-linux-gnu also matches the i686-unknown-linux-musl
+# platform.
 rust_crates.from_specs(
     supported_platform_triples = [
         "aarch64-apple-darwin",
@@ -123,12 +123,9 @@ rust_crates.from_specs(
         "i686-pc-windows-msvc",
         "i686-unknown-linux-gnu",
         "riscv64gc-unknown-linux-gnu",
-        "wasm32-unknown-unknown",
-        "wasm32-wasip1",
         "x86_64-apple-darwin",
         "x86_64-pc-windows-msvc",
         "x86_64-unknown-linux-gnu",
-        "x86_64-unknown-nixos-gnu",
     ],
 )
 
