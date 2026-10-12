@@ -34,6 +34,8 @@ to a subagent. NEVER create or draft PRs directly in the main conversation.
      `gh pr create` when explicitly requested to create the PR.
    - **Targeting Upstream Repo**: When creating, target upstream using
      `--repo bazel-contrib/rules_python` and `--head <fork_owner>:<branch>`.
+   - **Open Questions Label**: If the PR description contains open questions,
+     apply the `"do not merge"` label (`--label "do not merge"`).
 4. **Return Status**: Direct subagent to report the PR number/draft status and
    the absolute file path to its `pr_info.md` artifact back to the caller.
 5. **Publish and Link Artifact in Main Agent**: Upon subagent completion, read
