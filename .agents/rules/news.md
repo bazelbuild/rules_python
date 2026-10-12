@@ -11,14 +11,25 @@ globs: "news/*.md"
 Before drafting any news entry, adhere strictly to the rules in
 `CONTRIBUTING.md` above.
 
+## Filename
+* Name files `news/<id>.<category>.md`.
+* Use the GitHub issue or PR number for `<id>` when known; otherwise, use a
+  short, hyphenated descriptive term (e.g., `my-feature.added.md`) to avoid
+  filename collisions.
+* Never use generic placeholders like `0000`.
+
+## Brevity and Content
+* Write a short snippet (1-2 concise sentences) so the combined `CHANGELOG.md`
+  is easy to skim and grok.
+* State high-level, user-visible behavior and outcomes (what now works, what
+  changed).
+* Omit internal implementation details, refactoring mechanics, and exhaustive
+  edge-case explanations (document detailed usage in API docs instead).
+
 ## Sphinx MyST Cross-Reference Syntax (`{obj}`)
 * Use `{obj}\`<symbol>\`` only for cross-referencable Starlark or Python API
   symbols (rules, macros, targets, providers, attributes, args).
 * Never use `{obj}` on metadata files (e.g. `RECORD`), file paths, or tools.
-
-## Content
-* State user-visible behavior and outcomes (what now works, what changed).
-* Omit internal implementation and refactoring details.
 
 ## GitHub Issue Link Formatting
 * Append GitHub issue cross-references at the end of news entries in markdown

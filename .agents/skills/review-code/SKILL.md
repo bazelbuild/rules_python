@@ -32,14 +32,13 @@ file from `.agents/skills/review-code/`:
    - Prompt file:
      `.agents/skills/review-code/review-docs-prompt.md`
    - Focus: Audits documentation (`.md`) changes and docs build targets against
-     `.agents/rules/docs.md`, `.agents/rules/news.md`, and `AGENTS.md`.
+     `.agents/rules/docs.md` and `AGENTS.md`.
 
 4. **Contribution Guidelines Sub-Agent** (`Role: "Contributing Auditor"`):
    - Prompt file:
      `.agents/skills/review-code/review-contributing-prompt.md`
-   - Focus: Audits changes, requirements updates, directives, and news entry
-     files (`news/<id>.<category>.md`) against `CONTRIBUTING.md` and
-     `.agents/rules/news.md`.
+   - Focus: Audits changes, requirements updates, and version directives against
+     `CONTRIBUTING.md`.
 
 5. **Project Conventions Sub-Agent** (`Role: "Project Conventions Auditor"`):
    - Prompt file:
@@ -68,6 +67,14 @@ file from `.agents/skills/review-code/`:
      `rules_python`-specific Bzlmod and rule usage invariants (e.g., `pip.dep()`
      declarations in `MODULE.bazel` for `@pypi//<pkg>` references under
      `python/**`).
+
+9. **News Entry Sub-Agent** (`Role: "News Entry Auditor"`):
+   - Prompt file:
+     `.agents/skills/review-code/review-news-prompt.md`
+   - Focus: Audits `news/<id>.<category>.md` files for presence, naming (no
+     generic `0000` placeholders), brevity and skimmability, and formatting
+     against `.agents/rules/news.md` and
+     `.agents/skills/create-news/SKILL.md`.
 
 ### Action Instructions
 - Immediately create a user-facing review artifact named
