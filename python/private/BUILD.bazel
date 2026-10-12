@@ -929,6 +929,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "sentinel_impl",
+    srcs = ["sentinel_impl.bzl"],
+    deps = [":py_info"],
+)
+
+bzl_library(
     name = "bzlmod_enabled",
     srcs = ["bzlmod_enabled.bzl"],
 )
@@ -1006,11 +1012,6 @@ bzl_library(
 bzl_library(
     name = "runtimes_manifest_workspace",
     srcs = ["runtimes_manifest_workspace.bzl"],
-)
-
-bzl_library(
-    name = "sentinel_impl",
-    srcs = ["sentinel_impl.bzl"],
 )
 
 bzl_library(

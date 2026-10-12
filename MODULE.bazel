@@ -83,7 +83,11 @@ pip.parse(
         "windows_x86_64",
     ],
 )
-use_repo(pip, "rules_python_publish_deps")
+pip.dep(name = "pytest")
+pip.dep(name = "pytest-bazel")
+pip.dep(name = "pytest-randomly")
+pip.dep(name = "pytest-shard")
+use_repo(pip, "pypi", "rules_python_publish_deps")
 
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
 bazel_dep(name = "sphinxdocs", version = "0.0.0", dev_dependency = True)
@@ -388,7 +392,7 @@ dev_pip.parse(
     python_version = "3.14",
     requirements_lock = "//tests/multi_pypi/beta:requirements.txt",
 )
-use_repo(dev_pip, "dev_pip", "pypi", "pypi_alpha", "pypi_beta", "pypiserver")
+use_repo(dev_pip, "dev_pip", "pypi_alpha", "pypi_beta", "pypiserver")
 
 # Bazel integration test setup below
 
