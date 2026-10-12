@@ -865,9 +865,9 @@ simple==0.0.1 --hash=sha256:deadb00f
 """,
             experimental_index_url = "https://experimental.example.com/simple",
             experimental_extra_index_urls = [],
-            expect_index_url = "https://file.example.com/simple",
+            expect_index_url = "https://experimental.example.com/simple",
             expect_extra_index_urls = [],
-            expect_url = "file.example.com/simple/",
+            expect_url = "experimental.example.com/simple/",
         ),
         struct(
             requirements_txt = "simple==0.0.1 --hash=sha256:deadb00f",

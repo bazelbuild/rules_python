@@ -16,7 +16,9 @@ or when monitoring CI after PR updates:
    `pgrep -af "[m]onitor_remote_ci.py <pr_number>"`. Do NOT use a generic grep
    without `<pr_number>`, as other active agent conversations may be monitoring
    different PRs concurrently. If one is already running for this PR, do not
-   start another instance.
+   start another instance. Run `pgrep` as a standalone command—do NOT chain it
+   with `|| ... monitor_remote_ci.py <pr_number>` in a single shell invocation,
+   as `pgrep -af` will match the parent `bash -c` command string and exit `0`.
 2. **Launch Monitoring Script**: If no monitor process is active for
    `<pr_number>`, launch the script in the background:
 ```bash

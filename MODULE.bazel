@@ -113,8 +113,142 @@ rust_crates.spec(
     package = "sha2",
     version = "0.10.8",
 )
-rust_crates.from_specs()
+
+# The crates must build for every platform in dev/platforms. Conditional
+# dependencies are resolved for these triples; rules_rust matches them by CPU
+# and OS, e.g. i686-unknown-linux-gnu also matches the i686-unknown-linux-musl
+# platform.
+rust_crates.from_specs(
+    supported_platform_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-pc-windows-msvc",
+        "aarch64-unknown-linux-gnu",
+        "armv7-unknown-linux-gnueabi",
+        "i686-pc-windows-msvc",
+        "i686-unknown-linux-gnu",
+        "riscv64gc-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+
+# rules_rust has no @rules_rust//rust/platform config_setting for Linux ppc64le,
+# so don't mark the crates as incompatible with platforms that don't match one
+# of the triples above. Such platforms get only the unconditional dependencies,
+# which suffice for sha2.
+rust_crates.render_config(
+    generate_target_compatible_with = False,
+)
 use_repo(rust_crates, "crates")
+
+# Rust toolchains to cross-compile the release artifacts for other Linux CPUs
+# from Linux x86_64; see dev/release_artifacts. They target musl, which Rust can
+# link statically with its bundled rust-lld, so no C cross toolchain is needed.
+rust = use_extension(
+    "@rules_rust//rust:extensions.bzl",
+    "rust",
+    dev_dependency = True,
+)
+rust.repository_set(
+    # rules_rust also registers an x86_64 to x86_64 toolchain from this set, in
+    # name order with its default ones, so the name must sort after
+    # rust_linux_x86_64 for the default x86_64 toolchain to take precedence.
+    name = "rust_release_linux",
+    # The default allocator library needs a C toolchain for the target platform,
+    # but there isn't one. This one is what rules_rust uses for e.g. Windows.
+    allocator_library = "@rules_rust//rust/private/cc:empty",
+    edition = "2021",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+        "//dev/platforms:musl",
+    ],
+    target_triple = "aarch64-unknown-linux-musl",
+    # rules_rust 0.73.0's default version; update it with rules_rust. The
+    # default toolchain builds proc-macros, which rustc only loads if they were
+    # built by the same version.
+    versions = ["1.97.1"],
+)
+
+# Other targets for the same set; the first tag sets the shared attributes.
+rust.repository_set(
+    name = "rust_release_linux",
+    target_compatible_with = [
+        "@platforms//cpu:armv7",
+        "@platforms//os:linux",
+        "//dev/platforms:musl",
+    ],
+    target_triple = "armv7-unknown-linux-musleabihf",
+)
+rust.repository_set(
+    name = "rust_release_linux",
+    target_compatible_with = [
+        "@platforms//cpu:x86_32",
+        "@platforms//os:linux",
+        "//dev/platforms:musl",
+    ],
+    target_triple = "i686-unknown-linux-musl",
+)
+rust.repository_set(
+    name = "rust_release_linux",
+    target_compatible_with = [
+        "@platforms//cpu:ppc64le",
+        "@platforms//os:linux",
+        "//dev/platforms:musl",
+    ],
+    target_triple = "powerpc64le-unknown-linux-musl",
+)
+rust.repository_set(
+    name = "rust_release_linux",
+    target_compatible_with = [
+        "@platforms//cpu:riscv64",
+        "@platforms//os:linux",
+        "//dev/platforms:musl",
+    ],
+    target_triple = "riscv64gc-unknown-linux-musl",
+)
+use_repo(
+    rust,
+    "rust_release_linux__aarch64-unknown-linux-musl__stable",
+    "rust_release_linux__armv7-unknown-linux-musleabihf__stable",
+    "rust_release_linux__i686-unknown-linux-musl__stable",
+    "rust_release_linux__powerpc64le-unknown-linux-musl__stable",
+    "rust_release_linux__riscv64gc-unknown-linux-musl__stable",
+)
+
+# Registered here so that they take precedence over rules_rust's default
+# toolchains, e.g. its Linux x86_64 to aarch64 one also matches the aarch64
+# musl platform.
+register_toolchains(
+    "@rust_release_linux__aarch64-unknown-linux-musl__stable//:toolchain",
+    "@rust_release_linux__armv7-unknown-linux-musleabihf__stable//:toolchain",
+    "@rust_release_linux__i686-unknown-linux-musl__stable//:toolchain",
+    "@rust_release_linux__powerpc64le-unknown-linux-musl__stable//:toolchain",
+    "@rust_release_linux__riscv64gc-unknown-linux-musl__stable//:toolchain",
+    dev_dependency = True,
+)
+
+# A Rust toolchain to cross-compile the release artifacts for 32-bit Windows
+# from Windows x86_64, with MSVC's x86 tools. Unlike the Linux ones, it isn't
+# registered here: no default toolchain targets 32-bit Windows, and rules_rust
+# registers it.
+rust.repository_set(
+    # As above, its x86_64 toolchain's name must sort after the default one's.
+    # On Windows, rules_rust names toolchains after a hash of the full name:
+    # rw-1886791612 for this one, after rust_windows_x86_64's rw-1704990954.
+    name = "rust_release_windows",
+    edition = "2021",
+    exec_triple = "x86_64-pc-windows-msvc",
+    target_compatible_with = [
+        "@platforms//cpu:x86_32",
+        "@platforms//os:windows",
+    ],
+    target_triple = "i686-pc-windows-msvc",
+    # See above.
+    versions = ["1.97.1"],
+)
 
 # Use the Rust-based build tools when developing rules_python itself.
 register_toolchains(
@@ -226,7 +360,6 @@ dev_pip = use_extension(
         hub_name = "dev_pip",
         parallel_download = False,
         python_version = python_version,
-        requirements_lock = "//dev:requirements.txt",
         # Ensure that we are setting up the following platforms
         target_platforms = [
             "{os}_{arch}",
