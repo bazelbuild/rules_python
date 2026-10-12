@@ -45,3 +45,12 @@ Before drafting any pull request description, strictly adhere to the rules in
   active, and direct phrasing for *why* and *how*.
 * **Preserve Existing Descriptions**: Preserve the author's wording unless
   instructed to change it. Wrap bodies at 72 columns.
+* **Open Questions & Follow-Up Items**:
+  * Add the `"do not merge"` label to the PR when the PR description contains
+    open questions (e.g., `gh pr edit <pr> --repo bazel-contrib/rules_python
+    --add-label "do not merge"`).
+  * During code review, inspect the PR description and comments for open
+    questions, `TODO` items, or "Things we could do / follow-up" notes.
+    Evaluate each item against the diff and project rules, flag unresolved
+    items with `ACTION_REQUIRED` or `USER_DECISION_REQUIRED`, and verify the
+    `"do not merge"` label is applied if open questions remain.
