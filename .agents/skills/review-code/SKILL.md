@@ -50,7 +50,9 @@ file from `.agents/skills/review-code/`:
    - Prompt file:
      `.agents/skills/review-code/review-pr-standards-prompt.md`
    - Focus: Audits PR titles and descriptions against Conventional Commits
-     formatting and PR update rules in `CONTRIBUTING.md`.
+     formatting, PR update rules in `CONTRIBUTING.md`, and open questions or
+     "TODO / Things we could do" items in the PR description (ensuring the
+     `"do not merge"` label is applied when open questions exist).
 
 7. **GitHub Workflows Sub-Agent** (`Role: "GitHub Workflows Auditor"`):
    - Prompt file:
@@ -58,6 +60,14 @@ file from `.agents/skills/review-code/`:
    - Focus: Audits workflow files (`.github/**`) and workflow tests against
      `.agents/rules/github_actions_workflows.md` (e.g. `chmod +x` executable
      permissions, shebangs, action versions, fallback jobs).
+
+8. **`rules_python` Usage Sub-Agent** (`Role: "rules_python Usage Auditor"`):
+   - Prompt file:
+     `.agents/skills/review-code/review-rules-python-prompt.md`
+   - Focus: Audits changes against `.agents/rules/rules_python.md` and
+     `rules_python`-specific Bzlmod and rule usage invariants (e.g., `pip.dep()`
+     declarations in `MODULE.bazel` for `@pypi//<pkg>` references under
+     `python/**`).
 
 ### Action Instructions
 - Immediately create a user-facing review artifact named
