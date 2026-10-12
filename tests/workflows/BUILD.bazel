@@ -1,6 +1,6 @@
 load("//python:py_library.bzl", "py_library")
+load("//python:pytest_test.bzl", "pytest_test")
 load("//tests/support:support.bzl", "NOT_WINDOWS")
-load("//tests/support/pytest_test:pytest_test.bzl", "pytest_test")
 
 py_library(
     name = "on_comment",

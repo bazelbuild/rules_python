@@ -8,15 +8,15 @@ _RUSTC_FLAGS = "@rules_rust//rust/settings:extra_rustc_flags"
 def _release_transition_impl(settings, attr):
     features = []
     rustc_flags = []
-    if attr.target_os == "linux" and attr.target_libc != "musl":
+    if attr.target_os == "linux":
         # Rust links glibc dynamically, so the files would require at least
         # the build machine's glibc version. Link it statically so they run on
-        # older distros too. The gold linker can't link static glibc, so use
-        # bfd. Rust already links musl statically.
-        rustc_flags = [
-            "-Ctarget-feature=+crt-static",
-            "-Clink-arg=-fuse-ld=bfd",
-        ]
+        # older distros too. Rust links musl statically for most CPUs, but not
+        # all, e.g. riscv64.
+        rustc_flags = ["-Ctarget-feature=+crt-static"]
+        if attr.target_libc != "musl":
+            # The gold linker can't link static glibc, so use bfd.
+            rustc_flags.append("-Clink-arg=-fuse-ld=bfd")
     elif attr.target_os == "windows":
         # Statically link the C runtime so that the VC++ redistributable isn't
         # required.
