@@ -16,5 +16,6 @@ in `git diff` against the project's Starlark coding rules and conventions:
    `python/private/common_labels.bzl` rather than redefining `Label("//...")`.
 8. Prefer `types.is_*` helpers from `@bazel_skylib//lib:types.bzl` over
    `type(x)` comparisons.
+9. Verify `config_setting` names start with `is_` (or `_is_` when private).
 
 @.agents/skills/review-code/review-report-format.md
