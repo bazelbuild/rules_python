@@ -63,24 +63,41 @@ def _get_pycache_root(rctx):
     os_name = repo_utils.get_platforms_os_name(rctx)
     is_windows = os_name == "windows"
 
-    # Python checks a pyc file against its source's mtime and size, and the
-    # sources in a runtime's archive all share one mtime. Keying on the archive
-    # keeps a runtime from loading pyc files compiled from another's sources.
-    suffix = "{}/{}".format(rctx.name, rctx.attr.sha256[:16] or rctx.attr.python_version)
+    # When Python uses mtime/size checking of pycs, the mtimes of files in a
+    # runtime are fixed once the repository is created. In addition, pyc
+    # content is a function of hash mode and optimization level, which can vary
+    # by workspace. Keying on both the workspace and runtime archive keeps
+    # workspaces and runtime versions from colliding on pyc files.
+    runtime_hash = rctx.attr.sha256 or rctx.attr.python_version
+    suffix = "{}/{}".format(
+        rctx.name,
+        hash("{}:{}".format(rctx.workspace_root, runtime_hash)),
+    )
 
     res = rctx.getenv("RULES_PYTHON_PYCACHE_DIR")
     if res:
-        res = res + "/" + suffix
-        return repo_utils.mkdir(rctx, res)
+        return repo_utils.mkdir(rctx, rctx.path(res).get_child(suffix))
 
+    # Global locations like /tmp or TMP/TEMP are intentionally not used:
+    # * Avoids cross-user contamination or prediction/interception of the pyc
+    #   cache.
+    # * Temporary directories get cleaned out while the fetched runtime
+    #   repository persists, leaving dangling symlinks.
     res = rctx.getenv("XDG_CACHE_HOME")
     if not res:
-        res = rctx.getenv("LOCALAPPDATA" if is_windows else "HOME")
-        if res and not is_windows:
-            res += "/.cache"
+        if is_windows:
+            res = rctx.getenv("LOCALAPPDATA")
+        else:
+            res = rctx.getenv("HOME")
+            if res:
+                res += "/.cache"
     if not res:
         return None
-    return repo_utils.mkdir(rctx, rctx.path(res).get_child("rules_python_pycache").get_child(suffix))
+
+    # The first level directory is static and documented so that it is easy to
+    # use with e.g. --sandbox_add_mount_pair=$HOME/.cache/rules_python_pycache
+    path = rctx.path(res).get_child("rules_python_pycache").get_child(suffix)
+    return repo_utils.mkdir(rctx, path)
 
 def _create_pycache_symlinks(rctx, logger):
     """Finds all directories with a .py file and creates __pycache__ symlinks.
@@ -238,8 +255,11 @@ def _python_repository_impl(rctx):
         # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
         # the definition of this filegroup will change, and depending rules will get invalidated."
         # See https://github.com/bazel-contrib/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
-        # The __pycache__ directories themselves are symlinks out of the repository.
+        # The __pycache__ directories themselves are symlinks out of the
+        # repository.
         "**/__pycache__",
+        # Also ignore everything under __pycache__, just in case pre-population
+        # of the directories misses one and a regular directory is created.
         "**/__pycache__/**",
     ]
 

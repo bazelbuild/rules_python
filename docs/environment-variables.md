@@ -90,7 +90,7 @@ Valid values:
 * Other non-empty values mean to use isolated mode.
 :::
 
-:::{envvar} RULES_PYTHON_PYCACHE_DIR
+::::{envvar} RULES_PYTHON_PYCACHE_DIR
 
 Determines the directory that runtime-generated pyc cache files will
 be stored in.
@@ -98,10 +98,10 @@ be stored in.
 This directory may be reused between invocations, depending on the sandboxing
 configuration. Setting it to `/dev/null` will, in effect, disable runtime
 pyc caching. By setting e.g.
-`--sandbox_add_mount_pair=$HOME/.cache/rules_python_pycache`, it's possible for pyc
-caching to persist across invocations.
+`--sandbox_add_mount_pair=$HOME/.cache/rules_python_pycache`, it's possible for
+pyc caching to persist across invocations.
 
-**Behavior specific to downloaded runtimes:** 
+**Behavior specific to downloaded runtimes:**
 First `RULES_PYTHON_PYCACHE_DIR` is checked. If set, it is used as-is for
 the root pycache directory.
 
@@ -121,7 +121,7 @@ They get cleaned out while the fetched runtime persists, which left the
 `__pycache__` symlinks dangling.
 :::
 
-:::
+::::
 
 :::{envvar} RULES_PYTHON_PYPI_HUB_RESERVED
 

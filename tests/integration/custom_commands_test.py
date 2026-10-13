@@ -36,7 +36,9 @@ class CustomCommandsTest(runner.TestCase):
             "--output=files",
             "deps(//:bin)",
         )
-        pycache = [f for f in result.stdout.splitlines() if "__pycache__" in f]
+        files = result.stdout.splitlines()
+        self.assertTrue(any("bin/python" in f or "python.exe" in f for f in files))
+        pycache = [f for f in files if "__pycache__" in f]
         self.assertEqual(pycache, [])
 
 
