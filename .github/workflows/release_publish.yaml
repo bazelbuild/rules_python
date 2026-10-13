@@ -49,7 +49,9 @@ jobs:
   build_tools:
     # For now, this only verifies that the tools build. They aren't attached
     # to the release, so no other job waits on this one. A failed build only
-    # adds a warning to this run; a failed check of the built files fails it.
+    # adds a warning to this run. The run fails if a build hangs past the job
+    # timeout, the built files fail their checks, or the ref's dev/platforms
+    # lacks a job's platform.
     name: Build tools
     uses: ./.github/workflows/release_build_tools.yaml
     with:

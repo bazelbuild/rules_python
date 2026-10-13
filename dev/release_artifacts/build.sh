@@ -14,6 +14,13 @@ triple="$2"
 # The paths below are relative to the workspace root.
 cd "$(dirname "$0")/../.."
 
+# Fail for a triple without a platform: it's the caller's mistake, unlike a
+# failed build, which only warns.
+if ! grep -qF "name = \"$triple\"," dev/platforms/BUILD.bazel; then
+  echo "::error::dev/platforms has no $triple platform"
+  exit 1
+fi
+
 # Keep Git Bash on Windows from rewriting `//foo` labels into paths.
 export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL="*"
 
