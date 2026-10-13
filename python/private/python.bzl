@@ -1624,6 +1624,8 @@ python = module_extension(
         "toolchain": _toolchain,
     },
     environ = ["RULES_PYTHON_BZLMOD_DEBUG"],
+    os_dependent = True,
+    arch_dependent = True,
 )
 
 _DEBUG_BUILD_CONTENT = """
