@@ -69,6 +69,8 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   `@bazel_skylib//lib:types.bzl` instead of `type(x)` comparisons.
 * **Non-Info Provider Naming**: Add `# buildifier: disable=name-conventions`
   above `provider()` declarations that do not end in `Info` (e.g. `*Fileset`).
+* **`config_setting` Naming**: Prefix `config_setting` names with `is_` (e.g.
+  `is_linux_x86_64`), so that `select()` keys read as conditions.
 * **Docstring Formatting Invariants**: Use triple-quoted strings for multi-line
   docstrings without trailing backslashes (`\`) for line continuation.
 * **No Bazel Copyright Headers**: Do not add Bazel copyright headers to new or
