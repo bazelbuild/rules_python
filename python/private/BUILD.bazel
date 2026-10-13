@@ -671,6 +671,7 @@ bzl_library(
         ":common_labels",
         ":reexports",
         "//python:py_runtime_info",
+        "//python/private/pypi:python_tag",
         "@bazel_skylib//rules:common_settings",
     ],
 )
@@ -730,6 +731,7 @@ bzl_library(
         ":py_package",
         ":rule_builders",
         ":stamp_impl",
+        ":toolchain_types",
         ":transition_labels",
         ":version",
     ],
