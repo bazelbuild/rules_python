@@ -41,3 +41,6 @@
   Bzlmod with `target_compatible_with = SUPPORTS_BZLMOD`
   (`//tests/support:support.bzl`). WORKSPACE mode resolves pip dependencies for
   only the host Python version.
+* **Non-Obvious Test Constructs**: Add an inline comment when a test target
+  uses an intentionally unusual construct (e.g., a `select()` with only
+  `//conditions:default` to verify macro `select()` handling).
