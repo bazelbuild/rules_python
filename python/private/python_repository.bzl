@@ -60,6 +60,10 @@ def _get_pycache_root(rctx):
         {type}`path | None` The path to the pycache root, or None if it couldn't
         be created.
     """
+    res = rctx.getenv("RULES_PYTHON_PYCACHE_DIR")
+    if res and res.lower() in ("/dev/null", "nul"):
+        return None
+
     os_name = repo_utils.get_platforms_os_name(rctx)
     is_windows = os_name == "windows"
 
@@ -74,7 +78,6 @@ def _get_pycache_root(rctx):
         hash("{}:{}".format(rctx.workspace_root, runtime_hash)),
     )
 
-    res = rctx.getenv("RULES_PYTHON_PYCACHE_DIR")
     if res:
         return repo_utils.mkdir(rctx, rctx.path(res).get_child(suffix))
 
@@ -100,7 +103,7 @@ def _get_pycache_root(rctx):
     return repo_utils.mkdir(rctx, path)
 
 def _create_pycache_symlinks(rctx, logger):
-    """Finds all directories with a .py file and creates __pycache__ symlinks.
+    """Finds all directories with a .py file and creates __pycache__ entries.
 
     Args:
         rctx: {type}`repository_ctx` The repository rule's context object.
@@ -109,9 +112,6 @@ def _create_pycache_symlinks(rctx, logger):
     pycache_root = _get_pycache_root(rctx)
     logger.info(lambda: "pycache root: {}".format(pycache_root))
     pycache_root_str = str(pycache_root) if pycache_root else None
-
-    os_name = repo_utils.get_platforms_os_name(rctx)
-    null_device = "NUL" if os_name == "windows" else "/dev/null"
 
     queue = [rctx.path(".")]
 
@@ -146,7 +146,13 @@ def _create_pycache_symlinks(rctx, logger):
                 rctx.symlink(target_dir, pycache_dir)
             else:
                 rctx.delete(pycache_dir)
-                rctx.symlink(null_device, pycache_dir)
+
+                # The intent is to disable pyc generation, which we can't
+                # entirely do directly. Symlinking to /dev/null makes it point
+                # to a character device, which can act weird when read or put
+                # into a zip. A regular file seems to make python skip local pyc
+                # generation, so use that.
+                rctx.file(pycache_dir, content = "", executable = False)
 
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:

@@ -112,8 +112,8 @@ the root pycache directory:
 2. `$HOME/.cache` (non-Windows), the XDG default when `XDG_CACHE_HOME` is
    unset, or `LOCALAPPDATA` (Windows).
 
-If such a diretory cannot be found, or created, then `/dev/null` will be used,
-which will effectively disable pyc caching.
+If `/dev/null` (`NUL` on Windows) is specified, or if a directory cannot be
+found or created, then pyc caching will be disabled.
 
 :::{versionchanged} VERSION_NEXT_PATCH
 Temporary directories (`TMP`, `TEMP`, `/tmp` and `C:\Temp`) are no longer used.
