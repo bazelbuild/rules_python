@@ -20,6 +20,13 @@ def wait_for_signal(handle_signal):
 
 
 def main():
+    if sys.argv[1:] == ["check-ignored-signals"]:
+        ignored = all(
+            signal.getsignal(sig) == signal.SIG_IGN
+            for sig in (signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM)
+        )
+        print(f"ignored-signals:{ignored}")
+        return 0
     if sys.argv[1:] == ["wait-for-sigterm"]:
         return wait_for_signal(handle_signal=True)
     if sys.argv[1:] == ["wait-for-unhandled-sigterm"]:

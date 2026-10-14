@@ -257,7 +257,9 @@ def run_subprocess(subprocess_argv, env, cwd):
     for name in ("SIGHUP", "SIGINT", "SIGQUIT", "SIGTERM"):
         signum = getattr(signal, name, None)
         if signum is not None:
-            previous_handlers[signum] = signal.signal(signum, forward_signal)
+            # Ignored signals must remain ignored across the child exec.
+            if signal.getsignal(signum) != signal.SIG_IGN:
+                previous_handlers[signum] = signal.signal(signum, forward_signal)
 
     try:
         child = subprocess.Popen(subprocess_argv, env=env, cwd=cwd)
@@ -308,8 +310,6 @@ def execute_file(
     #   workspace after the process finishes so control must return here.
     try:
         subprocess_argv = [python_program]
-        if not EXTRACT_ROOT:
-            subprocess_argv.append(f"-XRULES_PYTHON_ZIP_DIR={dirname(runfiles_root)}")
         subprocess_argv.append(main_filename)
         subprocess_argv += args
         print_verbose("subprocess env:", mapping=env)

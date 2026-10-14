@@ -17,6 +17,15 @@ def _extract_root_from_output(output):
     raise AssertionError(f"Could not find file: line in output:\n{output}")
 
 
+def _assert_removed_eventually(test, path):
+    # Shell launchers exec the app and leave cleanup to a detached watcher.
+    deadline = time.monotonic() + 15
+    while os.path.exists(path):
+        if time.monotonic() >= deadline:
+            test.fail(f"Temporary zip extraction dir leaked after exit: {path}")
+        time.sleep(0.1)
+
+
 class SystemPythonZipAppTest(unittest.TestCase):
     def test_zipapp_runnable(self):
         zipapp_path = os.environ["TEST_ZIPAPP"]
@@ -47,10 +56,7 @@ class SystemPythonZipAppTest(unittest.TestCase):
         )
 
         extract_root = _extract_root_from_output(output)
-        self.assertFalse(
-            os.path.exists(extract_root),
-            f"Temporary zip extraction dir leaked after exit: {extract_root}",
-        )
+        _assert_removed_eventually(self, extract_root)
 
 
 @unittest.skipUnless(os.name == "posix", "POSIX signals are required")
@@ -100,10 +106,7 @@ class PosixSignalZipAppTest(unittest.TestCase):
                     output, _ = process.communicate(timeout=10)
                     self.assertEqual(0, process.returncode, output)
                     self.assertIn(f"received:{signal.SIGTERM}", output)
-                    self.assertFalse(
-                        os.path.exists(extract_root),
-                        f"Temporary zip extraction dir leaked after handled SIGTERM: {extract_root}",
-                    )
+                    _assert_removed_eventually(self, extract_root)
                 finally:
                     self.stop_process(process, application_pid)
 
@@ -120,10 +123,7 @@ class PosixSignalZipAppTest(unittest.TestCase):
                         128 + signal.SIGTERM if invoke_with_python else -signal.SIGTERM
                     )
                     self.assertEqual(expected, process.returncode, output)
-                    self.assertFalse(
-                        os.path.exists(extract_root),
-                        f"Temporary zip extraction dir leaked after unhandled SIGTERM: {extract_root}",
-                    )
+                    _assert_removed_eventually(self, extract_root)
                 finally:
                     self.stop_process(process, application_pid)
 
@@ -157,15 +157,16 @@ class PosixSignalZipAppTest(unittest.TestCase):
                     )
 
     def test_zipapp_preserves_sig_ign(self):
+        sighup = getattr(signal, "SIGHUP")
         for invoke_with_python in (False, True):
             with self.subTest(invoke_with_python=invoke_with_python):
                 process, application_pid, _ = self.start_signal_app(
                     "wait-for-unhandled-sigterm",
                     invoke_with_python,
-                    preexec_fn=lambda: signal.signal(signal.SIGHUP, signal.SIG_IGN),
+                    preexec_fn=lambda: signal.signal(sighup, signal.SIG_IGN),
                 )
                 try:
-                    process.send_signal(signal.SIGHUP)
+                    process.send_signal(sighup)
                     time.sleep(0.2)
                     self.assertIsNone(
                         process.poll(),
@@ -194,6 +195,26 @@ class PosixSignalZipAppTest(unittest.TestCase):
                     check=False,
                 )
                 self.assertEqual(17, process.returncode)
+
+    def test_zipapp_inherits_ignored_signals(self):
+        def ignore_signals():
+            for name in ("SIGHUP", "SIGINT", "SIGQUIT", "SIGTERM"):
+                signal.signal(getattr(signal, name), signal.SIG_IGN)
+
+        for invoke_with_python in (False, True):
+            with self.subTest(invoke_with_python=invoke_with_python):
+                process = subprocess.run(
+                    self.zipapp_command(
+                        "check-ignored-signals", invoke_with_python=invoke_with_python
+                    ),
+                    preexec_fn=ignore_signals,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    timeout=10,
+                    check=True,
+                )
+                self.assertIn("ignored-signals:True", process.stdout)
 
 
 if __name__ == "__main__":

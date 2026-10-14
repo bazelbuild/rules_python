@@ -511,7 +511,9 @@ def _run_subprocess(argv, env, cwd):
   for name in ("SIGHUP", "SIGINT", "SIGQUIT", "SIGTERM"):
     signum = getattr(signal, name, None)
     if signum is not None:
-      previous_handlers[signum] = signal.signal(signum, forward_signal)
+      # Ignored signals must remain ignored across the child exec.
+      if signal.getsignal(signum) != signal.SIG_IGN:
+        previous_handlers[signum] = signal.signal(signum, forward_signal)
 
   try:
     child = subprocess.Popen(argv, env=env, cwd=cwd)

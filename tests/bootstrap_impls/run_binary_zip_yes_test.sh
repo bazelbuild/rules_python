@@ -33,9 +33,9 @@ actual=$($bin)
 
 # How we detect if a zip file was executed from depends on which bootstrap
 # is used.
-# bootstrap_impl=script outputs RULES_PYTHON_ZIP_DIR:<somepath>
+# bootstrap_impl=script outputs file:<somepath>/runfiles/...
 # bootstrap_impl=system_python outputs file:.*Bazel.runfiles (or .exe.runfiles on Windows)
-expected_pattern="RULES_PYTHON_ZIP_DIR:/\|file:.*Bazel.runfiles\|file:.*\.exe\.runfiles"
+expected_pattern="file:.*/runfiles/\|file:.*Bazel.runfiles\|file:.*\.exe\.runfiles"
 if ! (echo "$actual" | grep "$expected_pattern" ) >/dev/null; then
   echo "expected output to match: $expected_pattern"
   echo "but got: $actual"
@@ -49,10 +49,16 @@ esac
 # Verify that temporary extracted zip directories are cleaned up when the binary exits.
 extracted_file=$(echo "$actual" | sed -n 's/^file: //p')
 extracted_root="${extracted_file%%/runfiles/*}"
-if [[ -n "$extracted_root" && -e "$extracted_root" ]]; then
-  echo "ERROR: temporary zip directory was not cleaned up after exit: $extracted_root" >&2
-  exit 1
-fi
+assert_removed_eventually() {
+  local path="$1"
+  for _ in {1..150}; do
+    [[ ! -e "$path" ]] && return 0
+    sleep 0.1
+  done
+  echo "ERROR: temporary zip directory was not cleaned up after exit: $path" >&2
+  return 1
+}
+assert_removed_eventually "$extracted_root" || exit 1
 
 test_dir=$(mktemp -d)
 launcher_pid=""
@@ -79,7 +85,8 @@ run_signal_case() {
   local expected_output="$3"
   local log="${test_dir}/${mode}.log"
 
-  "$bin" "${mode}" >"${log}" 2>&1 &
+  # An inherited ignored SIGHUP must remain ignored through both bootstraps.
+  ( trap '' HUP; exec "$bin" "${mode}" ) >"${log}" 2>&1 &
   launcher_pid=$!
   for _ in {1..100}; do
     if grep -F "ready:" "${log}" >/dev/null; then
@@ -90,6 +97,9 @@ run_signal_case() {
   grep -F "ready:" "${log}" >/dev/null || return 1
   application_pid=$(sed -n 's/^ready://p' "${log}")
 
+  kill -HUP "${launcher_pid}"
+  sleep 0.2
+  kill -0 "${application_pid}" || return 1
   kill -TERM "${launcher_pid}"
   (
     sleep 10
@@ -109,6 +119,9 @@ run_signal_case() {
   if [[ -n "${expected_output}" ]]; then
     grep -F "${expected_output}" "${log}" >/dev/null || return 1
   fi
+  local extracted_file
+  extracted_file=$(sed -n 's/^file: //p' "${log}")
+  assert_removed_eventually "${extracted_file%%/runfiles/*}" || return 1
   launcher_pid=""
   application_pid=""
 }

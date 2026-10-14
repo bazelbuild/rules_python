@@ -24,6 +24,7 @@ if sys.argv[1:] in (["handled"], ["unhandled"]):
 
         signal.signal(signal.SIGTERM, handle)
 
+    print(f"file: {__file__}", flush=True)
     print(f"ready:{os.getpid()}", flush=True)
     signal.pause()
     raise SystemExit(0)
