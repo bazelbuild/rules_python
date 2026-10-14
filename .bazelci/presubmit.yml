@@ -36,44 +36,44 @@ buildifier:
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
   build_flags: &reusable_config_build_flags
-    - "--experimental_repository_cache_hardlinks=false"
-    - "--keep_going"
-    - "--build_tag_filters=-integration-test"
-    - "--verbose_failures"
+    ? "--experimental_repository_cache_hardlinks=false"
+    ? "--keep_going"
+    ? "--build_tag_filters=-integration-test"
+    ? "--verbose_failures"
   test_targets:
     - "--"
     - "..."
   test_flags:
-    - "--test_tag_filters=-integration-test"
+    ? "--test_tag_filters=-integration-test"
 .common_workspace_flags_min_bazel: &common_workspace_flags_min_bazel
   build_flags:
-    - "--experimental_repository_cache_hardlinks=false"
-    - "--noenable_bzlmod"
-    - "--build_tag_filters=-integration-test"
+    ? "--experimental_repository_cache_hardlinks=false"
+    ? "--noenable_bzlmod"
+    ? "--build_tag_filters=-integration-test"
   test_flags:
-    - "--noenable_bzlmod"
-    - "--test_tag_filters=-integration-test"
+    ? "--noenable_bzlmod"
+    ? "--test_tag_filters=-integration-test"
 .common_workspace_flags: &common_workspace_flags
   skip_in_bazel_downstream_pipeline: "Bazel 9 doesn't support workspace"
   test_flags:
-    - "--noenable_bzlmod"
-    - "--enable_workspace"
-    - "--test_tag_filters=-integration-test"
+    ? "--noenable_bzlmod"
+    ? "--enable_workspace"
+    ? "--test_tag_filters=-integration-test"
   build_flags:
-    - "--noenable_bzlmod"
-    - "--enable_workspace"
-    - "--build_tag_filters=-integration-test"
+    ? "--noenable_bzlmod"
+    ? "--enable_workspace"
+    ? "--build_tag_filters=-integration-test"
   bazel: 7.x
 # NOTE: The Mac and Windows bazelinbazel jobs override parts of this config.
 .common_bazelinbazel_config: &common_bazelinbazel_config
     build_flags:
-      - "--build_tag_filters=integration-test"
+      ? "--build_tag_filters=integration-test"
     test_flags:
-      - "--test_tag_filters=integration-test"
-      - "--jobs=2"
+      ? "--test_tag_filters=integration-test"
+      ? "--jobs=2"
       # The integration tests are so expensive that only a few can be run concurrently
       # without harming overall reliability and runtime.
-      - "--local_test_jobs=2"
+      ? "--local_test_jobs=2"
     build_targets: ["..."]
     test_targets: ["..."]
 
@@ -139,9 +139,9 @@ tasks:
     working_directory: examples/bzlmod
     bazel: ${{ bazel }}
     build_flags:
-      - "--keep_going"
+      ? "--keep_going"
     test_flags:
-      - "--keep_going"
+      ? "--keep_going"
     build_targets:
       - "//..."
     test_targets:
@@ -245,8 +245,8 @@ tasks:
       - "--"
       - "//tests/..."
     test_flags:
-      - "--keep_going"
-      - "--test_tag_filters=-integration-test"
+      ? "--keep_going"
+      ? "--test_tag_filters=-integration-test"
   ubuntu_workspace:
     <<: *reusable_config
     <<: *common_workspace_flags
@@ -271,17 +271,17 @@ tasks:
       # their package path is qualified with the repo name.
       - "@rules_python//examples/wheel/..."
     build_flags:
-      - "--noenable_bzlmod"
-      - "--enable_workspace"
-      - "--keep_going"
-      - "--build_tag_filters=-integration-test"
+      ? "--noenable_bzlmod"
+      ? "--enable_workspace"
+      ? "--keep_going"
+      ? "--build_tag_filters=-integration-test"
     test_targets:
       - "--"
       - "..."
     test_flags:
-      - "--noenable_bzlmod"
-      - "--enable_workspace"
-      - "--test_tag_filters=-integration-test"
+      ? "--noenable_bzlmod"
+      ? "--enable_workspace"
+      ? "--test_tag_filters=-integration-test"
 
   debian:
     <<: *reusable_config
@@ -299,27 +299,27 @@ tasks:
     platform: windows
     bazel: ${{ bazel }}
     test_flags:
-      - "--test_tag_filters=-integration-test,-fix-windows"
+      ? "--test_tag_filters=-integration-test,-fix-windows"
   rbe_min:
     <<: *minimum_supported_version
     <<: *reusable_config
     name: "RBE: Ubuntu, minimum Bazel"
     platform: rbe_ubuntu2404
     build_flags:
-      - "--experimental_repository_cache_hardlinks=false"
+      ? "--experimental_repository_cache_hardlinks=false"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
-      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
-      - "--build_tag_filters=-docs"
+      ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      ? "--build_tag_filters=-docs"
     test_flags:
-      - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
+      ? "--test_tag_filters=-integration-test,-acceptance-test,-docs"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
-      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
   rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
@@ -328,8 +328,8 @@ tasks:
     # See https://github.com/bazelbuild/rules_python/issues/2499
     bazel: 8.x
     test_flags:
-      - "--test_tag_filters=-integration-test,-acceptance-test"
-      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      ? "--test_tag_filters=-integration-test,-acceptance-test"
+      ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version
