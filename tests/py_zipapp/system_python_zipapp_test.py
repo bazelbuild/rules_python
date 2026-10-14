@@ -2,7 +2,19 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
+import time
 import unittest
+
+
+def _extract_root_from_output(output):
+    for line in output.splitlines():
+        if line.startswith("file:"):
+            file_path = line.removeprefix("file:").strip()
+            runfiles_marker = f"{os.sep}runfiles{os.sep}"
+            if runfiles_marker in file_path:
+                return file_path.split(runfiles_marker, 1)[0]
+    raise AssertionError(f"Could not find file: line in output:\n{output}")
 
 
 class SystemPythonZipAppTest(unittest.TestCase):
@@ -28,6 +40,17 @@ class SystemPythonZipAppTest(unittest.TestCase):
             )
         self.assertIn("Hello from zipapp", output)
         self.assertIn("dep:", output)
+        self.assertIn(
+            "xoption_zip_dir:UNSET",
+            output,
+            f"RULES_PYTHON_ZIP_DIR -X option leaked into user main.py:\n{output}",
+        )
+
+        extract_root = _extract_root_from_output(output)
+        self.assertFalse(
+            os.path.exists(extract_root),
+            f"Temporary zip extraction dir leaked after exit: {extract_root}",
+        )
 
 
 @unittest.skipUnless(os.name == "posix", "POSIX signals are required")
@@ -39,17 +62,21 @@ class PosixSignalZipAppTest(unittest.TestCase):
             command.insert(0, sys.executable)
         return [*command, *args]
 
-    def start_signal_app(self, mode, invoke_with_python):
+    def start_signal_app(self, mode, invoke_with_python, preexec_fn=None):
         process = subprocess.Popen(
             self.zipapp_command(mode, invoke_with_python=invoke_with_python),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            preexec_fn=preexec_fn,
         )
         self.assertIsNotNone(process.stdout)
+        file_line = process.stdout.readline().strip()
+        self.assertTrue(file_line.startswith("file:"), file_line)
+        extract_root = _extract_root_from_output(file_line)
         ready = process.stdout.readline().strip()
         self.assertTrue(ready.startswith("ready:"), ready)
-        return process, int(ready.removeprefix("ready:"))
+        return process, int(ready.removeprefix("ready:")), extract_root
 
     def stop_process(self, process, application_pid):
         if process.poll() is None:
@@ -65,7 +92,7 @@ class PosixSignalZipAppTest(unittest.TestCase):
     def test_zipapp_forwards_sigterm(self):
         for invoke_with_python in (False, True):
             with self.subTest(invoke_with_python=invoke_with_python):
-                process, application_pid = self.start_signal_app(
+                process, application_pid, extract_root = self.start_signal_app(
                     "wait-for-sigterm", invoke_with_python
                 )
                 try:
@@ -73,13 +100,17 @@ class PosixSignalZipAppTest(unittest.TestCase):
                     output, _ = process.communicate(timeout=10)
                     self.assertEqual(0, process.returncode, output)
                     self.assertIn(f"received:{signal.SIGTERM}", output)
+                    self.assertFalse(
+                        os.path.exists(extract_root),
+                        f"Temporary zip extraction dir leaked after handled SIGTERM: {extract_root}",
+                    )
                 finally:
                     self.stop_process(process, application_pid)
 
     def test_zipapp_preserves_signal_termination(self):
         for invoke_with_python in (False, True):
             with self.subTest(invoke_with_python=invoke_with_python):
-                process, application_pid = self.start_signal_app(
+                process, application_pid, extract_root = self.start_signal_app(
                     "wait-for-unhandled-sigterm", invoke_with_python
                 )
                 try:
@@ -89,6 +120,67 @@ class PosixSignalZipAppTest(unittest.TestCase):
                         128 + signal.SIGTERM if invoke_with_python else -signal.SIGTERM
                     )
                     self.assertEqual(expected, process.returncode, output)
+                    self.assertFalse(
+                        os.path.exists(extract_root),
+                        f"Temporary zip extraction dir leaked after unhandled SIGTERM: {extract_root}",
+                    )
+                finally:
+                    self.stop_process(process, application_pid)
+
+    def test_zipapp_preserves_extract_root_cache(self):
+        for invoke_with_python in (False, True):
+            with self.subTest(invoke_with_python=invoke_with_python):
+                with tempfile.TemporaryDirectory() as extract_root_env:
+                    env = {**os.environ, "RULES_PYTHON_EXTRACT_ROOT": extract_root_env}
+                    proc = subprocess.run(
+                        self.zipapp_command(invoke_with_python=invoke_with_python),
+                        env=env,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        check=True,
+                    )
+                    extract_root = _extract_root_from_output(proc.stdout)
+                    self.assertTrue(
+                        extract_root.startswith(extract_root_env),
+                        f"Expected {extract_root} to be under {extract_root_env}",
+                    )
+                    self.assertTrue(
+                        os.path.exists(extract_root),
+                        f"RULES_PYTHON_EXTRACT_ROOT cache dir was unexpectedly deleted: {extract_root}",
+                    )
+                    self.assertIn(
+                        "xoption_zip_dir:UNSET",
+                        proc.stdout,
+                        "RULES_PYTHON_ZIP_DIR should not be exposed when "
+                        f"RULES_PYTHON_EXTRACT_ROOT is set:\n{proc.stdout}",
+                    )
+
+    def test_zipapp_preserves_sig_ign(self):
+        for invoke_with_python in (False, True):
+            with self.subTest(invoke_with_python=invoke_with_python):
+                process, application_pid, _ = self.start_signal_app(
+                    "wait-for-unhandled-sigterm",
+                    invoke_with_python,
+                    preexec_fn=lambda: signal.signal(signal.SIGHUP, signal.SIG_IGN),
+                )
+                try:
+                    process.send_signal(signal.SIGHUP)
+                    time.sleep(0.2)
+                    self.assertIsNone(
+                        process.poll(),
+                        f"Process died from SIGHUP (returncode={process.returncode}) instead of ignoring SIG_IGN",
+                    )
+                    process.terminate()
+                    output, _ = process.communicate(timeout=10)
+                    expected = (
+                        128 + signal.SIGTERM if invoke_with_python else -signal.SIGTERM
+                    )
+                    self.assertEqual(
+                        expected,
+                        process.returncode,
+                        f"Process died from SIGHUP instead of ignoring SIG_IGN:\n{output}",
+                    )
                 finally:
                     self.stop_process(process, application_pid)
 

@@ -46,6 +46,14 @@ case "$(uname -s)" in
   CYGWIN*|MINGW*|MSYS*) exit 0 ;;
 esac
 
+# Verify that temporary extracted zip directories are cleaned up when the binary exits.
+extracted_file=$(echo "$actual" | sed -n 's/^file: //p')
+extracted_root="${extracted_file%%/runfiles/*}"
+if [[ -n "$extracted_root" && -e "$extracted_root" ]]; then
+  echo "ERROR: temporary zip directory was not cleaned up after exit: $extracted_root" >&2
+  exit 1
+fi
+
 test_dir=$(mktemp -d)
 launcher_pid=""
 application_pid=""

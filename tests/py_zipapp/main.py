@@ -13,6 +13,7 @@ def wait_for_signal(handle_signal):
 
         signal.signal(signal.SIGTERM, handle)
 
+    print(f"file:{__file__}", flush=True)
     print(f"ready:{os.getpid()}", flush=True)
     signal.pause()
     return 0
@@ -27,6 +28,8 @@ def main():
         return int(sys.argv[2])
 
     print("Hello from zipapp")
+    print(f"file:{__file__}")
+    print(f"xoption_zip_dir:{sys._xoptions.get('RULES_PYTHON_ZIP_DIR', 'UNSET')}")
     try:
         import some_dep
 
