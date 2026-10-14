@@ -23,8 +23,9 @@ Your sole task is to audit `news/` fragment files and user-visible changes in
    - Verify each news entry is a short snippet (1-2 concise sentences) that is
      easy to skim and grok when combined into `CHANGELOG.md`.
    - Flag overly long, verbose entries or entries that explain internal
-     implementation details, background rationale, or exhaustive edge cases
-     (provide a shortened rewrite in your report).
+     implementation details, background rationale, exhaustive lists of symbol
+     names, or exhaustive edge cases (provide a shortened rewrite in your
+     report).
 5. **Formatting & Cross-References**:
    - Verify no leading bullet points (`*` or `-`).
    - Verify subsystem prefix in parentheses when applicable (e.g., `(pypi)`,
