@@ -61,6 +61,20 @@ def retry_job_by_uuid(job_id):
     return subprocess.run(["bk", "job", "retry", job_id])
 
 
+def unblock_manual_jobs(jobs):
+    unblocked = []
+    for j in jobs:
+        jstate = j.get("state", "")
+        is_manual_block = j.get("type") == "manual" or j.get("unblockable") is True
+        jid = j.get("id")
+        if jid and jstate in ("blocked", "blocked_failed") and is_manual_block:
+            jname = j.get("name") or j.get("label") or jid
+            print(f"🔓 Unblocking manual approval job '{jname}' (ID: {jid})...")
+            subprocess.run(["bk", "job", "unblock", jid, "--no-input"])
+            unblocked.append(j)
+    return unblocked
+
+
 def retry_jobs_by_name(pipeline, build_number, job_pattern):
     check_cli("bk", "https://github.com/buildkite/cli")
     cmd = ["bk", "build", "view", str(build_number), "-p", pipeline, "--json"]
@@ -119,6 +133,11 @@ def main():
         action="store_true",
         help="Rebuild the entire build afresh via 'bk build rebuild'",
     )
+    parser.add_argument(
+        "--unblock",
+        action="store_true",
+        help="Unblock manual approval steps (e.g. .bazelci/presubmit.yml changes) via 'bk job unblock'",
+    )
     args = parser.parse_args()
 
     check_cli("bk", "https://github.com/buildkite/cli")
@@ -146,6 +165,24 @@ def main():
 
     if args.job_name:
         retry_jobs_by_name(pipeline, build_number, args.job_name)
+    elif args.unblock:
+        cmd = [
+            "bk",
+            "build",
+            "view",
+            str(build_number),
+            "-p",
+            pipeline,
+            "--json",
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(res.stdout)
+        unblocked = unblock_manual_jobs(data.get("jobs", []))
+        if not unblocked:
+            print(
+                f"ℹ️ No blocked manual approval jobs found in build #{build_number}.",
+                file=sys.stderr,
+            )
     elif args.rebuild:
         print(f"🚀 Rebuilding entire build #{build_number} for pipeline: {pipeline}")
         res = subprocess.run(
@@ -153,7 +190,7 @@ def main():
         )
         sys.exit(res.returncode)
     else:
-        # Default behavior: try job-level retries of failed jobs if any, otherwise rebuild
+        # Default behavior: unblock manual approval steps and retry failed jobs if any, otherwise rebuild
         cmd = [
             "bk",
             "build",
@@ -166,9 +203,11 @@ def main():
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, check=True)
             data = json.loads(res.stdout)
+            jobs = data.get("jobs", [])
+            unblocked_jobs = unblock_manual_jobs(jobs)
             failed_jobs = [
                 j
-                for j in data.get("jobs", [])
+                for j in jobs
                 if j.get("state") in ("failed", "broken", "timed_out") and j.get("id")
             ]
             if failed_jobs:
@@ -177,7 +216,7 @@ def main():
                     jname = j.get("name") or j.get("label") or jid
                     print(f"🚀 Retrying failed job '{jname}' (ID: {jid})...")
                     subprocess.run(["bk", "job", "retry", jid])
-            else:
+            elif not unblocked_jobs:
                 print(
                     f"🚀 Rebuilding entire build #{build_number} for pipeline: {pipeline}"
                 )
