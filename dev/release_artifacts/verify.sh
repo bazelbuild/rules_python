@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Checks the files built by build.sh for the platform with the Rust target
-# triple TRIPLE: that Linux files are statically linked for the right CPU, and
-# that macOS files don't require a newer macOS than users may have. Windows
-# files aren't checked.
+# triple TRIPLE: that Linux files are statically linked, that Linux and Windows
+# files are for the right CPU, and that macOS files don't require a newer macOS
+# than users may have.
 #
 # Usage: dev/release_artifacts/verify.sh TRIPLE
 set -euo pipefail
@@ -54,7 +54,31 @@ while IFS= read -r bin; do
         exit 1
       fi
       ;;
-    *-windows-*) ;; # Not checked.
+    *-windows-*)
+      # The i686 files are cross-compiled, so check that they're for the right
+      # CPU. PE files start with "MZ", and the PE header's offset is at 0x3c.
+      # The machine type follows the header's 4-byte signature. Like PE, the
+      # runners are little-endian, and od uses the host's byte order.
+      if [[ "$(head -c2 "$bin")" != MZ ]]; then
+        echo "::error::$bin isn't a PE file"
+        exit 1
+      fi
+      pe="$(od -An -tu4 -j60 -N4 "$bin" | tr -d ' ')"
+      machine="$(od -An -tx2 -j"$((pe + 4))" -N2 "$bin" | tr -d ' ')"
+      case "$triple" in
+        aarch64-*) want="aa64" ;;
+        i686-*) want="014c" ;;
+        x86_64-*) want="8664" ;;
+        *)
+          echo "::error::$bin: no CPU check for $triple"
+          exit 1
+          ;;
+      esac
+      if [[ "$machine" != "$want" ]]; then
+        echo "::error::$bin's PE machine type is 0x$machine, not 0x$want"
+        exit 1
+      fi
+      ;;
     *)
       echo "::error::$bin: no checks for $triple"
       exit 1

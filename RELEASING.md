@@ -71,7 +71,7 @@ gh workflow run release_publish.yaml --ref <TAG> -f publish_to_pypi=false
 
 The release workflow also builds `//dev/release_artifacts:artifacts_for_release`
 for each platform to verify it builds. For now, the files aren't attached to
-the release.
+the release, so a failed "Build tools" job doesn't block it.
 
 ### Manually publishing to PyPI
 

@@ -21,6 +21,8 @@ Before drafting any news entry, adhere strictly to the rules in
 ## Brevity and Content
 * Write a short snippet (1-2 concise sentences) so the combined `CHANGELOG.md`
   is easy to skim and grok.
+* Summarize the capability rather than listing every new variable, attribute, or
+  field name (leave exhaustive lists to the API reference docs).
 * State high-level, user-visible behavior and outcomes (what now works, what
   changed).
 * Omit internal implementation details, refactoring mechanics, and exhaustive

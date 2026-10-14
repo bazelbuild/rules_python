@@ -33,6 +33,9 @@ jobs:
   build:
     name: Build ${{ matrix.triple }}
     runs-on: ${{ matrix.runner }}
+    # Builds take a few minutes; cancel hung ones instead of holding a runner
+    # for the default 6 hours.
+    timeout-minutes: 30
     strategy:
       # Report the result of every platform instead of stopping at the first
       # failure.
@@ -81,15 +84,15 @@ jobs:
 
       # Release commands run main's workflows, even for patch releases of older
       # release branches. Skip refs without dev/platforms, since their scripts
-      # don't build for the job's platform, or don't exist. Refs whose
-      # dev/platforms lacks the job's platform fail the build, which only warns.
+      # don't build for the job's platform, or don't exist. If a ref's
+      # dev/platforms lacks the job's platform, build.sh fails.
       - name: Build artifacts
         id: build
         if: hashFiles('dev/platforms/BUILD.bazel') != ''
         run: dev/release_artifacts/build.sh "$REF" "$TRIPLE"
 
-      # build.sh only sets `files` if the build succeeded. Otherwise, it adds a
-      # warning instead of failing, since releases don't use the files yet.
+      # build.sh only sets `files` if the build succeeded. If the build failed,
+      # it only adds a warning, since releases don't use the files yet.
       - name: Verify artifacts
         if: steps.build.outputs.files != ''
         run: dev/release_artifacts/verify.sh "$TRIPLE"
