@@ -300,13 +300,13 @@ tasks:
     bazel: ${{ bazel }}
     build_flags:
       <<: *reusable_config_build_flags
-      # Fail if the image lacks Visual Studio's ARM64 build tools; see
-      # dev/release_artifacts/BUILD.bazel. Tests set it too, so that they reuse
+      # Among other things, makes missing Visual Studio ARM64 build tools an
+      # error; see .bazelrc. test_flags repeat it so that `bazel test` reuses
       # the build's analysis cache.
-      ? "--//dev/release_artifacts:require_msvc_arm64"
+      ? "--config=ci"
     test_flags:
       ? "--test_tag_filters=-integration-test,-fix-windows"
-      ? "--//dev/release_artifacts:require_msvc_arm64"
+      ? "--config=ci"
   rbe_min:
     <<: *minimum_supported_version
     <<: *reusable_config

@@ -8,17 +8,18 @@ load(
 )
 
 _ProbeInfo = provider(
-    doc = "Whether a usable C++ toolchain was found.",
+    doc = "The result of looking for a C++ toolchain.",
     fields = {"available": "bool: whether a usable C++ toolchain was found."},
 )
 
 def _probe_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx, mandatory = False)
 
-    # rules_cc registers its MSVC toolchains even if Visual Studio lacks the
-    # tools for their CPU, and then runs an error script instead of them.
+    # rules_cc registers its Windows toolchains even if their tools are
+    # missing, and then runs an error script instead of them, e.g.
+    # vc_installation_error_arm64.bat or clang_installation_error.bat.
     available = cc_toolchain != None and (
-        "vc_installation_error" not in cc_toolchain.compiler_executable
+        "installation_error" not in cc_toolchain.compiler_executable
     )
     return [_ProbeInfo(available = available)]
 
@@ -50,10 +51,10 @@ def _cc_toolchain_available_impl(ctx):
         ctx.attr.required_flag[BuildSettingInfo].value
     )
     if required and not available:
-        fail("{} is set, but no usable C++ toolchain can build for {}.".format(
-            ctx.attr.required_flag.label,
-            ctx.attr.platform.label,
-        ))
+        fail((
+            "{} is set, but no usable C++ toolchain can build for {}. " +
+            "Install one, or unset the flag."
+        ).format(ctx.attr.required_flag.label, ctx.attr.platform.label))
     return [config_common.FeatureFlagInfo(value = "yes" if available else "no")]
 
 _cc_toolchain_available = rule(
@@ -78,14 +79,15 @@ _cc_toolchain_available = rule(
 def cc_toolchain_available_config_setting(
         name,
         platform,
-        constraint_values = [],
+        constraint_values = None,
         required_flag = None,
         visibility = None):
     """Matches if a usable C++ toolchain can build for `platform`.
 
     Toolchain resolution for `platform` finds the toolchain, so the result
     reflects the registered toolchains and execution platforms. A toolchain
-    that runs rules_cc's error script instead of a compiler isn't usable.
+    that runs one of rules_cc's error scripts instead of a compiler isn't
+    usable.
 
     Args:
         name: The name of the `config_setting`.
@@ -93,10 +95,12 @@ def cc_toolchain_available_config_setting(
         constraint_values: Constraint values that the target platform must
             also have, as in `config_setting`.
         required_flag: The label of a `bool_flag`. When it's true and the
-            target platform has `constraint_values`, a missing toolchain fails
-            the build instead of not matching.
+            target platform has `constraint_values`, a missing or unusable
+            toolchain fails the build instead of not matching.
         visibility: The visibility of the `config_setting`.
     """
+    constraint_values = constraint_values or []
+
     _probe(
         name = name + "_probe",
         tags = ["manual"],

@@ -28,9 +28,8 @@ cross_compiled_files = rule(
     doc = """
 Builds `src` for each platform in `platforms`, in one build.
 
-`--platforms` selects one target platform for the whole build; this builds
-`src` for every platform in `platforms` instead. With no platforms, it builds
-nothing.
+`--platforms` selects only one target platform per build. With no platforms,
+this builds nothing.
 """,
     attrs = {
         "platforms": attr.label_list(
