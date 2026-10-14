@@ -40,11 +40,16 @@ buildifier:
     ? "--keep_going"
     ? "--build_tag_filters=-integration-test"
     ? "--verbose_failures"
+    # Among other things, makes missing Visual Studio ARM64 build tools an
+    # error on Windows; see .bazelrc. test_flags repeat it so that `bazel test`
+    # reuses the build's analysis cache.
+    ? "--config=ci"
   test_targets:
     - "--"
     - "..."
-  test_flags:
+  test_flags: &reusable_config_test_flags
     ? "--test_tag_filters=-integration-test"
+    ? "--config=ci"
 .common_workspace_flags_min_bazel: &common_workspace_flags_min_bazel
   build_flags:
     ? "--experimental_repository_cache_hardlinks=false"
@@ -245,8 +250,8 @@ tasks:
       - "--"
       - "//tests/..."
     test_flags:
+      <<: *reusable_config_test_flags
       ? "--keep_going"
-      ? "--test_tag_filters=-integration-test"
   ubuntu_workspace:
     <<: *reusable_config
     <<: *common_workspace_flags
@@ -298,15 +303,10 @@ tasks:
     name: "Default: Windows, Bazel {bazel}"
     platform: windows
     bazel: ${{ bazel }}
-    build_flags:
-      <<: *reusable_config_build_flags
-      # Among other things, makes missing Visual Studio ARM64 build tools an
-      # error; see .bazelrc. test_flags repeat it so that `bazel test` reuses
-      # the build's analysis cache.
-      ? "--config=ci"
     test_flags:
+      <<: *reusable_config_test_flags
+      # Bazel uses the last --test_tag_filters, so this replaces the merged one.
       ? "--test_tag_filters=-integration-test,-fix-windows"
-      ? "--config=ci"
   rbe_min:
     <<: *minimum_supported_version
     <<: *reusable_config
@@ -320,6 +320,7 @@ tasks:
       # build kite cc toolchain.
       ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
       ? "--build_tag_filters=-docs"
+      ? "--config=ci"
     test_flags:
       ? "--test_tag_filters=-integration-test,-acceptance-test,-docs"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
@@ -327,6 +328,7 @@ tasks:
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
       ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      ? "--config=ci"
   rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
@@ -337,6 +339,7 @@ tasks:
     test_flags:
       ? "--test_tag_filters=-integration-test,-acceptance-test"
       ? "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      ? "--config=ci"
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version

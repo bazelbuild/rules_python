@@ -69,10 +69,9 @@ cc_toolchain_available_config_setting(
     required_flag = ":require_msvc_arm64",
 )
 
-# BazelCI's default Windows jobs (the `windows` task in .bazelci/presubmit.yml)
-# set this through --config=ci (see .bazelrc), since their images have the
-# ARM64 build tools, so that losing them fails the build instead of going
-# unnoticed.
+# BazelCI sets this through --config=ci (see .bazelrc). Its Windows images have
+# the ARM64 build tools, so losing them fails the build instead of going
+# unnoticed. It has no effect unless the target platform is Windows x86_64.
 bool_flag(
     name = "require_msvc_arm64",
     build_setting_default = False,

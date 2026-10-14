@@ -53,7 +53,8 @@ common --experimental_downloader_config=downloader_config.cfg
 common --http_timeout_scaling=10.0
 common --experimental_repository_downloader_retries=10
 
-# Only BazelCI's default Windows jobs pass --config=ci (.bazelci/presubmit.yml).
+# BazelCI's default and RBE bzlmod jobs pass --config=ci; see
+# .bazelci/presubmit.yml.
 # To work around bug on bazel 7
 common:ci --experimental_repository_cache_hardlinks=false
 # Make missing Visual Studio ARM64 build tools an error on Windows x86_64; see
