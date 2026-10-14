@@ -5,9 +5,12 @@
 # aarch64 macOS file. s390x isn't covered yet: Rust ships no musl std for it,
 # and a static glibc build needs a C cross toolchain.
 #
-# Linux x86_64 hosts cross-compile for the musl ones, and Windows x86_64 hosts
-# for i686-pc-windows-msvc, with the Rust toolchains in MODULE.bazel. The
-# others are built on hosts that match them.
+# Linux x86_64 hosts can cross-compile for the musl ones, Windows x86_64 hosts
+# for the other Windows ones, and macOS arm64 hosts for x86_64-apple-darwin,
+# with the Rust toolchains in MODULE.bazel and rules_rust's defaults.
+# //dev/release_artifacts:cross_compiled_artifacts cross-compiles them all; the
+# release workflow builds aarch64-pc-windows-msvc and x86_64-apple-darwin on
+# hosts that match them instead.
 
 package(default_visibility = ["//:__subpackages__"])
 
