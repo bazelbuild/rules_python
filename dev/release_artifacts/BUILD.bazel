@@ -5,8 +5,7 @@ load(
     ":cc_toolchain_available_config_setting.bzl",
     "cc_toolchain_available_config_setting",
 )
-load(":cross_compiled_files.bzl", "cross_compiled_files")
-load(":release_files.bzl", "release_files")
+load(":release_files.bzl", "cross_compiled_files", "release_files")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -116,9 +115,4 @@ bzl_library(
         "@bazel_skylib//rules:common_settings",
         "@rules_cc//cc:find_cc_toolchain_bzl",
     ],
-)
-
-bzl_library(
-    name = "cross_compiled_files",
-    srcs = ["cross_compiled_files.bzl"],
 )
