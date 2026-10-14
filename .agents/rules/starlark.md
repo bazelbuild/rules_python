@@ -62,6 +62,12 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   not use mutable `list[T]`.
 
 ## Code Style & Conventions
+* **Direct Attribute Access**: Use normal attribute access (`x.field`) instead
+  of `getattr(x, "field", default)` for fields defined on a provider or struct
+  schema. When an object may be one of multiple provider/struct variants with
+  different field sets, guard once with `if hasattr(x, "field"):` (with a
+  comment explaining why the field may be absent) and use normal attribute
+  access inside the block.
 * **Dict union (`|`)**: Use `|` instead of `dicts.add(...)` from
   `@bazel_skylib//lib:dicts.bzl` when merging dictionaries.
 * **Type Checks (`@bazel_skylib//lib:types.bzl`)**: Prefer `types.is_*` helpers
