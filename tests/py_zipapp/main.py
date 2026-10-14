@@ -2,6 +2,7 @@
 
 import os
 import signal
+import stat
 import sys
 
 
@@ -20,6 +21,11 @@ def wait_for_signal(handle_signal):
 
 
 def main():
+    if sys.argv[1:] == ["readonly-file"]:
+        path = os.path.join(os.path.dirname(__file__), "readonly-cleanup-test")
+        with open(path, "w") as file:
+            file.write("Cleanup must remove read-only extracted files.\n")
+        os.chmod(path, stat.S_IREAD)
     if sys.argv[1:] == ["check-ignored-signals"]:
         ignored = all(
             signal.getsignal(sig) == signal.SIG_IGN

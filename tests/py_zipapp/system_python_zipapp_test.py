@@ -27,6 +27,14 @@ def _assert_removed_eventually(test, path):
 
 
 class SystemPythonZipAppTest(unittest.TestCase):
+    def test_zipapp_cleans_readonly_files(self):
+        output = subprocess.check_output(
+            [os.environ["TEST_ZIPAPP"], "readonly-file"],
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        _assert_removed_eventually(self, _extract_root_from_output(output))
+
     def test_zipapp_runnable(self):
         zipapp_path = os.environ["TEST_ZIPAPP"]
 

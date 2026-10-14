@@ -275,6 +275,16 @@ def run_subprocess(subprocess_argv, env, cwd):
     return ret_code
 
 
+def remove_readonly(function, path, _exc_info):
+    # Windows won't unlink extracted files whose archived mode is read-only.
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        function(path)
+    except OSError as error:
+        # Cleanup errors must not replace the application's exit status.
+        print_verbose("cleanup: failed to remove:", path, error)
+
+
 def execute_file(
     python_program,
     main_filename,
@@ -325,7 +335,11 @@ def execute_file(
             # whole temporary directory.
             extract_root = dirname(runfiles_root)
             print_verbose("cleanup: rmtree: ", extract_root)
-            shutil.rmtree(extract_root, True)
+            if IS_WINDOWS:
+                # onerror is supported by older bootstrap interpreters too.
+                shutil.rmtree(extract_root, onerror=remove_readonly)
+            else:
+                shutil.rmtree(extract_root, True)
 
 
 def finish_venv_setup(runfiles_root):
