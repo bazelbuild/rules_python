@@ -79,6 +79,8 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   `is_linux_x86_64`), so that `select()` keys read as conditions.
 * **Docstring Formatting Invariants**: Use triple-quoted strings for multi-line
   docstrings without trailing backslashes (`\`) for line continuation.
+* **Workaround Comments**: Comment non-obvious workarounds with the intent, why
+  the direct approach fails, and why the workaround works.
 * **No Bazel Copyright Headers**: Do not add Bazel copyright headers to new or
   existing files unless explicitly directed by the user.
 * **Line Length & Wrapping**: Wrap Markdown and Starlark lines to 80 columns in

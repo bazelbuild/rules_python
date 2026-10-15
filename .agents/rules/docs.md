@@ -9,6 +9,8 @@ globs: docs/*.md
 * Act as an expert in tech writing, Sphinx, MyST, and markdown.
 * Wrap lines at 80 columns.
 * Use hyphens (`-`) in file names instead of underscores (`_`).
+* Document user-visible behavior, not internal workarounds or implementation
+  details.
 * **How-to Guides (`docs/howto/`)**:
   * Prefer adding sections to an existing topical guide (e.g.
     `docs/howto/build-a-wheel.md`) over creating a separate granular file.
