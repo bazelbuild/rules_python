@@ -16,5 +16,7 @@ in `git diff` against the project's documentation rules:
    version numbers).
 7. Check documentation build correctness: ensure new `.bzl` files or public
    APIs are included in `//docs:docs` or relevant docs build targets.
+8. Ensure docs describe user-visible behavior, not internal workarounds or
+   implementation details.
 
 @.agents/skills/review-code/review-report-format.md
