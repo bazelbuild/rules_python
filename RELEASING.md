@@ -73,6 +73,9 @@ The release workflow also builds `//dev/release_artifacts:artifacts_for_release`
 for each platform to verify it builds. For now, the files aren't attached to
 the release, so a failed "Build tools" job doesn't block it.
 
+Presubmit builds it for every platform too: natively on each CI host, and
+through `//dev/release_artifacts:cross_compiled_artifacts` for the others.
+
 ### Manually publishing to PyPI
 
 If PyPI publishing failed or was skipped during the main release, the PyPI
