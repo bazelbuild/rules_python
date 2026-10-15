@@ -57,6 +57,10 @@ func NewFileParser() *FileParser {
 	return &FileParser{}
 }
 
+// parseCodeToTree instantiates a new tree-sitter Parser and parses the Python code,
+// returning the parsed tree-sitter Tree. Callers are responsible for calling Close()
+// on the returned Tree to release its underlying C resources when finished.
+// It logs a warning if the syntax tree contains parse errors.
 func parseCodeToTree(code []byte, path string) (*sitter.Tree, error) {
 	parser := sitter.NewParser()
 	defer parser.Close()
