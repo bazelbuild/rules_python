@@ -60,12 +60,14 @@ declare -a INTERPRETER_ARGS_FROM_TARGET=(
 %interpreter_args%
 )
 
+cleanup_zip_dir=""
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   # NOTE: Macs have an old version of mktemp, so we must use only the
   # minimal functionality of it.
   zip_dir=$(mktemp -d)
 
   if [[ -n "$zip_dir" && -z "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
+    cleanup_zip_dir=1
     trap 'rm -fr "$zip_dir"' EXIT
   fi
   # unzip emits a warning and exits with code 1 when there is extraneous data,
@@ -153,7 +155,8 @@ python_exe=$(find_python_interpreter $RUNFILES_DIR $PYTHON_BINARY)
 # Zip files have to re-create the venv bin/python3 symlink because they
 # don't contain it already.
 if [[ "$IS_ZIPFILE" == "1" ]]; then
-  use_exec=0
+  # A detached watcher below owns cleanup after exec replaces this bootstrap.
+  use_exec=1
   # It should always be under runfiles, but double check this. We don't
   # want to accidentally create symlinks elsewhere.
   if [[ "$python_exe" != $RUNFILES_DIR/* ]]; then
@@ -297,10 +300,6 @@ if [[ -z "${PYTHONSAFEPATH+x}" ]]; then
   interpreter_env+=("PYTHONSAFEPATH=${PYTHONSAFEPATH-1}")
 fi
 
-if [[ "$IS_ZIPFILE" == "1" ]]; then
-  interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
-fi
-
 if [[ -n "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}" ]]; then
   read -a additional_interpreter_args <<< "${RULES_PYTHON_ADDITIONAL_INTERPRETER_ARGS}"
   interpreter_args+=("${additional_interpreter_args[@]}")
@@ -325,6 +324,52 @@ command=(
   "$@"
 )
 
+# Prints an identifier for a running process that changes if the PID is reused,
+# or nothing once the process has exited. A zombie counts as exited, so it
+# doesn't matter whether the caller has reaped it yet.
+process_identity() {
+  local stat fields
+  if [[ -r "/proc/$1/stat" ]]; then
+    stat=$(< "/proc/$1/stat") || return 0
+    # The command name is in parentheses and may contain spaces, so split the
+    # fields after the last ")": field 3 (state) through field 22 (start time).
+    read -r -a fields <<< "${stat##*) }"
+    if [[ "${fields[0]}" != "Z" ]]; then
+      echo "${fields[19]}"
+    fi
+  elif command -v ps >/dev/null 2>&1; then
+    stat=$(ps -o stat=,lstart= -p "$1" 2>/dev/null)
+    stat="${stat#"${stat%%[![:space:]]*}"}"
+    if [[ -n "$stat" && "$stat" != Z* ]]; then
+      echo "${stat#* }"
+    fi
+  elif kill -0 "$1" 2>/dev/null; then
+    echo "running"
+  fi
+}
+
+if [[ -n "$cleanup_zip_dir" ]]; then
+  # exec replaces this shell, so the EXIT trap can't remove the extracted files.
+  # Instead, start a watcher that removes them once this PID, which becomes the
+  # Python process, exits. Unlike the trap, this also works when the process is
+  # killed with SIGKILL. The watcher is double-forked so it isn't a child of the
+  # Python process, and it doesn't hold this process's stdio open. It stays in
+  # the caller's process group, so it ignores the signals sent to a whole group
+  # (e.g. Ctrl-C in a terminal) and exits on its own once the process is gone.
+  # Unlike the implicit SIGINT ignore for background jobs, `trap ''` also
+  # applies to the commands it runs.
+  launcher_pid=$$
+  launcher_identity=$(process_identity "$launcher_pid")
+  ( (
+    trap '' INT QUIT HUP TERM
+    while [[ -n "$launcher_identity" &&
+             "$(process_identity "$launcher_pid")" == "$launcher_identity" ]]; do
+      sleep 1
+    done
+    rm -fr "$zip_dir"
+  ) </dev/null >/dev/null 2>&1 & )
+fi
+
 # We use `exec` instead of a child process so that signals sent directly (e.g.
 # using `kill`) to this process (the PID seen by the calling process) are
 # received by the Python process. Otherwise, this process receives the signal
@@ -333,8 +378,8 @@ command=(
 # for more information.
 #
 # However, we can't use exec when there is cleanup to do afterwards. Control
-# must return to this process so it can run the trap handlers. Such cases
-# occur when zip mode or recreate_venv_at_runtime creates temporary files.
+# must return to this process so it can run the trap handlers. This case
+# occurs when recreate_venv_at_runtime creates a temporary venv.
 if [[ "$use_exec" == "0" ]]; then
   "${command[@]}"
   exit $?
