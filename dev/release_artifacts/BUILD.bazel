@@ -115,3 +115,8 @@ bzl_library(
         "@rules_cc//cc:find_cc_toolchain_bzl",
     ],
 )
+
+exports_files([
+    "generate_tool_manifest_snippet.py",
+    "merge_manifest_snippets.py",
+])

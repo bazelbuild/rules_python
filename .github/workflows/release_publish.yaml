@@ -46,25 +46,46 @@ on:
         default: true
 
 jobs:
+  create_release:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          prerelease: ${{ contains( (inputs.tag_name || github.ref), '-rc') }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+
   build_tools:
-    # For now, this only verifies that the tools build. They aren't attached
-    # to the release, so no other job waits on this one. A failed build only
-    # adds a warning to this run. The run fails if a build hangs past the job
-    # timeout, the built files fail their checks, or the ref's dev/platforms
-    # lacks a job's platform.
+    # Builds prebuilt tools and uploads them to the draft release. A failed
+    # build only adds a warning to this run, since releases don't require the
+    # tools yet. The run fails if a build hangs past the job timeout, the built
+    # files fail their checks, or the ref's dev/platforms lacks a job's
+    # platform.
     name: Build tools
+    needs: create_release
     uses: ./.github/workflows/release_build_tools.yaml
     with:
       ref: ${{ inputs.tag_name || github.ref_name }}
 
   release:
     name: Release
+    needs: build_tools
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag_name || github.ref_name }}
+      - name: Download tool manifest snippets
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-tools-manifest-snippets
+          path: manifest-snippets
+          merge-multiple: true
+      - name: Merge tool manifest snippets
+        run: dev/release_artifacts/merge_manifest_snippets.py manifest-snippets tools_manifest.json
       - name: Create release archive and notes
         run: .github/workflows/create_archive_and_notes.sh ${{ inputs.tag_name || github.ref_name }}
       - name: Release
@@ -73,9 +94,12 @@ jobs:
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
           body_path: release_notes.txt
+          draft: false
           prerelease: ${{ contains( (inputs.tag_name || github.ref), '-rc') }}
           fail_on_unmatched_files: true
-          files: rules_python-*.tar.gz
+          files: |
+            rules_python-*.tar.gz
+            tools_manifest.json
           tag_name: ${{ inputs.tag_name || github.ref_name }}
 
   publish_bcr:
