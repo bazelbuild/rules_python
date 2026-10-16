@@ -1,7 +1,7 @@
 ---
 name: github-actions-workflows
 trigger: glob
-globs: [".github/workflows/**"]
+globs: ".github/workflows/**"
 ---
 
 # GitHub Actions Workflows Rule
