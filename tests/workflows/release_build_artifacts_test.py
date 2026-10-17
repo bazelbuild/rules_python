@@ -1,4 +1,4 @@
-"""Tests for the release_build_tools.yaml workflow."""
+"""Tests for the release_build_artifacts.yaml workflow."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ def test_matrix_matches_dev_platforms():
     its platform is missing.
     """
     root = runfiles.CreateOrRaise().root() / "rules_python"
-    workflow_path = root / ".github/workflows/release_build_tools.yaml"
+    workflow_path = root / ".github/workflows/release_build_artifacts.yaml"
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
     triples = [
         entry["triple"]

@@ -3,10 +3,7 @@
 # see dev/release_artifacts/build.sh. Linux x86_64 runners cross-compile the
 # files for other Linux CPUs. macOS and Windows files need those OSes' SDKs, so
 # they're built on those OSes.
-#
-# For now, this only verifies that the artifacts build; they aren't attached to
-# releases yet.
-name: "Release: Build Tools"
+name: "Release: Build Artifacts"
 
 on:
   workflow_call:
@@ -23,7 +20,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -33,6 +30,8 @@ jobs:
   build:
     name: Build ${{ matrix.triple }}
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
     # Builds take a few minutes; cancel hung ones instead of holding a runner
     # for the default 6 hours.
     timeout-minutes: 30
@@ -97,12 +96,70 @@ jobs:
         if: steps.build.outputs.files != ''
         run: dev/release_artifacts/verify.sh "$TRIPLE"
 
-      # Stores the files with this workflow run so they can be downloaded from
-      # the run's page. Nothing is added to the GitHub release.
+      # Stores the files with this workflow run so the publish job (and users
+      # viewing the run) can download them.
       - name: Upload artifacts
         if: steps.build.outputs.files != ''
         uses: actions/upload-artifact@v7
         with:
-          name: release-tools-${{ matrix.triple }}
+          name: release-artifacts-${{ matrix.triple }}
           path: ${{ steps.build.outputs.files }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish artifacts
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      REF: ${{ inputs.ref || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Download built artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: release-artifacts-*
+          path: release-artifacts
+          merge-multiple: true
+
+      # The hashFiles(...) checks below are for backwards compatibility with
+      # patch releases of older release branches that predate these scripts and
+      # artifacts (and while artifact build failures are non-fatal). They can be
+      # removed once older release branches are no longer supported.
+      - name: Generate SHA256SUMS
+        if: hashFiles('release-artifacts/*') != ''
+        working-directory: release-artifacts
+        run: sha256sum * > ../SHA256SUMS
+
+      - name: Generate artifacts manifest
+        if: >-
+          hashFiles('dev/release_artifacts/generate_artifacts_manifest.py') != '' &&
+          hashFiles('release-artifacts/*') != ''
+        run: |
+          dev/release_artifacts/generate_artifacts_manifest.py \
+            "$REF" release-artifacts artifacts_manifest.json
+
+      - name: Upload artifacts to GitHub release
+        if: hashFiles('release-artifacts/*') != ''
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.ref || github.ref_name }}
+          draft: true
+          fail_on_unmatched_files: true
+          files: |
+            release-artifacts/*
+            SHA256SUMS
+
+      - name: Upload artifacts manifest
+        if: hashFiles('artifacts_manifest.json') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-artifacts-manifest
+          path: artifacts_manifest.json
           if-no-files-found: error
