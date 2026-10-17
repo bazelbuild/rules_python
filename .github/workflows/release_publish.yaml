@@ -57,13 +57,13 @@ jobs:
           prerelease: ${{ contains( (inputs.tag_name || github.ref), '-rc') }}
           tag_name: ${{ inputs.tag_name || github.ref_name }}
 
-  build_tools:
+  build_artifacts:
     # Builds prebuilt tools and uploads them to the draft release. A failed
     # build only adds a warning to this run, since releases don't require the
     # tools yet. The run fails if a build hangs past the job timeout, the built
     # files fail their checks, or the ref's dev/platforms lacks a job's
     # platform.
-    name: Build tools
+    name: Build artifacts
     needs: create_release
     uses: ./.github/workflows/release_build_tools.yaml
     with:
@@ -71,7 +71,7 @@ jobs:
 
   release:
     name: Release
-    needs: build_tools
+    needs: build_artifacts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
