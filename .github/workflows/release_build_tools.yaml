@@ -132,17 +132,13 @@ jobs:
       # patch releases of older release branches that predate these scripts and
       # artifacts (and while tool build failures are non-fatal). They can be
       # removed once older release branches are no longer supported.
-      - name: Generate manifest snippets
-        if: hashFiles('dev/release_artifacts/generate_tool_manifest_snippet.py') != ''
+      - name: Generate artifacts manifest
+        if: >-
+          hashFiles('dev/release_artifacts/generate_artifacts_manifest.py') != '' &&
+          hashFiles('release-tools/*') != ''
         run: |
-          dev/release_artifacts/generate_tool_manifest_snippet.py \
-            "$REF" release-tools manifest-snippets
-
-      - name: Merge tool manifest snippets
-        if: hashFiles('manifest-snippets/*.json') != ''
-        run: |
-          dev/release_artifacts/merge_manifest_snippets.py \
-            manifest-snippets tools_manifest.json
+          dev/release_artifacts/generate_artifacts_manifest.py \
+            "$REF" release-tools artifacts_manifest.json
 
       - name: Upload tools to GitHub release
         if: hashFiles('release-tools/*') != ''
@@ -153,12 +149,12 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             release-tools/*
-            tools_manifest.json
+            artifacts_manifest.json
 
-      - name: Upload tool manifest
-        if: hashFiles('tools_manifest.json') != ''
+      - name: Upload artifacts manifest
+        if: hashFiles('artifacts_manifest.json') != ''
         uses: actions/upload-artifact@v7
         with:
-          name: release-tools-manifest
-          path: tools_manifest.json
+          name: release-artifacts-manifest
+          path: artifacts_manifest.json
           if-no-files-found: error

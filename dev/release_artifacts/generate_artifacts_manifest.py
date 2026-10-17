@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates a JSON manifest snippet for each built release binary."""
+"""Generates an artifacts_manifest.json file for built release binaries."""
 
 from __future__ import annotations
 
@@ -41,19 +41,13 @@ def _os_constraint(triple: str) -> str:
     raise ValueError(f"Unsupported OS in triple: {triple}")
 
 
-def generate_snippets(
+def generate_manifest(
     tag: str,
     tools_dir: Path,
-    snippets_dir: Path,
     repo: str,
-) -> None:
-    snippets_dir.mkdir(parents=True, exist_ok=True)
-    if not tools_dir.is_dir():
-        return
-
+) -> dict[str, Any]:
+    tools: dict[str, list[dict[str, Any]]] = {}
     for file_path in sorted(tools_dir.iterdir()):
-        if not file_path.is_file():
-            continue
         filename = file_path.name
         base = filename.removesuffix(".exe")
         match = _FILENAME_RE.match(base)
@@ -66,23 +60,19 @@ def generate_snippets(
         sha256 = hashlib.sha256(file_path.read_bytes()).hexdigest()
         url = f"https://github.com/{repo}/releases/download/{tag}/{filename}"
 
-        snippet: dict[str, Any] = {
-            "tools": {
-                tool: [
-                    {
-                        "exec_compatible_with": [cpu, os_constraint],
-                        "filename": filename,
-                        "sha256": sha256,
-                        "urls": [url],
-                    }
-                ]
+        tools.setdefault(tool, []).append(
+            {
+                "exec_compatible_with": [cpu, os_constraint],
+                "filename": filename,
+                "sha256": sha256,
+                "urls": [url],
             }
-        }
-        snippet_path = snippets_dir / f"{base}.json"
-        snippet_path.write_text(
-            json.dumps(snippet, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
         )
+
+    for entries in tools.values():
+        entries.sort(key=lambda entry: entry["filename"])
+
+    return {"tools": dict(sorted(tools.items()))}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -94,9 +84,9 @@ def main(argv: list[str] | None = None) -> int:
         help="Directory containing built <tool>-<triple>[.exe] files.",
     )
     parser.add_argument(
-        "snippets_dir",
+        "output_file",
         type=Path,
-        help="Output directory for generated *.json manifest snippets.",
+        help="Path to the artifacts_manifest.json file to write.",
     )
     parser.add_argument(
         "repo",
@@ -105,7 +95,12 @@ def main(argv: list[str] | None = None) -> int:
         help="GitHub owner/repository name.",
     )
     args = parser.parse_args(argv)
-    generate_snippets(args.tag, args.tools_dir, args.snippets_dir, args.repo)
+    manifest = generate_manifest(args.tag, args.tools_dir, args.repo)
+    args.output_file.parent.mkdir(parents=True, exist_ok=True)
+    args.output_file.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return 0
 
 

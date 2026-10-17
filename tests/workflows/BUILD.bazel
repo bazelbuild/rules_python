@@ -67,8 +67,7 @@ pytest_test(
     name = "release_artifacts_test",
     srcs = ["release_artifacts_test.py"],
     data = [
-        "//dev/release_artifacts:generate_tool_manifest_snippet.py",
-        "//dev/release_artifacts:merge_manifest_snippets.py",
+        "//dev/release_artifacts:generate_artifacts_manifest.py",
     ],
     target_compatible_with = NOT_WINDOWS,
     deps = [

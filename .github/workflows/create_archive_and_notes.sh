@@ -32,7 +32,7 @@ git checkout "$TAG"
 PREFIX="rules_python-${TAG}"
 ARCHIVE="rules_python-$TAG.tar.gz"
 # TODO(https://github.com/bazel-contrib/rules_python/issues/4250): Add
-# tools_manifest.json to the release archive.
+# artifacts_manifest.json to the release archive.
 git archive --format=tar "--prefix=${PREFIX}/" "$TAG" | gzip > "$ARCHIVE"
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 

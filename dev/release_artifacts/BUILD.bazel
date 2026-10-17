@@ -117,6 +117,5 @@ bzl_library(
 )
 
 exports_files([
-    "generate_tool_manifest_snippet.py",
-    "merge_manifest_snippets.py",
+    "generate_artifacts_manifest.py",
 ])

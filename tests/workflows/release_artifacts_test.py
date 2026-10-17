@@ -1,4 +1,4 @@
-"""Tests for release artifact manifest snippet generation and merging."""
+"""Tests for release artifact manifest generation."""
 
 from __future__ import annotations
 
@@ -17,18 +17,14 @@ def _rlocation(relpath: str) -> Path:
     return Path(path)
 
 
-def test_prepare_and_merge_release_files(tmp_path: Path):
-    prepare_script = _rlocation(
-        "rules_python/dev/release_artifacts/generate_tool_manifest_snippet.py"
-    )
-    merge_script = _rlocation(
-        "rules_python/dev/release_artifacts/merge_manifest_snippets.py"
+def test_generate_artifacts_manifest(tmp_path: Path):
+    generate_script = _rlocation(
+        "rules_python/dev/release_artifacts/generate_artifacts_manifest.py"
     )
 
     tools_dir = tmp_path / "release-tools"
     tools_dir.mkdir(parents=True)
-    snippets_dir = tmp_path / "manifest-snippets"
-    manifest_file = tmp_path / "tools_manifest.json"
+    manifest_file = tmp_path / "artifacts_manifest.json"
 
     linux_bin = tools_dir / "exe_zip_maker-x86_64-unknown-linux-gnu"
     linux_bin.write_bytes(b"linux-binary-contents")
@@ -44,17 +40,12 @@ def test_prepare_and_merge_release_files(tmp_path: Path):
 
     subprocess.run(
         [
-            str(prepare_script),
+            str(generate_script),
             "2.4.0",
             str(tools_dir),
-            str(snippets_dir),
+            str(manifest_file),
             "bazel-contrib/rules_python",
         ],
-        check=True,
-    )
-
-    subprocess.run(
-        [str(merge_script), str(snippets_dir), str(manifest_file)],
         check=True,
     )
 
@@ -98,34 +89,3 @@ def test_prepare_and_merge_release_files(tmp_path: Path):
             ]
         }
     }
-
-
-def test_prepare_and_merge_when_no_artifacts(tmp_path: Path):
-    prepare_script = _rlocation(
-        "rules_python/dev/release_artifacts/generate_tool_manifest_snippet.py"
-    )
-    merge_script = _rlocation(
-        "rules_python/dev/release_artifacts/merge_manifest_snippets.py"
-    )
-
-    tools_dir = tmp_path / "missing-release-tools"
-    snippets_dir = tmp_path / "manifest-snippets"
-    manifest_file = tmp_path / "tools_manifest.json"
-
-    subprocess.run(
-        [
-            str(prepare_script),
-            "2.4.0",
-            str(tools_dir),
-            str(snippets_dir),
-        ],
-        check=True,
-    )
-    assert list(snippets_dir.iterdir()) == []
-
-    subprocess.run(
-        [str(merge_script), str(snippets_dir), str(manifest_file)],
-        check=True,
-    )
-    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
-    assert manifest == {"tools": {}}
