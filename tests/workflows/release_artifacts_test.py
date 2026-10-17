@@ -10,16 +10,10 @@ from pathlib import Path
 from python.runfiles import runfiles
 
 
-def _rlocation(relpath: str) -> Path:
-    rf = runfiles.CreateOrRaise()
-    path = rf.Rlocation(relpath)
-    assert path is not None, f"Could not find runfile: {relpath}"
-    return Path(path)
-
-
 def test_generate_artifacts_manifest(tmp_path: Path):
-    generate_script = _rlocation(
-        "rules_python/dev/release_artifacts/generate_artifacts_manifest.py"
+    generate_script = (
+        runfiles.CreateOrRaise().root()
+        / "rules_python/dev/release_artifacts/generate_artifacts_manifest.py"
     )
 
     artifacts_dir = tmp_path / "release-artifacts"
@@ -50,6 +44,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
     )
 
     manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    base_url = "https://github.com/bazel-contrib/rules_python/releases/download/2.4.0"
     assert manifest == {
         "artifacts": {
             "exe_zip_maker": [
@@ -60,9 +55,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
                     ],
                     "filename": "exe_zip_maker-aarch64-apple-darwin",
                     "sha256": mac_sha,
-                    "urls": [
-                        "https://github.com/bazel-contrib/rules_python/releases/download/2.4.0/exe_zip_maker-aarch64-apple-darwin"
-                    ],
+                    "urls": [f"{base_url}/exe_zip_maker-aarch64-apple-darwin"],
                 },
                 {
                     "exec_compatible_with": [
@@ -71,9 +64,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
                     ],
                     "filename": "exe_zip_maker-x86_64-pc-windows-msvc.exe",
                     "sha256": win_sha,
-                    "urls": [
-                        "https://github.com/bazel-contrib/rules_python/releases/download/2.4.0/exe_zip_maker-x86_64-pc-windows-msvc.exe"
-                    ],
+                    "urls": [f"{base_url}/exe_zip_maker-x86_64-pc-windows-msvc.exe"],
                 },
                 {
                     "exec_compatible_with": [
@@ -82,9 +73,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
                     ],
                     "filename": "exe_zip_maker-x86_64-unknown-linux-gnu",
                     "sha256": linux_sha,
-                    "urls": [
-                        "https://github.com/bazel-contrib/rules_python/releases/download/2.4.0/exe_zip_maker-x86_64-unknown-linux-gnu"
-                    ],
+                    "urls": [f"{base_url}/exe_zip_maker-x86_64-unknown-linux-gnu"],
                 },
             ]
         }

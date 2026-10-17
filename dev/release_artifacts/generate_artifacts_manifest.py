@@ -10,7 +10,15 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
+
+
+class ArtifactEntry(TypedDict):
+    exec_compatible_with: list[str]
+    filename: str
+    sha256: str
+    urls: list[str]
+
 
 _CPU_TO_CONSTRAINT = {
     "aarch64": "@platforms//cpu:aarch64",
@@ -45,8 +53,8 @@ def generate_manifest(
     tag: str,
     artifacts_dir: Path,
     repo: str,
-) -> dict[str, Any]:
-    artifacts: dict[str, list[dict[str, Any]]] = {}
+) -> dict[str, dict[str, list[ArtifactEntry]]]:
+    artifacts: dict[str, list[ArtifactEntry]] = {}
     for file_path in sorted(artifacts_dir.iterdir()):
         filename = file_path.name
         base = filename.removesuffix(".exe")
@@ -77,7 +85,7 @@ def generate_manifest(
     return {"artifacts": dict(sorted(artifacts.items()))}
 
 
-def main(argv: list[str] | None = None) -> int:
+def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("tag", help="Release tag name (e.g. 2.4.0).")
     parser.add_argument(
@@ -97,7 +105,11 @@ def main(argv: list[str] | None = None) -> int:
         help="GitHub owner/repository name.",
     )
     args = parser.parse_args(argv)
-    manifest = generate_manifest(args.tag, args.artifacts_dir, args.repo)
+    try:
+        manifest = generate_manifest(args.tag, args.artifacts_dir, args.repo)
+    except ValueError as err:
+        print(f"::error::{err}")
+        return 1
     args.output_file.parent.mkdir(parents=True, exist_ok=True)
     args.output_file.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
@@ -107,4 +119,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(_main())
