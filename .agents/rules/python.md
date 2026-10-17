@@ -8,6 +8,9 @@
 ## CLI & Arguments
 * Use direct attribute access (e.g. `args.foo`) on `argparse.Namespace` with
   well-defined shapes. Avoid defensive `getattr()`.
+* Assume caller-guaranteed preconditions hold (e.g., input directories exist
+  and contain files). Do not add silent no-op guards (`if path.is_dir():` or
+  `if not path.is_file(): continue`) that mask broken invocations.
 
 ## Interface & ABC Docstrings
 * In abstract base class / interface methods, always document `Args:`,
