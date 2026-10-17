@@ -132,6 +132,11 @@ jobs:
       # patch releases of older release branches that predate these scripts and
       # artifacts (and while tool build failures are non-fatal). They can be
       # removed once older release branches are no longer supported.
+      - name: Generate SHA256SUMS
+        if: hashFiles('release-tools/*') != ''
+        working-directory: release-tools
+        run: sha256sum * > ../SHA256SUMS
+
       - name: Generate artifacts manifest
         if: >-
           hashFiles('dev/release_artifacts/generate_artifacts_manifest.py') != '' &&
@@ -149,7 +154,7 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             release-tools/*
-            artifacts_manifest.json
+            SHA256SUMS
 
       - name: Upload artifacts manifest
         if: hashFiles('artifacts_manifest.json') != ''
