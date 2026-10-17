@@ -25,8 +25,9 @@ file from `.agents/skills/review-code/`:
 2. **Python Code Sub-Agent** (`Role: "Python Code Auditor"`):
    - Prompt file:
      `.agents/skills/review-code/review-python-prompt.md`
-   - Focus: Audits Python source and test changes in `git diff` against
-     `.agents/rules/python.md` and Python and pytest conventions in `AGENTS.md`.
+   - Focus: Audits Python source, test, and inline script changes in `git diff`
+     against `.agents/rules/python.md` and Python and pytest conventions in
+     `AGENTS.md`.
 
 3. **Documentation Sub-Agent** (`Role: "Documentation Auditor"`):
    - Prompt file:
