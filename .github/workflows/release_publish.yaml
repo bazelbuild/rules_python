@@ -65,7 +65,7 @@ jobs:
     # platform.
     name: Build artifacts
     needs: create_release
-    uses: ./.github/workflows/release_build_tools.yaml
+    uses: ./.github/workflows/release_build_artifacts.yaml
     with:
       ref: ${{ inputs.tag_name || github.ref_name }}
 

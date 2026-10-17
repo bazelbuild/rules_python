@@ -3,7 +3,7 @@
 # see dev/release_artifacts/build.sh. Linux x86_64 runners cross-compile the
 # files for other Linux CPUs. macOS and Windows files need those OSes' SDKs, so
 # they're built on those OSes.
-name: "Release: Build Tools"
+name: "Release: Build Artifacts"
 
 on:
   workflow_call:
