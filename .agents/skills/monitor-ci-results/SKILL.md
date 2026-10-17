@@ -20,10 +20,12 @@ or when monitoring CI after PR updates:
    with `|| ... monitor_remote_ci.py <pr_number>` in a single shell invocation,
    as `pgrep -af` will match the parent `bash -c` command string and exit `0`.
 2. **Launch Monitoring Script**: If no monitor process is active for
-   `<pr_number>`, launch the script in the background:
+   `<pr_number>`, launch the script via `run_command` with `IsDaemon: true` and
+   `WaitMsBeforeAsync: 500` (do NOT append a trailing `&`, which causes the
+   shell to exit immediately and kills the background process):
 ```bash
 ./.agents/skills/monitor-ci-results/scripts/monitor_remote_ci.py \
-  <pr_number> "<your_conversation_id>" &
+  <pr_number> "<your_conversation_id>"
 ```
 
 ### ✨ Autonomous Subagent Orchestration

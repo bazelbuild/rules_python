@@ -15,6 +15,10 @@ globs: ".github/workflows/**"
 * **Event Payload Resolution**: For steps that are a single Python script,
   loading event details directly from `$GITHUB_EVENT_PATH` is required (strong
   suggestion otherwise) rather than passing fields via env vars or CLI flags.
+* **Preserve `export-subst` in `git archive`**: Always pass a commit or tag ref
+  (never a raw `git write-tree` SHA) to `git archive` so `.gitattributes`
+  `export-subst` placeholders (such as `$Format:...$` in `python/features.bzl`)
+  expand. Use `--add-file` to include generated files.
 
 ## Workflow Python Scripts & Testing
 * **Executable Permissions**: Workflow step scripts must have `chmod +x` (mode
