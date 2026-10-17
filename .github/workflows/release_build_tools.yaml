@@ -138,6 +138,12 @@ jobs:
           dev/release_artifacts/generate_tool_manifest_snippet.py \
             "$REF" release-tools manifest-snippets
 
+      - name: Merge tool manifest snippets
+        if: hashFiles('manifest-snippets/*.json') != ''
+        run: |
+          dev/release_artifacts/merge_manifest_snippets.py \
+            manifest-snippets tools_manifest.json
+
       - name: Upload tools to GitHub release
         if: hashFiles('release-tools/*') != ''
         uses: softprops/action-gh-release@v3
@@ -145,12 +151,14 @@ jobs:
           tag_name: ${{ inputs.ref || github.ref_name }}
           draft: true
           fail_on_unmatched_files: true
-          files: release-tools/*
+          files: |
+            release-tools/*
+            tools_manifest.json
 
-      - name: Upload manifest snippets
-        if: hashFiles('manifest-snippets/*.json') != ''
+      - name: Upload tool manifest
+        if: hashFiles('tools_manifest.json') != ''
         uses: actions/upload-artifact@v7
         with:
-          name: release-tools-manifest-snippets
-          path: manifest-snippets/*.json
+          name: release-tools-manifest
+          path: tools_manifest.json
           if-no-files-found: error

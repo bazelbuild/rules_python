@@ -78,14 +78,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag_name || github.ref_name }}
-      - name: Download tool manifest snippets
-        uses: actions/download-artifact@v8
-        with:
-          pattern: release-tools-manifest-snippets
-          path: manifest-snippets
-          merge-multiple: true
-      - name: Merge tool manifest snippets
-        run: dev/release_artifacts/merge_manifest_snippets.py manifest-snippets tools_manifest.json
       - name: Create release archive and notes
         run: .github/workflows/create_archive_and_notes.sh ${{ inputs.tag_name || github.ref_name }}
       - name: Release
@@ -97,9 +89,7 @@ jobs:
           draft: false
           prerelease: ${{ contains( (inputs.tag_name || github.ref), '-rc') }}
           fail_on_unmatched_files: true
-          files: |
-            rules_python-*.tar.gz
-            tools_manifest.json
+          files: rules_python-*.tar.gz
           tag_name: ${{ inputs.tag_name || github.ref_name }}
 
   publish_bcr:
