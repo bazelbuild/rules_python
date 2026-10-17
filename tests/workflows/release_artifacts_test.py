@@ -22,19 +22,19 @@ def test_generate_artifacts_manifest(tmp_path: Path):
         "rules_python/dev/release_artifacts/generate_artifacts_manifest.py"
     )
 
-    tools_dir = tmp_path / "release-tools"
-    tools_dir.mkdir(parents=True)
+    artifacts_dir = tmp_path / "release-artifacts"
+    artifacts_dir.mkdir(parents=True)
     manifest_file = tmp_path / "artifacts_manifest.json"
 
-    linux_bin = tools_dir / "exe_zip_maker-x86_64-unknown-linux-gnu"
+    linux_bin = artifacts_dir / "exe_zip_maker-x86_64-unknown-linux-gnu"
     linux_bin.write_bytes(b"linux-binary-contents")
     linux_sha = hashlib.sha256(b"linux-binary-contents").hexdigest()
 
-    win_bin = tools_dir / "exe_zip_maker-x86_64-pc-windows-msvc.exe"
+    win_bin = artifacts_dir / "exe_zip_maker-x86_64-pc-windows-msvc.exe"
     win_bin.write_bytes(b"windows-binary-contents")
     win_sha = hashlib.sha256(b"windows-binary-contents").hexdigest()
 
-    mac_bin = tools_dir / "exe_zip_maker-aarch64-apple-darwin"
+    mac_bin = artifacts_dir / "exe_zip_maker-aarch64-apple-darwin"
     mac_bin.write_bytes(b"mac-binary-contents")
     mac_sha = hashlib.sha256(b"mac-binary-contents").hexdigest()
 
@@ -42,7 +42,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
         [
             str(generate_script),
             "2.4.0",
-            str(tools_dir),
+            str(artifacts_dir),
             str(manifest_file),
             "bazel-contrib/rules_python",
         ],
@@ -51,7 +51,7 @@ def test_generate_artifacts_manifest(tmp_path: Path):
 
     manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
     assert manifest == {
-        "tools": {
+        "artifacts": {
             "exe_zip_maker": [
                 {
                     "exec_compatible_with": [

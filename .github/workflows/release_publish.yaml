@@ -58,10 +58,10 @@ jobs:
           tag_name: ${{ inputs.tag_name || github.ref_name }}
 
   build_artifacts:
-    # Builds prebuilt tools and uploads them to the draft release. A failed
+    # Builds release artifacts and uploads them to the draft release. A failed
     # build only adds a warning to this run, since releases don't require the
-    # tools yet. The run fails if a build hangs past the job timeout, the built
-    # files fail their checks, or the ref's dev/platforms lacks a job's
+    # artifacts yet. The run fails if a build hangs past the job timeout, the
+    # built files fail their checks, or the ref's dev/platforms lacks a job's
     # platform.
     name: Build artifacts
     needs: create_release

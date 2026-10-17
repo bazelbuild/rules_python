@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates an artifacts_manifest.json file for built release binaries."""
+"""Generates an artifacts_manifest.json file for built release artifacts."""
 
 from __future__ import annotations
 
@@ -43,24 +43,26 @@ def _os_constraint(triple: str) -> str:
 
 def generate_manifest(
     tag: str,
-    tools_dir: Path,
+    artifacts_dir: Path,
     repo: str,
 ) -> dict[str, Any]:
-    tools: dict[str, list[dict[str, Any]]] = {}
-    for file_path in sorted(tools_dir.iterdir()):
+    artifacts: dict[str, list[dict[str, Any]]] = {}
+    for file_path in sorted(artifacts_dir.iterdir()):
         filename = file_path.name
         base = filename.removesuffix(".exe")
         match = _FILENAME_RE.match(base)
         if not match:
-            raise ValueError(f"Cannot parse tool and triple from filename: {filename}")
-        tool, triple = match.group(1), match.group(2)
+            raise ValueError(
+                f"Cannot parse artifact and triple from filename: {filename}"
+            )
+        artifact, triple = match.group(1), match.group(2)
 
         cpu = _cpu_constraint(triple)
         os_constraint = _os_constraint(triple)
         sha256 = hashlib.sha256(file_path.read_bytes()).hexdigest()
         url = f"https://github.com/{repo}/releases/download/{tag}/{filename}"
 
-        tools.setdefault(tool, []).append(
+        artifacts.setdefault(artifact, []).append(
             {
                 "exec_compatible_with": [cpu, os_constraint],
                 "filename": filename,
@@ -69,19 +71,19 @@ def generate_manifest(
             }
         )
 
-    for entries in tools.values():
+    for entries in artifacts.values():
         entries.sort(key=lambda entry: entry["filename"])
 
-    return {"tools": dict(sorted(tools.items()))}
+    return {"artifacts": dict(sorted(artifacts.items()))}
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("tag", help="Release tag name (e.g. 2.4.0).")
     parser.add_argument(
-        "tools_dir",
+        "artifacts_dir",
         type=Path,
-        help="Directory containing built <tool>-<triple>[.exe] files.",
+        help="Directory containing built <artifact>-<triple>[.exe] files.",
     )
     parser.add_argument(
         "output_file",
@@ -95,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         help="GitHub owner/repository name.",
     )
     args = parser.parse_args(argv)
-    manifest = generate_manifest(args.tag, args.tools_dir, args.repo)
+    manifest = generate_manifest(args.tag, args.artifacts_dir, args.repo)
     args.output_file.parent.mkdir(parents=True, exist_ok=True)
     args.output_file.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",

@@ -102,12 +102,12 @@ jobs:
         if: steps.build.outputs.files != ''
         uses: actions/upload-artifact@v7
         with:
-          name: release-tools-${{ matrix.triple }}
+          name: release-artifacts-${{ matrix.triple }}
           path: ${{ steps.build.outputs.files }}
           if-no-files-found: error
 
   publish:
-    name: Publish tools
+    name: Publish artifacts
     needs: build
     runs-on: ubuntu-24.04
     permissions:
@@ -121,39 +121,39 @@ jobs:
           ref: ${{ inputs.ref }}
           persist-credentials: false
 
-      - name: Download built tools
+      - name: Download built artifacts
         uses: actions/download-artifact@v8
         with:
-          pattern: release-tools-*
-          path: release-tools
+          pattern: release-artifacts-*
+          path: release-artifacts
           merge-multiple: true
 
       # The hashFiles(...) checks below are for backwards compatibility with
       # patch releases of older release branches that predate these scripts and
-      # artifacts (and while tool build failures are non-fatal). They can be
+      # artifacts (and while artifact build failures are non-fatal). They can be
       # removed once older release branches are no longer supported.
       - name: Generate SHA256SUMS
-        if: hashFiles('release-tools/*') != ''
-        working-directory: release-tools
+        if: hashFiles('release-artifacts/*') != ''
+        working-directory: release-artifacts
         run: sha256sum * > ../SHA256SUMS
 
       - name: Generate artifacts manifest
         if: >-
           hashFiles('dev/release_artifacts/generate_artifacts_manifest.py') != '' &&
-          hashFiles('release-tools/*') != ''
+          hashFiles('release-artifacts/*') != ''
         run: |
           dev/release_artifacts/generate_artifacts_manifest.py \
-            "$REF" release-tools artifacts_manifest.json
+            "$REF" release-artifacts artifacts_manifest.json
 
-      - name: Upload tools to GitHub release
-        if: hashFiles('release-tools/*') != ''
+      - name: Upload artifacts to GitHub release
+        if: hashFiles('release-artifacts/*') != ''
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.ref || github.ref_name }}
           draft: true
           fail_on_unmatched_files: true
           files: |
-            release-tools/*
+            release-artifacts/*
             SHA256SUMS
 
       - name: Upload artifacts manifest
