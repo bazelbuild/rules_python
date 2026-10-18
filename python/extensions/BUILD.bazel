@@ -30,6 +30,7 @@ bzl_library(
     deps = [
         "//python/private:internal_config_repo",
         "//python/private/pypi:deps",
+        "//python/private/toolchains:repo",
         "@bazel_features//:features",
     ],
 )

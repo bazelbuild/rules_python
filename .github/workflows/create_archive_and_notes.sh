@@ -31,9 +31,25 @@ git checkout "$TAG"
 # A prefix is added to better match the GitHub generated archives.
 PREFIX="rules_python-${TAG}"
 ARCHIVE="rules_python-$TAG.tar.gz"
-# TODO(https://github.com/bazel-contrib/rules_python/issues/4250): Add
-# artifacts_manifest.json to the release archive.
-git archive --format=tar "--prefix=${PREFIX}/" "$TAG" | gzip > "$ARCHIVE"
+sed --in-place 's/^TOOL_DEPS_DEV_ONLY = False$/TOOL_DEPS_DEV_ONLY = True/' MODULE.bazel
+# Verify that sed actually matched and modified the line (sed exits 0 even if no
+# substitution occurred).
+grep -q '^TOOL_DEPS_DEV_ONLY = True$' MODULE.bazel
+# --add-file appends extra files to the archive without replacing tracked files
+# from $TAG, so pathspec ":!..." excludes the committed files to avoid duplicate
+# tar entries (where the committed ones would overwrite the modified ones on
+# extraction).
+git archive \
+  --format=tar \
+  "--prefix=${PREFIX}/" \
+  "--add-file=MODULE.bazel" \
+  "--prefix=${PREFIX}/python/private/" \
+  "--add-file=artifacts_manifest.json" \
+  "--prefix=${PREFIX}/" \
+  "$TAG" \
+  . \
+  ":!MODULE.bazel" \
+  ":!python/private/artifacts_manifest.json" | gzip > "$ARCHIVE"
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
 cat > release_notes.txt << EOF
