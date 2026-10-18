@@ -93,7 +93,9 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
+        "LICENSE",
         "MODULE.bazel",
+        "REPO.bazel",
         "WORKSPACE",
         "WORKSPACE.bzlmod",
         "internal_dev_deps.bzl",
