@@ -85,7 +85,11 @@ exports_files(
 )
 
 exports_files(
-    glob(["*.md"]),
+    glob(
+        ["*.md"],
+        # Not all files are present when used as an integration test fixture
+        allow_empty = True,
+    ),
     visibility = ["//docs:__subpackages__"],
 )
 
