@@ -81,7 +81,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Bazel
-        uses: bazel-contrib/setup-bazel@0.19.0
+        uses: bazel-contrib/setup-bazel@0.19.1
         with:
           # Windows images also have a fixed-version `bazel` on PATH. 1.20.0,
           # used by the other workflows, has no windows-arm64 build.
