@@ -69,17 +69,13 @@ gh workflow run release_publish.yaml --ref <TAG> -f publish_to_pypi=false
 
 ### Release artifacts
 
-`release_build_artifacts.yaml` builds the release source archive, release notes,
-`bazel_runfiles` wheel, and `//dev/release_artifacts:artifacts_for_release` for
-each platform (along with `SHA256SUMS` and `artifacts_manifest.json`), uploading
-them as workflow run artifacts without publishing anything.
-`release_publish.yaml` calls it and publishes the resulting artifacts to the
-GitHub release, BCR, and PyPI. For now, platform binary build failures only emit
-a warning rather than failing the release.
+The release workflow also builds `//dev/release_artifacts:artifacts_for_release`
+for each platform and uploads the built artifacts and `SHA256SUMS` to the GitHub
+release. For now, build failures only emit a warning rather than failing the
+release.
 
-Presubmit builds the platform binaries on each CI host (natively and through
-`//dev/release_artifacts:cross_compiled_artifacts`), and runs
-`release_build_artifacts.yaml` on pull requests.
+Presubmit builds it for every platform too: natively on each CI host, and
+through `//dev/release_artifacts:cross_compiled_artifacts` for the others.
 
 ### Manually publishing to PyPI
 

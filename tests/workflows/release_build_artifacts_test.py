@@ -100,12 +100,16 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
     )
     (origin / "python").mkdir()
     (origin / "python/features.bzl").write_text(
-        '_VERSION_PRIVATE = "$Format:%(describe:tags=true)$"\n',
+        '_VERSION_PRIVATE = "$Format:%(describe:tags=true)$"\n'
+        '_COMMIT_PRIVATE = "$Format:%H$"\n',
         encoding="utf-8",
     )
     git(origin, "add", ".gitattributes", "python/features.bzl")
     git(origin, "commit", "-m", "Release commit")
     git(origin, "tag", "2.5.0")
+    release_sha = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=origin, text=True
+    ).strip()
 
     (origin / "README.md").write_text("later commit on main\n", encoding="utf-8")
     git(origin, "add", "README.md")
@@ -114,6 +118,17 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
     # Clone without tags at the later commit (matches actions/checkout default)
     clone = tmp_path / "clone"
     git(tmp_path, "clone", "--no-tags", str(origin), str(clone))
+
+    # Git < 2.35 (e.g. Debian 11 / Ubuntu 22.04 on Buildkite) does not support
+    # %(describe:tags=true) and leaves the literal placeholder unexpanded.
+    supports_describe_tags = (
+        subprocess.check_output(
+            ["git", "log", "-1", "--format=%(describe:tags=true)"],
+            cwd=origin,
+            text=True,
+        ).strip()
+        != "%(describe:tags=true)"
+    )
 
     # Presubmit run with no tag argument on an untagged commit uses HEAD SHA
     head_sha = subprocess.check_output(
@@ -128,7 +143,9 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
         )
         assert features_member is not None  # type assert
         features_content = features_member.read().decode("utf-8")
-        assert '_VERSION_PRIVATE = ""' in features_content
+        assert f'_COMMIT_PRIVATE = "{head_sha}"' in features_content
+        if supports_describe_tags:
+            assert '_VERSION_PRIVATE = ""' in features_content
 
     # Release run fetches and checks out the tag from origin
     subprocess.run([str(script), "2.5.0"], cwd=clone, check=True)
@@ -148,4 +165,6 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
         features_member = tar.extractfile("rules_python-2.5.0/python/features.bzl")
         assert features_member is not None  # type assert
         features_content = features_member.read().decode("utf-8")
-        assert '_VERSION_PRIVATE = "2.5.0"' in features_content
+        assert f'_COMMIT_PRIVATE = "{release_sha}"' in features_content
+        if supports_describe_tags:
+            assert '_VERSION_PRIVATE = "2.5.0"' in features_content
