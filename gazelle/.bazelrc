@@ -20,3 +20,6 @@ build --@rules_python//python/config_settings:incompatible_default_to_explicit_i
 build --enable_runfiles
 
 common:bazel7.x --incompatible_python_disallow_native_rules
+
+# TODO: Delete before merging; see the root .bazelrc.
+common --registry=https://bazel-contrib.github.io/rules_runfiles_group --registry=https://bcr.bazel.build
