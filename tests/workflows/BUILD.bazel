@@ -71,7 +71,7 @@ pytest_test(
         "//.github/workflows:create_archive_and_notes.sh",
         "//dev/release_artifacts:generate_artifacts_manifest.py",
     ],
-    target_compatible_with = NOT_WINDOWS,
+    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//python/runfiles",
     ],
