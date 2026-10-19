@@ -1749,8 +1749,8 @@ _tests.append(_test_uv_lock_requires_dist_extras)
 def _uv_graph_package(name, version = "0.0.1", **kwargs):
     return dict({
         "name": name,
-        "version": version,
         "source": {"registry": "https://pypi.org/simple"},
+        "version": version,
         "wheels": [{"url": "https://example.org/{}-{}-py3-none-any.whl".format(name, version)}],
     }, **kwargs)
 
@@ -1779,7 +1779,7 @@ def _test_uv_lock_dependency_markers(env):
     ]:
         got = _parse_uv_graph([
             _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
-                {"name": "uvloop", "marker": "sys_platform == 'linux'"},
+                {"marker": "sys_platform == 'linux'", "name": "uvloop"},
             ]),
             _uv_graph_package("uvloop", wheels = wheels, sdist = {"url": "https://example.org/uvloop-0.0.1.tar.gz"}),
         ])
@@ -1791,7 +1791,7 @@ _tests.append(_test_uv_lock_dependency_markers)
 def _test_uv_lock_transitive_markers(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"editable": "."}, dependencies = [
-            {"name": "parent", "marker": "sys_platform == 'linux'"},
+            {"marker": "sys_platform == 'linux'", "name": "parent"},
         ]),
         _uv_graph_package("parent", dependencies = [{"name": "child"}]),
         _uv_graph_package("child"),
@@ -1808,10 +1808,10 @@ def _test_uv_lock_requested_extras(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
             {"name": "parent"},
-            {"name": "parent", "extra": ["fast"], "marker": "sys_platform == 'linux'"},
+            {"extra": ["fast"], "marker": "sys_platform == 'linux'", "name": "parent"},
         ]),
         _uv_graph_package("parent", **{"optional-dependencies": {
-            "fast": [{"name": "child", "extra": "nested"}],
+            "fast": [{"extra": "nested", "name": "child"}],
             "unused": [{"name": "unreachable"}],
         }}),
         _uv_graph_package("child", **{"optional-dependencies": {
@@ -1830,7 +1830,7 @@ _tests.append(_test_uv_lock_requested_extras)
 def _test_uv_lock_root_optional_dependencies(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, **{"optional-dependencies": {
-            "fast": [{"name": "child", "marker": "sys_platform == 'linux'"}],
+            "fast": [{"marker": "sys_platform == 'linux'", "name": "child"}],
         }}),
         _uv_graph_package("child"),
     ])
@@ -1843,11 +1843,11 @@ def _test_uv_lock_multiple_roots_cycles_and_diamonds(env):
     # otherwise exhaust a traversal bounded by the number of graph nodes.
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
-            {"name": "left", "marker": "sys_platform == 'linux'"},
-            {"name": "right", "marker": "sys_platform == 'linux'"},
+            {"marker": "sys_platform == 'linux'", "name": "left"},
+            {"marker": "sys_platform == 'linux'", "name": "right"},
         ]),
         _uv_graph_package("workspace", source = {"editable": "workspace"}, dependencies = [
-            {"name": "leaf", "marker": "sys_platform == 'darwin'"},
+            {"marker": "sys_platform == 'darwin'", "name": "leaf"},
         ]),
         _uv_graph_package("left", dependencies = [{"name": "shared"}]),
         _uv_graph_package("right", dependencies = [{"name": "shared"}]),
@@ -1865,8 +1865,8 @@ _tests.append(_test_uv_lock_multiple_roots_cycles_and_diamonds)
 def _test_uv_lock_duplicate_dependency_edges(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
-            {"name": "tail", "marker": "sys_platform == 'linux'"},
-            {"name": "parent", "marker": "sys_platform == 'linux'"},
+            {"marker": "sys_platform == 'linux'", "name": "tail"},
+            {"marker": "sys_platform == 'linux'", "name": "parent"},
         ]),
         _uv_graph_package("parent", dependencies = [{"name": "child"}] * 10),
         _uv_graph_package("child"),
@@ -1881,7 +1881,7 @@ _tests.append(_test_uv_lock_duplicate_dependency_edges)
 def _test_uv_lock_dependency_identity(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
-            {"name": "fork", "version": "0.0.1", "source": {"registry": "https://pypi.org/simple"}},
+            {"name": "fork", "source": {"registry": "https://pypi.org/simple"}, "version": "0.0.1"},
             {"name": "scoped", "source": {"registry": "https://pypi.org/simple"}},
         ]),
         _uv_graph_package("fork", **{"resolution-markers": ["sys_platform == 'linux'"]}),
@@ -1900,8 +1900,8 @@ _tests.append(_test_uv_lock_dependency_identity)
 def _test_uv_lock_partial_extra_markers(env):
     got = _parse_uv_graph([
         _uv_graph_package("root", source = {"virtual": "."}, dependencies = [
-            {"name": "child", "marker": "sys_platform == 'linux' and extra == 'fast'"},
-            {"name": "union", "marker": "sys_platform == 'linux' or extra == 'fast'"},
+            {"marker": "sys_platform == 'linux' and extra == 'fast'", "name": "child"},
+            {"marker": "sys_platform == 'linux' or extra == 'fast'", "name": "union"},
         ]),
         _uv_graph_package("child", **{"resolution-markers": ["extra == 'fast'"]}),
         _uv_graph_package("union", **{"resolution-markers": ["sys_platform == 'linux'", "extra == 'fast'"]}),
