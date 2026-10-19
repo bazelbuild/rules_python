@@ -1,11 +1,17 @@
-# Builds `//dev/release_artifacts:artifacts_for_release` for the platforms in
-# dev/platforms, which cover python-build-standalone's platforms except s390x;
-# see dev/release_artifacts/build.sh. Linux x86_64 runners cross-compile the
-# files for other Linux CPUs. macOS and Windows files need those OSes' SDKs, so
-# they're built on those OSes.
+# Builds all deliverables for a release without publishing them:
+# - `//dev/release_artifacts:artifacts_for_release` for the platforms in
+#   dev/platforms, which cover python-build-standalone's platforms except s390x;
+#   see dev/release_artifacts/build.sh. Linux x86_64 runners cross-compile the
+#   files for other Linux CPUs. macOS and Windows files need those OSes' SDKs,
+#   so they're built on those OSes.
+# - `SHA256SUMS` and `artifacts_manifest.json` for the built platform binaries.
+# - The release source archive (`rules_python-<ref>.tar.gz`) and
+#   `release_notes.txt`.
+# - The `bazel_runfiles` wheel (`//python/runfiles:wheel.dist`).
 name: "Release: Build Artifacts"
 
 on:
+  pull_request:
   workflow_call:
     inputs:
       ref:
@@ -20,7 +26,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
@@ -65,7 +71,7 @@ jobs:
           - triple: riscv64gc-unknown-linux-musl
             runner: ubuntu-24.04
     env:
-      REF: ${{ inputs.ref || github.ref_name }}
+      REF: ${{ inputs.ref || github.sha }}
       TRIPLE: ${{ matrix.triple }}
     steps:
       - name: Checkout
@@ -96,8 +102,8 @@ jobs:
         if: steps.build.outputs.files != ''
         run: dev/release_artifacts/verify.sh "$TRIPLE"
 
-      # Stores the files with this workflow run so the publish job (and users
-      # viewing the run) can download them.
+      # Stores the files with this workflow run so the package job, caller
+      # workflow, and users viewing the run can download them.
       - name: Upload artifacts
         if: steps.build.outputs.files != ''
         uses: actions/upload-artifact@v7
@@ -106,14 +112,49 @@ jobs:
           path: ${{ steps.build.outputs.files }}
           if-no-files-found: error
 
-  publish:
-    name: Publish artifacts
+  build_wheel:
+    name: Build wheel
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Setup Bazel
+        uses: ./.github/actions/setup-bazel
+
+      - name: Build runfiles wheel
+        run: >-
+          bazel build
+          ${{ inputs.ref && format('--stamp --embed_label={0}', inputs.ref) || '' }}
+          //python/runfiles:wheel.dist
+          //python/runfiles:wheel.publish
+          //tools/publish:twine
+
+      - name: Check runfiles wheel
+        run: bazel-bin/tools/publish/twine check bazel-bin/python/runfiles/dist/*.whl
+
+      - name: Upload runfiles wheel
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-wheel
+          path: bazel-bin/python/runfiles/dist/*.whl
+          if-no-files-found: error
+
+  package:
+    name: Package release
     needs: build
     runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      contents: read
+    timeout-minutes: 15
     env:
-      REF: ${{ inputs.ref || github.ref_name }}
+      REF: ${{ inputs.ref || github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -141,20 +182,9 @@ jobs:
         if: >-
           hashFiles('dev/release_artifacts/generate_artifacts_manifest.py') != '' &&
           hashFiles('release-artifacts/*') != ''
-        run: |
-          dev/release_artifacts/generate_artifacts_manifest.py \
-            "$REF" release-artifacts artifacts_manifest.json
-
-      - name: Upload artifacts to GitHub release
-        if: hashFiles('release-artifacts/*') != ''
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ inputs.ref || github.ref_name }}
-          draft: true
-          fail_on_unmatched_files: true
-          files: |
-            release-artifacts/*
-            SHA256SUMS
+        run: >-
+          dev/release_artifacts/generate_artifacts_manifest.py
+          "$REF" release-artifacts artifacts_manifest.json
 
       - name: Upload artifacts manifest
         if: hashFiles('artifacts_manifest.json') != ''
@@ -162,4 +192,17 @@ jobs:
         with:
           name: release-artifacts-manifest
           path: artifacts_manifest.json
+          if-no-files-found: error
+
+      - name: Create release archive and notes
+        run: .github/workflows/create_archive_and_notes.sh ${{ inputs.ref }}
+
+      - name: Upload release archive and notes
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-archive
+          path: |
+            rules_python-*.tar.gz
+            release_notes.txt
+            SHA256SUMS
           if-no-files-found: error
