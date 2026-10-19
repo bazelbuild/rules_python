@@ -67,11 +67,12 @@ you can set the `publish_to_pypi` input to `false`:
 gh workflow run release_publish.yaml --ref <TAG> -f publish_to_pypi=false
 ```
 
-### Prebuilt tools
+### Release artifacts
 
 The release workflow also builds `//dev/release_artifacts:artifacts_for_release`
-for each platform to verify it builds. For now, the files aren't attached to
-the release, so a failed "Build tools" job doesn't block it.
+for each platform and uploads the built artifacts and `SHA256SUMS` to the GitHub
+release. For now, build failures only emit a warning rather than failing the
+release.
 
 Presubmit builds it for every platform too: natively on each CI host, and
 through `//dev/release_artifacts:cross_compiled_artifacts` for the others.

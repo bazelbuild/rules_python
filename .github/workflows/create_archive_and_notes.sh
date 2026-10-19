@@ -19,18 +19,20 @@ set -o errexit
 
 set -x
 
-TAG=$1
-if [ -z "$TAG" ]; then
-  echo "ERROR: TAG env var must be set"
-  exit 1
+TAG=${1:-}
+if [ -n "$TAG" ]; then
+  # If the workflow checks out one commit, but is releasing another
+  git fetch origin tag "$TAG"
+  git checkout "$TAG"
+else
+  TAG=$(git rev-parse HEAD)
 fi
-# If the workflow checks out one commit, but is releasing another
-git fetch origin tag "$TAG"
-git checkout "$TAG"
 
 # A prefix is added to better match the GitHub generated archives.
 PREFIX="rules_python-${TAG}"
 ARCHIVE="rules_python-$TAG.tar.gz"
+# TODO(https://github.com/bazel-contrib/rules_python/issues/4250): Add
+# artifacts_manifest.json to the release archive.
 git archive --format=tar "--prefix=${PREFIX}/" "$TAG" | gzip > "$ARCHIVE"
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
