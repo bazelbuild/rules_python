@@ -23,7 +23,13 @@ this PR", or monitor its merge):
    - Have the subagent use the **`buildkite-retry-job`** skill
      (`retry_buildkite_jobs.py <pr_number>`) to automatically retry any
      transient network flakes (e.g., HTTP 504 gateway timeouts, downloader
-     errors).
+     errors) and unblock manual approval steps.
+   - **Blocked Builds (`.bazelci/presubmit.yml` Approval)**: When
+     `.bazelci/presubmit.yml` is modified, Buildkite blocks the build until
+     manually approved. Approve and unblock it immediately via
+     `./.agents/skills/buildkite-retry-job/scripts/retry_buildkite_jobs.py
+     <pr_number> --unblock` (or `bk job unblock <job_id> --no-input`) so CI does
+     not sit blocked indefinitely.
    - **Soft-Failing Jobs**: Experimental Buildkite jobs (e.g. `*rolling*`
      Bazel) are non-blocking soft failures; do not treat them as merge blockers.
    - When the PR is queued, actively discover the merge queue branch via

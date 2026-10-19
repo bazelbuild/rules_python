@@ -20,5 +20,10 @@ conventions:
    modify `sys.path`.
 7. Verify console messaging: ensure scripts use GHA workflow command syntax
    (e.g. `::error::`, `::warning::`, `::notice::`, `::group::`).
+8. Verify non-trivial scripts (such as multi-line shell or Python logic) are
+   factored into standalone files (e.g. `.sh` or `.py` files) rather than
+   inlined in workflow YAML steps (`run: |`), shell scripts, or command
+   invocations via heredocs (`<< 'EOF'`) or `-c` flags (`bash -c`,
+   `python3 -c`).
 
 @.agents/skills/review-code/review-report-format.md

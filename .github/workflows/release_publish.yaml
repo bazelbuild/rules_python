@@ -46,34 +46,50 @@ on:
         default: true
 
 jobs:
-  build_tools:
-    # For now, this only verifies that the tools build. They aren't attached
-    # to the release, so no other job waits on this one. A failed build only
-    # adds a warning to this run; a failed check of the built files fails it.
-    name: Build tools
-    uses: ./.github/workflows/release_build_tools.yaml
+  build_artifacts:
+    # Builds the release archive, release notes, runfiles wheel, and platform
+    # binaries. A failed platform binary build only adds a warning to this run,
+    # since releases don't require those binaries yet. The run fails if a build
+    # hangs past the job timeout, the built files fail their checks, the wheel
+    # or archive fails to build, or the ref's dev/platforms lacks a job's
+    # platform.
+    name: Build artifacts
+    uses: ./.github/workflows/release_build_artifacts.yaml
     with:
       ref: ${{ inputs.tag_name || github.ref_name }}
 
   release:
     name: Release
+    needs: build_artifacts
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+      - name: Download release archive and notes
+        uses: actions/download-artifact@v8
         with:
-          ref: ${{ inputs.tag_name || github.ref_name }}
-      - name: Create release archive and notes
-        run: .github/workflows/create_archive_and_notes.sh ${{ inputs.tag_name || github.ref_name }}
+          name: release-archive
+
+      - name: Download built artifacts
+        uses: actions/download-artifact@v8
+        with:
+          # Match platform triples (<cpu>-<vendor>-<os>), excluding
+          # release-artifacts-manifest.
+          pattern: release-artifacts-*-*
+          path: release-artifacts
+          merge-multiple: true
+
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
           body_path: release_notes.txt
+          draft: false
           prerelease: ${{ contains( (inputs.tag_name || github.ref), '-rc') }}
           fail_on_unmatched_files: true
-          files: rules_python-*.tar.gz
+          files: |
+            rules_python-*.tar.gz
+            release-artifacts/*
+            SHA256SUMS
           tag_name: ${{ inputs.tag_name || github.ref_name }}
 
   publish_bcr:

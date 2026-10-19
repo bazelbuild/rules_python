@@ -231,10 +231,11 @@ register_toolchains(
     dev_dependency = True,
 )
 
-# A Rust toolchain to cross-compile the release artifacts for 32-bit Windows
-# from Windows x86_64, with MSVC's x86 tools. Unlike the Linux ones, it isn't
-# registered here: no default toolchain targets 32-bit Windows, and rules_rust
-# registers it.
+# Rust toolchains to cross-compile the release artifacts for 32-bit and Arm
+# Windows from Windows x86_64, with MSVC's cross tools; the Arm one needs
+# Visual Studio's optional ARM64 build tools. Unlike the Linux ones, they
+# aren't registered here: no default toolchain targets these platforms from
+# Windows x86_64, and rules_rust registers them.
 rust.repository_set(
     # As above, its x86_64 toolchain's name must sort after the default one's.
     # On Windows, rules_rust names toolchains after a hash of the full name:
@@ -249,6 +250,16 @@ rust.repository_set(
     target_triple = "i686-pc-windows-msvc",
     # See above.
     versions = ["1.97.1"],
+)
+
+# Another target for the same set; the first tag sets the shared attributes.
+rust.repository_set(
+    name = "rust_release_windows",
+    target_compatible_with = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:windows",
+    ],
+    target_triple = "aarch64-pc-windows-msvc",
 )
 
 # Use the Rust-based build tools when developing rules_python itself.
@@ -434,7 +445,7 @@ uv = use_extension("//python/uv:uv.bzl", "uv")
 uv.default(
     base_url = "https://github.com/astral-sh/uv/releases/download",
     manifest_filename = "dist-manifest.json",
-    version = "0.11.2",
+    version = "0.13.1",
 )
 uv.default(
     compatible_with = [
@@ -502,7 +513,7 @@ uv_dev = use_extension(
     dev_dependency = True,
 )
 uv_dev.configure(
-    version = "0.11.2",
+    version = "0.13.1",
 )
 
 flag_alias(

@@ -1,7 +1,7 @@
 ---
 name: github-actions-workflows
 trigger: glob
-globs: [".github/workflows/**"]
+globs: ".github/workflows/**"
 ---
 
 # GitHub Actions Workflows Rule
@@ -15,8 +15,17 @@ globs: [".github/workflows/**"]
 * **Event Payload Resolution**: For steps that are a single Python script,
   loading event details directly from `$GITHUB_EVENT_PATH` is required (strong
   suggestion otherwise) rather than passing fields via env vars or CLI flags.
+* **Preserve `export-subst` in `git archive`**: Always pass a commit or tag ref
+  (never a raw `git write-tree` SHA) to `git archive` so `.gitattributes`
+  `export-subst` placeholders (such as `$Format:...$` in `python/features.bzl`)
+  expand. Use `--add-file` to include generated files.
 
-## Workflow Python Scripts & Testing
+## Workflow Scripts & Testing
+* **Separate Script Files (No Inline Scripts)**: Factor non-trivial scripts
+  (such as multi-line shell or Python logic) into standalone files (e.g. `.sh`
+  or `.py` files) instead of inlining them in workflow YAML steps (`run: |`),
+  shell scripts, or command invocations via heredocs (`<< 'EOF'`) or `-c` flags
+  (`bash -c`, `python3 -c`).
 * **Executable Permissions**: Workflow step scripts must have `chmod +x` (mode
   `100755`) and a shebang (e.g. `#!/usr/bin/env python3`).
 * **Test Location**: Place workflow tests under `tests/workflows/`.

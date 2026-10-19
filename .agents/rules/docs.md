@@ -9,6 +9,14 @@ globs: docs/*.md
 * Act as an expert in tech writing, Sphinx, MyST, and markdown.
 * Wrap lines at 80 columns.
 * Use hyphens (`-`) in file names instead of underscores (`_`).
+* Document user-visible behavior, not internal workarounds or implementation
+  details.
+* **How-to Guides (`docs/howto/`)**:
+  * Prefer adding sections to an existing topical guide (e.g.
+    `docs/howto/build-a-wheel.md`) over creating a separate granular file.
+  * Write from the user's task perspective (e.g. "How do I generate the right
+    wheel filename for the active Python version?") rather than internal rule
+    or provider jargon, and omit low-level implementation parentheticals.
 * In Sphinx MyST markup, outer directives must have more colons than inner directives.
 * When adding `{versionadded}` or `{versionchanged}` sections, add them at the end of the documentation text.
 * For unreleased features or attributes, use `VERSION_NEXT_FEATURE` in

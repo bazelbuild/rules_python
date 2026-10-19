@@ -62,6 +62,12 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   not use mutable `list[T]`.
 
 ## Code Style & Conventions
+* **Direct Attribute Access**: Use normal attribute access (`x.field`) instead
+  of `getattr(x, "field", default)` for fields defined on a provider or struct
+  schema. When an object may be one of multiple provider/struct variants with
+  different field sets, guard once with `if hasattr(x, "field"):` (with a
+  comment explaining why the field may be absent) and use normal attribute
+  access inside the block.
 * **Dict union (`|`)**: Use `|` instead of `dicts.add(...)` from
   `@bazel_skylib//lib:dicts.bzl` when merging dictionaries.
 * **Type Checks (`@bazel_skylib//lib:types.bzl`)**: Prefer `types.is_*` helpers
@@ -69,8 +75,12 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   `@bazel_skylib//lib:types.bzl` instead of `type(x)` comparisons.
 * **Non-Info Provider Naming**: Add `# buildifier: disable=name-conventions`
   above `provider()` declarations that do not end in `Info` (e.g. `*Fileset`).
+* **`config_setting` Naming**: Prefix `config_setting` names with `is_` (e.g.
+  `is_linux_x86_64`), so that `select()` keys read as conditions.
 * **Docstring Formatting Invariants**: Use triple-quoted strings for multi-line
   docstrings without trailing backslashes (`\`) for line continuation.
+* **Workaround Comments**: Comment non-obvious workarounds with the intent, why
+  the direct approach fails, and why the workaround works.
 * **No Bazel Copyright Headers**: Do not add Bazel copyright headers to new or
   existing files unless explicitly directed by the user.
 * **Line Length & Wrapping**: Wrap Markdown and Starlark lines to 80 columns in

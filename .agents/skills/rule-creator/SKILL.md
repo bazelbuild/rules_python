@@ -32,8 +32,19 @@ trigger: <trigger-condition>
 
 #### Trigger Conditions
 *   `always_on`: The rule is always active and must be followed for all tasks.
-*   Custom triggers: You can specify other trigger conditions if the rule only
-    applies in certain contexts.
+*   `model_decision`: The agent loads the rule based on its `description` when
+    relevant. Prefer `model_decision` for conceptual, architectural, or
+    cross-cutting rules (e.g., `pr.md`, `rules_python.md`).
+*   `glob`: The rule activates when matching files (`globs:`) are accessed.
+    Use for syntax/formatting rules tied to specific file types. `globs` must
+    be a quoted, comma-separated string (e.g., `globs: "*.bzl,BUILD.bazel"`),
+    never a YAML list/sequence.
+
+### Domain Separation
+*   Keep language and tool rule files (`starlark.md`, `bzl.md`, `python.md`,
+    `docs.md`) general to those domains.
+*   Place `rules_python`-specific Bzlmod, PyPI, and rule API invariants in
+    `.agents/rules/rules_python.md`.
 
 ### Formatting Guidelines
 *   **Line Wrapping:** Wrap all text to 80 columns.
