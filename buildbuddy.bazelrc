@@ -1,0 +1,23 @@
+# Shared base config for BuildBuddy RBE and BES.
+# Prefixed with `_` because it should not be used directly; use
+# `--config=buildbuddy_presubmit` or `--config=buildbuddy_postsubmit` instead.
+# API keys (`--remote_header=x-buildbuddy-api-key=...`) must be configured in
+# `user.bazelrc` or passed by CI.
+build:_buildbuddy_base --bes_results_url=https://rules-python.buildbuddy.io/invocation/
+build:_buildbuddy_base --bes_backend=grpcs://rules-python.buildbuddy.io
+common:_buildbuddy_base --remote_cache=grpcs://rules-python.buildbuddy.io
+common:_buildbuddy_base --remote_timeout=10m
+common:_buildbuddy_base --remote_executor=grpcs://rules-python.buildbuddy.io
+
+# For PR presubmit runs.
+# Requires a BuildBuddy CAS-only API key.
+common:buildbuddy_presubmit --config=_buildbuddy_base
+# Isolate presubmit cache so untrusted PRs cannot poison the postsubmit cache.
+common:buildbuddy_presubmit --remote_instance_name=presubmit
+# A CAS-only key doesn't allow uploading locally generated results.
+common:buildbuddy_presubmit --remote_upload_local_results=false
+
+# For postsubmit CI runs on committed code.
+# Requires a BuildBuddy read+write API key.
+common:buildbuddy_postsubmit --config=_buildbuddy_base
+common:buildbuddy_postsubmit --remote_upload_local_results=true

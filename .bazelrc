@@ -88,5 +88,6 @@ build:macos --host_copt=-Wno-stringop-overread
 build:macos --host_copt=-Wno-sign-compare
 
 import %workspace%/specialized_configs.bazelrc
+import %workspace%/buildbuddy.bazelrc
 
 try-import user.bazelrc
