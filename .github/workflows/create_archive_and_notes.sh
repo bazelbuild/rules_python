@@ -19,14 +19,14 @@ set -o errexit
 
 set -x
 
-TAG=$1
-if [ -z "$TAG" ]; then
-  echo "ERROR: TAG env var must be set"
-  exit 1
+TAG=${1:-}
+if [ -n "$TAG" ]; then
+  # If the workflow checks out one commit, but is releasing another
+  git fetch origin tag "$TAG"
+  git checkout "$TAG"
+else
+  TAG=$(git rev-parse HEAD)
 fi
-# If the workflow checks out one commit, but is releasing another
-git fetch origin tag "$TAG"
-git checkout "$TAG"
 
 # A prefix is added to better match the GitHub generated archives.
 PREFIX="rules_python-${TAG}"
