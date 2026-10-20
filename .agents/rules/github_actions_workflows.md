@@ -1,12 +1,18 @@
 ---
 name: github-actions-workflows
 trigger: glob
-globs: ".github/workflows/**"
+globs: ".github/workflows/**,.github/actions/**"
 ---
 
 # GitHub Actions Workflows Rule
 
 * Use the latest version of referenced actions in `.github/workflows/`.
+* **Use Local Composite Actions (`./.github/actions/setup-bazel`)**: Always use
+  local composite action wrappers (such as
+  `uses: ./.github/actions/setup-bazel`) instead of invoking upstream actions
+  like `bazel-contrib/setup-bazel` directly in `.github/workflows/`. Update
+  `.github/actions/setup-bazel/action.yaml` if project defaults or inputs need
+  adjustment.
 * Preserve `suppress-no-jobs-ran-error` fallback jobs in conditional workflows.
 * Pass inputs (e.g. `${{ inputs.issue }}`) directly to commands without
   redundant shell stripping.
