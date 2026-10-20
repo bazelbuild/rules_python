@@ -749,6 +749,7 @@ bzl_library(
         ":python_register_toolchains",
         ":pythons_hub",
         ":repo_utils",
+        ":runtimes_manifest_workspace",
         ":toolchains_repo",
         ":version",
         "//python:versions",
@@ -796,6 +797,7 @@ bzl_library(
     srcs = ["pythons_hub.bzl"],
     deps = [
         ":pbs_manifest",
+        ":runtimes_manifest_workspace",
         ":text_util",
         ":toolchains_repo",
         "//python:versions",
