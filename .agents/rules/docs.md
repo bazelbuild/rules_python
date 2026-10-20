@@ -1,7 +1,7 @@
 ---
 trigger: glob
 description: Documentation formatting, Sphinx MyST style rules, and documentation build correctness
-globs: docs/*.md
+globs: "docs/**,RELEASING.md"
 ---
 
 # Documentation Rules
@@ -24,3 +24,5 @@ globs: docs/*.md
   behavioral adjustments, use `VERSION_NEXT_PATCH` in `{versionchanged}`
   directives.
 * **Documentation Build Correctness**: Ensure new `.bzl` files or user-facing APIs are properly registered in documentation build targets (e.g. `//docs:docs` or relevant Starlark API reference generation configs).
+* **`RELEASING.md` Scope**: Keep `RELEASING.md` focused strictly on how to
+  perform a release; do not document presubmit CI behavior in it.
