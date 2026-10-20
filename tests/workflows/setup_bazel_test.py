@@ -40,6 +40,18 @@ def test_action_yaml_invokes_executable_download_script():
     assert any("download_bazel.sh" in step.get("run", "") for step in steps)
 
 
+def test_action_yaml_enables_buildbuddy_only_on_linux():
+    """Verifies setup-bazel action.yaml only enables BuildBuddy on Linux."""
+    action = yaml.safe_load((_action_dir() / "action.yaml").read_text(encoding="utf-8"))
+    steps = action["runs"]["steps"]
+    setup_step = next(s for s in steps if s.get("name") == "Setup Bazel")
+    assert "runner.os == 'Linux'" in setup_step["with"]["bazelrc"]
+    secret_step = next(
+        s for s in steps if s.get("name") == "Write secret to user.bazelrc"
+    )
+    assert "runner.os == 'Linux'" in secret_step["if"]
+
+
 def test_download_bazel_succeeds_first_try(tmp_path: Path):
     """Verifies download_bazel.sh succeeds without warnings when bazel --version succeeds."""
     script = _action_dir() / "download_bazel.sh"

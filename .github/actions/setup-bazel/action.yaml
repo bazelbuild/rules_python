@@ -36,7 +36,8 @@ runs:
           # pyrefly toolchain or type-check targets before running them.
           build --output_groups=-pyrefly
           build --//python/config_settings:py_pbs_distribution=install_only_stripped
-          ${{ inputs.buildbuddy_api_key && format('common --config={0}', inputs.buildbuddy_config) || '' }}
+          # BuildBuddy RBE workers are Linux x86_64; only enable on Linux.
+          ${{ runner.os == 'Linux' && inputs.buildbuddy_api_key && format('common --config={0}', inputs.buildbuddy_config) || '' }}
 
     # setup-bazel only configures Bazelisk and restores caches; the Bazel
     # binary itself is downloaded by Bazelisk on first invocation. Because
@@ -50,7 +51,7 @@ runs:
     # passing it via environment variables or CLI args, keeping it out of
     # process tables and child environments.
     - name: Write secret to user.bazelrc
-      if: ${{ inputs.buildbuddy_api_key != '' }}
+      if: ${{ runner.os == 'Linux' && inputs.buildbuddy_api_key != '' }}
       uses: actions/github-script@v7
       with:
         script: |
