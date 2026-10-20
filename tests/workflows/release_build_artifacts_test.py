@@ -73,6 +73,21 @@ def test_workflow_is_safe_for_presubmit():
             )
 
 
+def test_build_jobs_use_buildbuddy_rbe():
+    """Verifies that build jobs pass BuildBuddy keys to setup-bazel."""
+    workflow = _load_workflow()
+
+    for job_name in ("build", "build_wheel"):
+        job = workflow["jobs"][job_name]
+        steps = job["steps"]
+        setup_steps = [s for s in steps if s.get("name") == "Setup Bazel"]
+        assert len(setup_steps) == 1, f"Missing Setup Bazel in {job_name}"
+        assert setup_steps[0]["uses"] == "./.github/actions/setup-bazel"
+        api_key = setup_steps[0]["with"]["buildbuddy_api_key"]
+        assert "secrets.BUILDBUDDY_CAS_ONLY_KEY" in api_key
+        assert "secrets.BUILDBUDDY_READ_WRITE_KEY" in api_key
+
+
 def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
     """Verifies create_archive_and_notes.sh fetches missing tags and expands export-subst."""
     script = (
