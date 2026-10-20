@@ -75,3 +75,16 @@ pytest_test(
         "//python/runfiles",
     ],
 )
+
+pytest_test(
+    name = "setup_bazel_test",
+    srcs = ["setup_bazel_test.py"],
+    data = [
+        "//.github/actions/setup-bazel:all_files",
+    ],
+    target_compatible_with = NOT_WINDOWS,
+    deps = [
+        "//python/runfiles",
+        "@pypi//pyyaml",
+    ],
+)
