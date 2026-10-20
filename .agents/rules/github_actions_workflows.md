@@ -47,6 +47,6 @@ globs: ".github/workflows/**"
   outputs directly when matching actions. Test end-to-end via autouse fixtures
   for GHA env files and API mocks.
 * **Git Portability in Workflow Tests**: CI runs on older Linux distributions
-  with Git `< 2.35` (e.g. Debian 11, Ubuntu 22.04), where `%(describe:tags=true)`
-  is unsupported. Guard assertions on Git $\ge$ 2.35 format options with a host
-  Git capability check.
+  with Git `< 2.35` (e.g. Debian 11, Ubuntu 22.04), where
+  `%(describe:tags=true)` is unsupported. Guard assertions on Git $\ge$ 2.35
+  format options with a host Git capability check.
