@@ -19,6 +19,17 @@ globs: ".github/workflows/**"
   (never a raw `git write-tree` SHA) to `git archive` so `.gitattributes`
   `export-subst` placeholders (such as `$Format:...$` in `python/features.bzl`)
   expand. Use `--add-file` to include generated files.
+* **Ref Handling (Tags vs. Commits)**: When a workflow or script processes a
+  release tag or a commit (e.g. in presubmit), use that exact tag or commit SHA
+  value throughout. Never invent dummy version strings (e.g. `0.0.0-dev`) or
+  create synthetic git tags to work around downstream logic.
+* **No `--stamp` or `--embed_label` on Pull Requests**: Only pass `--stamp` and
+  `--embed_label` on release builds, never on `pull_request` builds, to avoid
+  busting remote/RBE caching.
+* **Direct `bazel-bin/` Tool Execution**: When a workflow step runs a Bazel
+  binary directly from `bazel-bin/<pkg>/<target>` instead of `bazel run`,
+  explicitly include `//<pkg>:<target>` in `bazel build` so its `.runfiles` tree
+  is materialized.
 
 ## Workflow Scripts & Testing
 * **Separate Script Files (No Inline Scripts)**: Factor non-trivial scripts
@@ -35,3 +46,7 @@ globs: ".github/workflows/**"
   entry point (e.g. `process_comment()`) and private helpers (`_` prefix). Write
   outputs directly when matching actions. Test end-to-end via autouse fixtures
   for GHA env files and API mocks.
+* **Git Portability in Workflow Tests**: CI runs on older Linux distributions
+  with Git `< 2.35` (e.g. Debian 11, Ubuntu 22.04), where
+  `%(describe:tags=true)` is unsupported. Guard assertions on Git $\ge$ 2.35
+  format options with a host Git capability check.
