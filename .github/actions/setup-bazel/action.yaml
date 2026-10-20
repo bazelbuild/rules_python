@@ -5,7 +5,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.19.0
+      uses: bazel-contrib/setup-bazel@0.19.1
       with:
         # Windows images have a fixed-version `bazel` on PATH, and Bazelisk
         # < 1.29.0 has no windows-arm64 build.
