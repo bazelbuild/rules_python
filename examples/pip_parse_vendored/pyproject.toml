@@ -3,5 +3,5 @@ name = "pip_parse_vendored"
 version = "0.0.0"
 dependencies = [
     "requests",
-    "certifi>=2023.7.22", # https://security.snyk.io/vuln/SNYK-PYTHON-CERTIFI-5805047
+    "certifi>=2026.10.19", # https://security.snyk.io/vuln/SNYK-PYTHON-CERTIFI-5805047
 ]
