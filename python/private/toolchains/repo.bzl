@@ -38,7 +38,7 @@ def _prebuilt_exe_zip_maker_toolchain_impl_repo_impl(rctx):
         executable = False,
     )
 
-    # Bazel 6 does not have rctx.repo_metadata.
+    # Bazel <8.3.0 lacks repository_ctx.repo_metadata.
     if not hasattr(rctx, "repo_metadata"):
         return None
     return rctx.repo_metadata(reproducible = True)
@@ -77,7 +77,7 @@ def _tools_toolchains_repo_impl(rctx):
         executable = False,
     )
 
-    # Bazel 6 does not have rctx.repo_metadata.
+    # Bazel <8.3.0 lacks repository_ctx.repo_metadata.
     if not hasattr(rctx, "repo_metadata"):
         return None
     return rctx.repo_metadata(reproducible = True)
