@@ -174,6 +174,9 @@ This repository contains 3 Bazel bzlmod modules.
 public API. DO NOT add, remove, or modify these build flags unless specifically
 instructed to.
 
+`version.bzl` defines `MINIMUM_BAZEL_VERSION`. Do not add compatibility logic
+or feature guards for Bazel versions older than `MINIMUM_BAZEL_VERSION`.
+
 `bazel query --output=build` can be used to inspect target definitions.
 
 In WORKSPACE mode:

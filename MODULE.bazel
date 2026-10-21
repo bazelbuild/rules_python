@@ -16,7 +16,14 @@ bazel_dep(name = "toml.bzl", version = "0.4.1")
 # Use py_proto_library directly from protobuf repository
 bazel_dep(name = "protobuf", version = "29.0-rc2", repo_name = "com_google_protobuf")
 
+# False in git so source checkouts build and enable Rust tools by default;
+# rewritten to True in release archives (which bundle prebuilt binaries).
+TOOL_DEPS_DEV_ONLY = False
+
 rules_python_config = use_extension("//python/extensions:config.bzl", "config")
+rules_python_config.internal_configure(
+    tool_deps_dev_only = TOOL_DEPS_DEV_ONLY,
+)
 use_repo(
     rules_python_config,
     "pypi__build",
@@ -35,7 +42,10 @@ use_repo(
     "pypi__wheel",
     "pypi__zipp",
     "rules_python_internal",
+    "rules_python_tools",
 )
+
+register_toolchains("@rules_python_tools//toolchains:all")
 
 # We need to do another use_extension call to expose the "pythons_hub"
 # repo.
@@ -90,25 +100,16 @@ pip.dep(name = "pytest-randomly")
 pip.dep(name = "pytest-shard")
 use_repo(pip, "pypi", "rules_python_publish_deps")
 
-# ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
-bazel_dep(name = "sphinxdocs", version = "0.0.0", dev_dependency = True)
-local_path_override(
-    module_name = "sphinxdocs",
-    path = "sphinxdocs",
+bazel_dep(
+    name = "rules_rust",
+    version = "0.73.0",
+    dev_dependency = TOOL_DEPS_DEV_ONLY,
 )
-
-bazel_dep(name = "rules_bazel_integration_test", version = "0.27.0", dev_dependency = True)
-bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
-bazel_dep(name = "rules_shell", version = "0.3.0", dev_dependency = True)
-bazel_dep(name = "rules_multirun", version = "0.9.0", dev_dependency = True)
-bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
-bazel_dep(name = "rules_pkg", version = "1.2.0", dev_dependency = True)
-bazel_dep(name = "rules_rust", version = "0.73.0", dev_dependency = True)
 
 rust_crates = use_extension(
     "@rules_rust//crate_universe:extensions.bzl",
     "crate",
-    dev_dependency = True,
+    dev_dependency = TOOL_DEPS_DEV_ONLY,
 )
 rust_crates.spec(
     package = "sha2",
@@ -120,6 +121,8 @@ rust_crates.spec(
 # and OS, e.g. i686-unknown-linux-gnu also matches the i686-unknown-linux-musl
 # platform.
 rust_crates.from_specs(
+    cargo_lockfile = "//crates:Cargo.lock",
+    lockfile = "//crates:Cargo.Bazel.lock",
     supported_platform_triples = [
         "aarch64-apple-darwin",
         "aarch64-pc-windows-msvc",
@@ -142,6 +145,20 @@ rust_crates.render_config(
     generate_target_compatible_with = False,
 )
 use_repo(rust_crates, "crates")
+
+# ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
+bazel_dep(name = "sphinxdocs", version = "0.0.0", dev_dependency = True)
+local_path_override(
+    module_name = "sphinxdocs",
+    path = "sphinxdocs",
+)
+
+bazel_dep(name = "rules_bazel_integration_test", version = "0.27.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.3.0", dev_dependency = True)
+bazel_dep(name = "rules_multirun", version = "0.9.0", dev_dependency = True)
+bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "1.2.0", dev_dependency = True)
 
 # Rust toolchains to cross-compile the release artifacts for other Linux CPUs
 # from Linux x86_64; see dev/release_artifacts. They target musl, which Rust can
@@ -260,12 +277,6 @@ rust.repository_set(
         "@platforms//os:windows",
     ],
     target_triple = "aarch64-pc-windows-msvc",
-)
-
-# Use the Rust-based build tools when developing rules_python itself.
-register_toolchains(
-    "//dev/dev_only_toolchains:exe_zip_maker_toolchain",
-    dev_dependency = True,
 )
 
 bazel_dep(name = "other", version = "0", dev_dependency = True)

@@ -46,7 +46,7 @@ pytest_test(
         "//.github/workflows:release_build_artifacts.yaml",
         "//dev/platforms:BUILD.bazel",
     ],
-    target_compatible_with = NOT_WINDOWS,
+    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//python/runfiles",
         "@pypi//pyyaml",
@@ -68,10 +68,25 @@ pytest_test(
     name = "release_artifacts_test",
     srcs = ["release_artifacts_test.py"],
     data = [
+        "//:MODULE.bazel",
+        "//.github/workflows:create_archive_and_notes.sh",
         "//dev/release_artifacts:generate_artifacts_manifest.py",
+    ],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = [
+        "//python/runfiles",
+    ],
+)
+
+pytest_test(
+    name = "setup_bazel_test",
+    srcs = ["setup_bazel_test.py"],
+    data = [
+        "//.github/actions/setup-bazel:all_files",
     ],
     target_compatible_with = NOT_WINDOWS,
     deps = [
         "//python/runfiles",
+        "@pypi//pyyaml",
     ],
 )

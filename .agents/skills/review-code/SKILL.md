@@ -59,15 +59,15 @@ file from `.agents/skills/review-code/`:
      `.agents/skills/review-code/review-workflows-prompt.md`
    - Focus: Audits workflow files (`.github/**`) and workflow tests against
      `.agents/rules/github_actions_workflows.md` (e.g. `chmod +x` executable
-     permissions, shebangs, action versions, fallback jobs).
+     permissions, shebangs, action versions, `./.github/actions/setup-bazel`
+     wrapper usage, fallback jobs).
 
 8. **`rules_python` Usage Sub-Agent** (`Role: "rules_python Usage Auditor"`):
    - Prompt file:
      `.agents/skills/review-code/review-rules-python-prompt.md`
-   - Focus: Audits changes against `.agents/rules/rules_python.md` and
-     `rules_python`-specific Bzlmod and rule usage invariants (e.g., `pip.dep()`
-     declarations in `MODULE.bazel` for `@pypi//<pkg>` references under
-     `python/**`).
+   - Focus: Audits changes against `.agents/rules/rules_python.md` (e.g.,
+     `pip.dep()` declarations in `MODULE.bazel` and `MINIMUM_BAZEL_VERSION`
+     bounds).
 
 9. **News Entry Sub-Agent** (`Role: "News Entry Auditor"`):
    - Prompt file:
