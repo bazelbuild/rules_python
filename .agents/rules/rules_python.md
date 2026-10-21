@@ -15,3 +15,9 @@ description: rules_python-specific Bzlmod, PyPI, and rule usage invariants
   analysis when `<pkg>` is absent from their `pip.parse()` lockfiles. Package
   names in `pip.dep(name = "...")` are normalized (hyphens and underscores map
   to the same name).
+
+## Minimum Supported Bazel Version
+* `//:version.bzl` defines `MINIMUM_BAZEL_VERSION`. Do not add compatibility
+  logic, feature guards, or comments for older Bazel versions.
+* When guarding a feature added after `MINIMUM_BAZEL_VERSION`, verify and
+  comment the exact Bazel version that introduced it.

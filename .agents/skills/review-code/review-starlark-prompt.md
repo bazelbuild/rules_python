@@ -19,5 +19,7 @@ in `git diff` against the project's Starlark coding rules and conventions:
 9. Verify `config_setting` names start with `is_` (or `_is_` when private).
 10. Verify non-obvious workarounds have comments stating the intent, why the
     direct approach fails, and why the workaround works.
+11. Verify no compatibility logic or feature guards target Bazel versions
+    older than `MINIMUM_BAZEL_VERSION` in `//:version.bzl`.
 
 @.agents/skills/review-code/review-report-format.md
