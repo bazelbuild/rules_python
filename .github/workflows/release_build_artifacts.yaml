@@ -82,6 +82,12 @@ jobs:
 
       - name: Setup Bazel
         uses: ./.github/actions/setup-bazel
+        with:
+          buildbuddy_api_key: >-
+            ${{ github.event_name == 'pull_request'
+            && secrets.BUILDBUDDY_CAS_ONLY_KEY
+            || (github.event_name != 'pull_request' && secrets.BUILDBUDDY_READ_WRITE_KEY)
+            || '' }}
 
       # Release commands run main's workflows, even for patch releases of older
       # release branches. Skip refs without dev/platforms, since their scripts
@@ -123,6 +129,12 @@ jobs:
 
       - name: Setup Bazel
         uses: ./.github/actions/setup-bazel
+        with:
+          buildbuddy_api_key: >-
+            ${{ github.event_name == 'pull_request'
+            && secrets.BUILDBUDDY_CAS_ONLY_KEY
+            || (github.event_name != 'pull_request' && secrets.BUILDBUDDY_READ_WRITE_KEY)
+            || '' }}
 
       - name: Build runfiles wheel
         run: >-
