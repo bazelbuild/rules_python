@@ -15,7 +15,7 @@ from typing import TypedDict
 
 class ArtifactEntry(TypedDict):
     exec_compatible_with: list[str]
-    filename: str
+    name: str
     sha256: str
     urls: list[str]
 
@@ -67,20 +67,21 @@ def generate_manifest(
 
         cpu = _cpu_constraint(triple)
         os_constraint = _os_constraint(triple)
+        name = base.replace("-", "_").replace(".", "_")
         sha256 = hashlib.sha256(file_path.read_bytes()).hexdigest()
         url = f"https://github.com/{repo}/releases/download/{tag}/{filename}"
 
         artifacts.setdefault(artifact, []).append(
             {
                 "exec_compatible_with": [cpu, os_constraint],
-                "filename": filename,
+                "name": name,
                 "sha256": sha256,
                 "urls": [url],
             }
         )
 
     for entries in artifacts.values():
-        entries.sort(key=lambda entry: entry["filename"])
+        entries.sort(key=lambda entry: entry["name"])
 
     return {"artifacts": dict(sorted(artifacts.items()))}
 
