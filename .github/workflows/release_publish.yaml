@@ -57,6 +57,7 @@ jobs:
     uses: ./.github/workflows/release_build_artifacts.yaml
     with:
       ref: ${{ inputs.tag_name || github.ref_name }}
+    secrets: inherit
 
   release:
     name: Release
