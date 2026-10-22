@@ -85,6 +85,11 @@ _RULE_DEPS = [
         "1f776e7d669ebceb01dee46484485f43a4048746235e683bcdffacdf1fb4785a",
     ),
     (
+        "pypi__typing_extensions",
+        "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+        "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    ),
+    (
         "pypi__wheel",
         "https://files.pythonhosted.org/packages/87/22/b76d483683216dde3d67cba61fb2444be8d5be289bf628c13fc0fd90e5f9/wheel-0.46.3-py3-none-any.whl",
         "4b399d56c9d9338230118d705d9737a2a468ccca63d5e813e2a4fc7815d8bc4d",
