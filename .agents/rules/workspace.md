@@ -14,7 +14,7 @@ basis:
 * Run the workspace helper script to configure upstream tracking and safe
   pushing:
   ```bash
-  .agents/scripts/setup_triangle_branch.sh <branch>
+  .agents/scripts/setup_client.py <branch>
   ```
 * Never use `git push -u` or `--set-upstream` (it breaks upstream tracking).
 * When pushing to a checked-out PR branch from an external fork, push
