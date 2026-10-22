@@ -45,12 +45,53 @@ def test_action_yaml_enables_buildbuddy_on_all_os():
     action = yaml.safe_load((_action_dir() / "action.yaml").read_text(encoding="utf-8"))
     steps = action["runs"]["steps"]
     setup_step = next(s for s in steps if s.get("name") == "Setup Bazel")
-    assert "inputs.buildbuddy_api_key" in setup_step["with"]["bazelrc"]
-    assert "runner.os" not in setup_step["with"]["bazelrc"]
+    bazelrc = setup_step["with"]["bazelrc"]
+    assert "inputs.buildbuddy_api_key" in bazelrc
+    assert "runner.os" not in bazelrc
+    assert "ROLE=CI" in bazelrc
+    assert "VISIBILITY=PUBLIC" in bazelrc
+    assert "RUN_ID=" in bazelrc
+    assert "ACTOR=" in bazelrc
+    assert "COMMIT_SHA=" in bazelrc
+    assert "PR_NUMBER=" in bazelrc
+    assert "BRANCH_NAME=" in bazelrc
+    assert '--build_metadata="BUILDBUDDY_LINKS=' in bazelrc
     secret_step = next(
         s for s in steps if s.get("name") == "Write secret to user.bazelrc"
     )
     assert secret_step["if"] == "${{ inputs.buildbuddy_api_key != '' }}"
+
+
+def test_buildbuddy_bazelrc_cache_and_diagnostics():
+    """Verifies buildbuddy.bazelrc includes recommended cache, diagnostic, and
+    profiling flags.
+    """
+    rf = runfiles.CreateOrRaise()
+    buildbuddy_path = rf.root() / "rules_python/buildbuddy.bazelrc"
+    buildbuddy_lines = [
+        line.strip()
+        for line in buildbuddy_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    expected_flags = [
+        (
+            "build:_buildbuddy_base "
+            "--build_metadata=REPO_URL=https://github.com/bazel-contrib/rules_python"
+        ),
+        "common:_buildbuddy_base --remote_cache_compression",
+        "common:_buildbuddy_base --experimental_remote_cache_chunking",
+        "common:_buildbuddy_base --rewind_lost_inputs",
+        "common:_buildbuddy_base --remote_grpc_log=bazel-remote-grpc.log",
+        (
+            "common:_buildbuddy_base "
+            "--execution_log_compact_file=bazel-execution-log.binpb.zst"
+        ),
+        "common:_buildbuddy_base --noslim_profile",
+        "common:_buildbuddy_base --experimental_profile_include_target_label",
+        "common:_buildbuddy_base --experimental_profile_include_primary_output",
+    ]
+    for flag in expected_flags:
+        assert flag in buildbuddy_lines, f"Expected '{flag}' in buildbuddy.bazelrc"
 
 
 def test_buildbuddy_bazelrc_disables_remote_executor_on_macos_and_windows():
