@@ -2,12 +2,16 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("//tests/support:support.bzl", "SUPPORTS_BZLMOD")
 
 def _test_downloaded_archive(name):
     analysis_test(
         name = name,
         target = "@rules_python_publish_deps//packaging:whl",
         impl = _test_downloaded_archive_impl,
+        # WORKSPACE resolves this fixture through pip_archive, which retains
+        # its existing archive layout. Only bzlmod supplies a known wheel URL.
+        attr_values = {"target_compatible_with": SUPPORTS_BZLMOD},
     )
 
 def _test_downloaded_archive_impl(env, target):
