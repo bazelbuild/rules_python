@@ -41,10 +41,13 @@ if ! bazel build --verbose_failures --compilation_mode=opt --stamp \
 fi
 
 # The target lists the paths of its files in a manifest; see release_files.bzl.
+# Copy them into a single directory so upload-artifact strips the directory
+# prefix instead of preserving per-platform bazel-out/<cfg> subdirectories.
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-  {
-    echo "files<<EOF"
-    cat "$manifest"
-    echo "EOF"
-  } >> "$GITHUB_OUTPUT"
+  rm -rf release-artifacts
+  mkdir -p release-artifacts
+  while IFS= read -r file; do
+    cp "$file" release-artifacts/
+  done < "$manifest"
+  echo "files=release-artifacts/*" >> "$GITHUB_OUTPUT"
 fi
