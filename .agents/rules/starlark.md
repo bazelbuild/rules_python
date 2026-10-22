@@ -61,6 +61,20 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   freeze). Use `tuple[T]` or `depset[T]` in providers placed into depsets; do
   not use mutable `list[T]`.
 
+## Repository Rules & Code Generation
+* **Structured Attributes**: Pass separate typed attributes (`attr.string_list`,
+  `attr.string_list_dict`) instead of pre-rendered `BUILD` text or JSON blobs;
+  render `BUILD.bazel` in the rule implementation.
+* **Single-Value Templates**: For generated file templates with one interpolated
+  value, use a top-level string and `.format()`.
+* **Reuse `http_file`**: Use `http_file` from
+  `@bazel_tools//tools/build_defs/repo:http.bzl` for single-file downloads. Omit
+  `downloaded_file_path` unless required and reference `@<repo>//file`.
+* **`rctx.read()` Files**: Do not add `exports_files()` for files only read via
+  `rctx.read(Label(...))`.
+* **`repository_ctx.repo_metadata`**: `repository_ctx.repo_metadata` was
+  introduced in Bazel 8.3.0.
+
 ## Code Style & Conventions
 * **Direct Attribute Access**: Use normal attribute access (`x.field`) instead
   of `getattr(x, "field", default)` for fields defined on a provider or struct
@@ -77,6 +91,8 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   above `provider()` declarations that do not end in `Info` (e.g. `*Fileset`).
 * **`config_setting` Naming**: Prefix `config_setting` names with `is_` (e.g.
   `is_linux_x86_64`), so that `select()` keys read as conditions.
+* **Explicit Required Parameters**: Declare required parameters explicitly
+  instead of passing them through `**kwargs`. Document `Args:` and `Returns:`.
 * **Docstring Formatting Invariants**: Use triple-quoted strings for multi-line
   docstrings without trailing backslashes (`\`) for line continuation.
 * **Workaround Comments**: Comment non-obvious workarounds with the intent, why
