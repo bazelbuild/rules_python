@@ -60,6 +60,7 @@ exports_files([
 
 exports_files(
     [
+        ".bazelrc",
         ".bazelversion",
         "MODULE.bazel",
         "buildbuddy.bazelrc",

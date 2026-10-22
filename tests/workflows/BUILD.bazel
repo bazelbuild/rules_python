@@ -82,6 +82,7 @@ pytest_test(
     name = "setup_bazel_test",
     srcs = ["setup_bazel_test.py"],
     data = [
+        "//:.bazelrc",
         "//:buildbuddy.bazelrc",
         "//.github/actions/setup-bazel:all_files",
     ],
