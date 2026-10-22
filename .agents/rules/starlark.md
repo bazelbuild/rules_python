@@ -60,8 +60,16 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   fields must be immutable when `depset()` is called (eager check before rule
   freeze). Use `tuple[T]` or `depset[T]` in providers placed into depsets; do
   not use mutable `list[T]`.
+* **Dedicated Providers over Filtering `DefaultInfo.files`**: When a rule needs
+  a subset of a dependency's outputs (e.g., binaries without a sibling `.txt`
+  manifest), return a dedicated provider (e.g., `_ReleaseFilesInfo`) instead of
+  filtering `DefaultInfo.files` by filename or extension.
 
 ## Code Style & Conventions
+* **Do Not Export `BUILD` Files Unnecessarily**: Do not add `BUILD` or
+  `BUILD.bazel` to `exports_files(...)` unless strictly required.
+* **No Nested List Comprehensions**: Do not write nested list comprehensions
+  (`[x for y in ... for x in ...]`). Use explicit `for` loops instead.
 * **Direct Attribute Access**: Use normal attribute access (`x.field`) instead
   of `getattr(x, "field", default)` for fields defined on a provider or struct
   schema. When an object may be one of multiple provider/struct variants with

@@ -47,6 +47,12 @@ globs: ".github/workflows/**,.github/actions/**,.github/dependabot.yml"
   binary directly from `bazel-bin/<pkg>/<target>` instead of `bazel run`,
   explicitly include `//<pkg>:<target>` in `bazel build` so its `.runfiles` tree
   is materialized.
+* **Flat Staging for `actions/upload-artifact` Across Split Transitions**:
+  `actions/upload-artifact` strips only the longest common parent directory of
+  all matched `path` entries. When uploading files from multiple Bazel
+  configurations (`bazel-out/<cfg-1>/...`, `bazel-out/<cfg-2>/...`), stage them
+  into a single flat directory first (reading paths from the rule's `.txt`
+  manifest) so `<cfg>/...` subdirectories are not preserved in the artifact.
 
 ## Workflow Scripts & Testing
 * **Separate Script Files (No Inline Scripts)**: Factor non-trivial scripts
