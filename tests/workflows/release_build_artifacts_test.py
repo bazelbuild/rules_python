@@ -116,13 +116,26 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
     (origin / ".gitattributes").write_text(
         "python/features.bzl export-subst\n", encoding="utf-8"
     )
-    (origin / "python").mkdir()
+    (origin / "MODULE.bazel").write_text(
+        "TOOL_DEPS_DEV_ONLY = False\n", encoding="utf-8"
+    )
+    (origin / "python/private").mkdir(parents=True)
+    (origin / "python/private/artifacts_manifest.json").write_text(
+        "# stub\n", encoding="utf-8"
+    )
     (origin / "python/features.bzl").write_text(
         '_VERSION_PRIVATE = "$Format:%(describe:tags=true)$"\n'
         '_COMMIT_PRIVATE = "$Format:%H$"\n',
         encoding="utf-8",
     )
-    git(origin, "add", ".gitattributes", "python/features.bzl")
+    git(
+        origin,
+        "add",
+        ".gitattributes",
+        "MODULE.bazel",
+        "python/private/artifacts_manifest.json",
+        "python/features.bzl",
+    )
     git(origin, "commit", "-m", "Release commit")
     git(origin, "tag", "2.5.0")
     release_sha = subprocess.check_output(
@@ -136,6 +149,7 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
     # Clone without tags at the later commit (matches actions/checkout default)
     clone = tmp_path / "clone"
     git(tmp_path, "clone", "--no-tags", str(origin), str(clone))
+    (clone / "artifacts_manifest.json").write_text("{}\n", encoding="utf-8")
 
     # Git < 2.35 (e.g. Debian 11 / Ubuntu 22.04 on Buildkite) does not support
     # %(describe:tags=true) and leaves the literal placeholder unexpanded.
@@ -166,6 +180,7 @@ def test_create_archive_and_notes_fetches_and_expands_tag(tmp_path: Path):
             assert '_VERSION_PRIVATE = ""' in features_content
 
     # Release run fetches and checks out the tag from origin
+    git(clone, "checkout", "--", "MODULE.bazel")
     subprocess.run([str(script), "2.5.0"], cwd=clone, check=True)
     archive = clone / "rules_python-2.5.0.tar.gz"
     notes = clone / "release_notes.txt"

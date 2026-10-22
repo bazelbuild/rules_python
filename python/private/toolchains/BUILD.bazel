@@ -1,0 +1,65 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:distribution_filegroup.bzl", "distribution_filegroup")
+load("//python/private:visibility.bzl", "NOT_ACTUALLY_PUBLIC")
+
+package(default_visibility = ["//:__subpackages__"])
+
+licenses(["notice"])
+
+distribution_filegroup(
+    name = "distribution",
+)
+
+# Whether to use the Rust implementation of exe_zip_maker.
+# * `yes`: use it.
+# * `no`: use the built-in Python implementation.
+# * `auto`: let rules_python decide. Currently `yes` when developing
+#   rules_python (TOOL_DEPS_DEV_ONLY = False), and `no` in releases.
+#
+# Enable with `--//python/private/toolchains:use_rust_exe_zip_maker=yes` or
+# disable with `--//python/private/toolchains:use_rust_exe_zip_maker=no`.
+string_flag(
+    name = "use_rust_exe_zip_maker",
+    build_setting_default = "auto",
+    values = [
+        "auto",
+        "no",
+        "yes",
+    ],
+    visibility = NOT_ACTUALLY_PUBLIC,
+)
+
+config_setting(
+    name = "is_rust_exe_zip_maker_auto",
+    flag_values = {":use_rust_exe_zip_maker": "auto"},
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "is_rust_exe_zip_maker_yes",
+    flag_values = {":use_rust_exe_zip_maker": "yes"},
+    visibility = ["//visibility:private"],
+)
+
+selects.config_setting_group(
+    name = "is_rust_exe_zip_maker_enabled",
+    match_any = [
+        ":is_rust_exe_zip_maker_yes",
+    ] + ([
+        ":is_rust_exe_zip_maker_auto",
+    ] if not config.tool_deps_dev_only else []),
+    visibility = NOT_ACTUALLY_PUBLIC,
+)
+
+bzl_library(
+    name = "repo",
+    srcs = ["repo.bzl"],
+    deps = [
+        "//python/private:bazel_tools",
+        "//python/private:text_util",
+        "//python/private:toolchain_types",
+    ],
+)

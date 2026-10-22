@@ -556,6 +556,22 @@ def _glob_new():
         glob = _glob_fn,
     )
 
+def _repo_new():
+    """Create a mock repository rule object.
+
+    Returns:
+        {type}`MockRepo` A struct with a `calls` list and a `rule` function.
+    """
+    calls = []
+
+    def _repo_fn(**kwargs):
+        calls.append(kwargs)
+
+    return struct(
+        calls = calls,
+        rule = _repo_fn,
+    )
+
 def _select_new(value, no_match_error = None):
     """A mock select function that returns the value.
 
@@ -577,6 +593,7 @@ mocks = struct(
     module = _module_new,
     path = _path_new,
     rctx = _rctx_new,
+    repo = _repo_new,
     select = _select_new,
     tag = _tag_new,
 )

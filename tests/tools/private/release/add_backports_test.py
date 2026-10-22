@@ -30,6 +30,12 @@ def test_add_backports_explicit_issue(mock_gh):
     assert "- [ ] Tag RC0" in updated_body
     assert "- [ ] Sync Changelog #124" in updated_body
     assert "- [ ] Sync Changelog #125" in updated_body
+    expected_comment = (
+        "Updated release tracking issue #123 (Release 2.1.0) with this PR added"
+        " to the backports checklist."
+    )
+    assert mock_gh.issue_comments[124] == [expected_comment]
+    assert mock_gh.issue_comments[125] == [expected_comment]
 
 
 def test_add_backports_auto_discover_success(mock_gh):
@@ -51,6 +57,10 @@ def test_add_backports_auto_discover_success(mock_gh):
     assert result == 0
     updated_body = mock_gh.get_issue_body(issue_num)
     assert "- [ ] #124" in updated_body
+    assert mock_gh.issue_comments[124] == [
+        f"Updated release tracking issue #{issue_num} (Release 2.1.0) with this"
+        " PR added to the backports checklist."
+    ]
 
 
 def test_add_backports_auto_discover_no_issues_creates_patch_release(
@@ -75,6 +85,10 @@ def test_add_backports_auto_discover_no_issues_creates_patch_release(
     assert "Prepare Release" not in body
     assert "Create Release branch" not in body
     assert "- [ ] Tag Final" in body
+    assert mock_gh.issue_comments[124] == [
+        f"Created release tracking issue #{issue['number']} (Release 1.2.1)"
+        " with this PR added to the backports checklist."
+    ]
 
 
 def test_add_backports_auto_discover_skips_complete_release_creates_patch_release(
