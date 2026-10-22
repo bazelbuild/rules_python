@@ -1,12 +1,23 @@
 ---
 name: github-actions-workflows
 trigger: glob
-globs: ".github/workflows/**,.github/actions/**"
+globs: ".github/workflows/**,.github/actions/**,.github/dependabot.yml"
 ---
 
 # GitHub Actions Workflows Rule
 
-* Use the latest version of referenced actions in `.github/workflows/`.
+* Use the latest version of referenced actions in `.github/workflows/` and
+  `.github/actions/` (ensuring actions target supported Node.js runtimes such as
+  `node24` rather than deprecated `node20`).
+* **Dependabot Coverage for Composite Actions**: When adding a composite action
+  directory under `.github/actions/<name>`, add `"/.github/actions/<name>"` to
+  the `github-actions` `directories` list in `.github/dependabot.yml` (since
+  `directory: "/"` only scans `.github/workflows/`).
+* **Verifying Secret-Gated Workflow Steps**: GitHub Actions does not expose
+  repository secrets (e.g. `secrets.BUILDBUDDY_CAS_ONLY_KEY`) to `pull_request`
+  runs from forks (`origin`). To test secret-gated workflow or composite action
+  steps in CI, push the branch to `upstream` and open the PR from
+  `bazel-contrib:<branch>`.
 * **Use Local Composite Actions (`./.github/actions/setup-bazel`)**: Always use
   local composite action wrappers (such as
   `uses: ./.github/actions/setup-bazel`) instead of invoking upstream actions
