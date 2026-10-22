@@ -4,6 +4,7 @@
 # depend on the type without loading the toolchain implementation.
 
 load("//python/private:distribution_filegroup.bzl", "distribution_filegroup")
+load("//python/private:visibility.bzl", "NOT_ACTUALLY_PUBLIC")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -16,7 +17,7 @@ distribution_filegroup(
 # Toolchain providing the tool that creates self-executable zip files
 # (`<preamble> <zip> <output>`). It is optional: when no toolchain is
 # registered, rules fall back to the Python `//tools/zipapp:exe_zip_maker`.
-# For now, only rules_python itself registers one (a Rust build, dev-only).
 toolchain_type(
     name = "exe_zip_maker",
+    visibility = NOT_ACTUALLY_PUBLIC,
 )

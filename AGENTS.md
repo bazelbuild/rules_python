@@ -32,6 +32,11 @@ into the sentence, not verbatim.
 When adding `{versionadded}` or `{versionchanged}` sections, add them add the
 end of the documentation text.
 
+Factor non-trivial scripts (such as multi-line shell or Python logic) into
+standalone files (e.g. `.sh` or `.py` files) instead of inlining them via
+heredocs (`<< 'EOF'`), `-c` flags (`bash -c`, `python3 -c`), or multi-line
+workflow `run:` blocks.
+
 ### PR Updates
 
 Once a PR is created, create new commits and merges. Don't use rebase or amend
@@ -168,6 +173,9 @@ This repository contains 3 Bazel bzlmod modules.
 `python/config_settings/BUILD.bazel` contains build flags that are part of the
 public API. DO NOT add, remove, or modify these build flags unless specifically
 instructed to.
+
+`version.bzl` defines `MINIMUM_BAZEL_VERSION`. Do not add compatibility logic
+or feature guards for Bazel versions older than `MINIMUM_BAZEL_VERSION`.
 
 `bazel query --output=build` can be used to inspect target definitions.
 

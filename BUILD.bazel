@@ -80,7 +80,10 @@ exports_files([
 ])
 
 exports_files(
-    [".bazelversion"],
+    [
+        ".bazelversion",
+        "MODULE.bazel",
+    ],
     visibility = ["//tests:__subpackages__"],
 )
 
