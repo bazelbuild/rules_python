@@ -40,16 +40,46 @@ def test_action_yaml_invokes_executable_download_script():
     assert any("download_bazel.sh" in step.get("run", "") for step in steps)
 
 
-def test_action_yaml_enables_buildbuddy_only_on_linux():
-    """Verifies setup-bazel action.yaml only enables BuildBuddy on Linux."""
+def test_action_yaml_enables_buildbuddy_on_all_os():
+    """Verifies setup-bazel action.yaml enables BuildBuddy across all OSes."""
     action = yaml.safe_load((_action_dir() / "action.yaml").read_text(encoding="utf-8"))
     steps = action["runs"]["steps"]
     setup_step = next(s for s in steps if s.get("name") == "Setup Bazel")
-    assert "runner.os == 'Linux'" in setup_step["with"]["bazelrc"]
+    assert "inputs.buildbuddy_api_key" in setup_step["with"]["bazelrc"]
+    assert "runner.os" not in setup_step["with"]["bazelrc"]
     secret_step = next(
         s for s in steps if s.get("name") == "Write secret to user.bazelrc"
     )
-    assert "runner.os == 'Linux'" in secret_step["if"]
+    assert secret_step["if"] == "${{ inputs.buildbuddy_api_key != '' }}"
+
+
+def test_buildbuddy_bazelrc_disables_remote_executor_on_macos_and_windows():
+    """Verifies .bazelrc and buildbuddy.bazelrc disable remote_executor on macOS and Windows."""
+    rf = runfiles.CreateOrRaise()
+    buildbuddy_path = rf.root() / "rules_python/buildbuddy.bazelrc"
+    buildbuddy_lines = [
+        line.strip()
+        for line in buildbuddy_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    executor_line = (
+        "common:_buildbuddy_base --remote_executor=grpcs://rules-python.buildbuddy.io"
+    )
+    platform_config_line = "common:_buildbuddy_base --enable_platform_specific_config"
+    assert executor_line in buildbuddy_lines
+    assert platform_config_line in buildbuddy_lines
+    assert buildbuddy_lines.index(executor_line) < buildbuddy_lines.index(
+        platform_config_line
+    )
+
+    bazelrc_path = rf.root() / "rules_python/.bazelrc"
+    bazelrc_lines = [
+        line.strip()
+        for line in bazelrc_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    assert "common:macos --remote_executor=" in bazelrc_lines
+    assert "common:windows --remote_executor=" in bazelrc_lines
 
 
 def test_download_bazel_succeeds_first_try(tmp_path: Path):
