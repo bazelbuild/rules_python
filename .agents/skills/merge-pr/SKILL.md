@@ -15,6 +15,8 @@ this PR", or monitor its merge):
      "merge immediately" once CI passes and only `REVIEW_REQUIRED` blocks).
      Never pass `--admin` while CI is pending or failing unless told to bypass
      CI.
+   - **No `--delete-branch` (`-d`)**: Never pass `-d` or `--delete-branch` to
+     `gh pr merge`; it fails when a merge queue is enabled on the repository.
 2. **Invoke a Background Shepherd**: Launch a background subagent with the role
    `Merge PR Shepherd` to continuously watch the PR until it merges.
 3. **Leverage Existing CI Skills**:
