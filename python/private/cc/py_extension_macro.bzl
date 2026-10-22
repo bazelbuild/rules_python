@@ -101,6 +101,23 @@ def py_extension(
         "//conditions:default": ["-fPIC"],
     })
 
+    linkopts = linkopts +  select({
+        # Windows MinGW linker flags are needed for Python upb windows x86 wheels test
+        "//python/dist:windows_x86_32": ["-static-libgcc"],
+        "//conditions:default": [],
+        }) + select({
+        "//python/dist:windows_x86_64_mingw": [
+        "-Wl,--dynamicbase",
+        "-Wl,--nxcompat",
+        "-Wl,--high-entropy-va",
+        ],
+        "//python/dist:windows_x86_32_mingw": [
+            "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+        ],
+        "//conditions:default": [],
+    })
+
     # Private alias targets are appended to avoid "duplicate dependency label" errors
     # if a user explicitly passes //python/cc:current_py_cc_headers or //python/cc:current_py_cc_libs
     # in their deps attribute (including when deps is a select() expression).
