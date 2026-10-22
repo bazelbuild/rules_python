@@ -20,6 +20,9 @@ globs: "*.py,*.sh"
 * Factor non-trivial scripts (such as multi-line Python or shell logic) into
   standalone files (e.g. `.py` or `.sh` files) instead of inlining them via
   heredocs (`<< 'EOF'`) or `-c` flags (`python3 -c`, `bash -c`).
+* **Directly Executable Scripts**: Scripts executed directly (outside a
+  `py_binary` rule) must have `chmod +x` (mode `100755`) and a
+  `#!/usr/bin/env python3` shebang.
 
 ## Interface & ABC Docstrings
 * In abstract base class / interface methods, always document `Args:`,

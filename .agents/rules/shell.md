@@ -11,3 +11,5 @@ globs: "*.sh"
   with `while IFS= read -r file; do ...; done < "$manifest"`. Do not use
   unquoted command substitution (`$(cat "$manifest")`) or suppress ShellCheck
   `SC2046` assuming paths lack spaces.
+* Do not create companion `.sh` forwarders that merely pass `"$@"` to another
+  executable or script.
