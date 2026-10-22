@@ -61,10 +61,13 @@ def test_buildbuddy_bazelrc_disables_remote_executor_on_macos_and_windows():
         for line in bazelrc_path.read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.strip().startswith("#")
     ]
-    assert (
+    executor_line = (
         "common:_buildbuddy_base --remote_executor=grpcs://rules-python.buildbuddy.io"
-        in lines
     )
+    platform_config_line = "common:_buildbuddy_base --enable_platform_specific_config"
+    assert executor_line in lines
+    assert platform_config_line in lines
+    assert lines.index(executor_line) < lines.index(platform_config_line)
     assert "common:macos --remote_executor=" in lines
     assert "common:windows --remote_executor=" in lines
 

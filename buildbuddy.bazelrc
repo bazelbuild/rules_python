@@ -8,6 +8,12 @@ build:_buildbuddy_base --bes_backend=grpcs://rules-python.buildbuddy.io
 common:_buildbuddy_base --remote_cache=grpcs://rules-python.buildbuddy.io
 common:_buildbuddy_base --remote_timeout=10m
 common:_buildbuddy_base --remote_executor=grpcs://rules-python.buildbuddy.io
+# Re-apply `--enable_platform_specific_config` after setting `--remote_executor`
+# so `common:macos` and `common:windows` below inherit the priority of
+# `--config=buildbuddy_*` (e.g. when set in `~/.bazelrc` by `setup-bazel`,
+# which has higher priority than `.bazelrc`'s top-level
+# `--enable_platform_specific_config`).
+common:_buildbuddy_base --enable_platform_specific_config
 
 # BuildBuddy's managed cloud pool only has Linux executors; disable remote
 # execution on macOS and Windows while keeping BES and remote caching enabled.
