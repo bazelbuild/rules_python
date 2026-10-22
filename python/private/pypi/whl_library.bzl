@@ -16,6 +16,7 @@
 
 load(":pip_archive.bzl", "pip_archive", "pip_archive_attrs")
 load(":whl_archive.bzl", "whl_archive", "whl_archive_attrs")
+load(":whl_download.bzl", "whl_download", "whl_download_attrs")
 
 def _filter(kwargs, subset, debug = False):
     dropped = {}
@@ -38,6 +39,10 @@ def whl_library(name, repo = None, **kwargs):
     * {obj}`whl_archive`
     * {obj}`pip_archive`
 
+    URL wheels are downloaded temporarily for extraction, then removed.
+    A sibling `<name>_whl` repository supplies the original archive lazily,
+    when a wheel target is requested. Extraction does not depend on it.
+
     Args:
         name: {type}`str` The name of the repo.
         repo: Unused, will be dropped in the next major release.
@@ -56,6 +61,9 @@ def whl_library(name, repo = None, **kwargs):
     kwargs.setdefault("dep_template", "@{}{{name}}//:{{target}}".format(kwargs.pop("repo_prefix", "")))
 
     if whl_file or (urls and filename and filename.endswith(".whl")):
+        if not whl_file:
+            whl_download(name = name + "_whl", **_filter(kwargs, whl_download_attrs))
+            kwargs["downloaded_whl"] = "@{}//:{}".format(name + "_whl", filename)
         whl_archive(name = name, **_filter(kwargs, whl_archive_attrs))
     else:
         pip_archive(name = name, **_filter(kwargs, pip_archive_attrs))

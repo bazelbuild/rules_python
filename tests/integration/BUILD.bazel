@@ -143,6 +143,11 @@ rules_python_integration_test(
     name = "whl_library_test",
 )
 
+rules_python_integration_test(
+    name = "whl_storage_test",
+    py_main = "whl_storage_test.py",
+)
+
 py_library(
     name = "runner_lib",
     srcs = ["runner.py"],

@@ -69,7 +69,7 @@ def _remove_files(rctx, *basenames):
         elif path.is_dir:
             paths.extend(path.readdir())
 
-def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None):
+def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None, whl_file = None):
     """Extract the wheel, apply patches and generate BUILD.bazel files.
 
     Reused in pip and http wheel download code.
@@ -79,6 +79,7 @@ def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None):
         whl_path: the whl path to extract.
         logger: The logger to use
         sdist_filename: The filename to ignore in the BUILD.bazel files as sources.
+        whl_file: The label of an externally stored wheel, if any.
 
     Returns:
         The repository metadata if the extraction is reproducible
@@ -91,15 +92,21 @@ def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None):
                 patches[patch_file] = patch_dst.patch_strip
 
         if patches:
+            # patch_whl deletes its input before repacking. Never delete an
+            # archive owned by another repository.
+            if whl_path.dirname != rctx.path("."):
+                rctx.symlink(whl_path, whl_path.basename)
+                whl_path = rctx.path(whl_path.basename)
             whl_path = patch_whl(
                 rctx,
                 whl_path = whl_path,
                 patches = patches,
             )
+            whl_file = None
 
     whl_extract(rctx, whl_path = whl_path, logger = logger)
 
-    install_dir_path = whl_path.dirname.get_child("site-packages")
+    install_dir_path = rctx.path("site-packages")
     metadata = whl_metadata(
         install_dir = install_dir_path,
         read_fn = rctx.read,
@@ -139,7 +146,13 @@ def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None):
             metadata = metadata,
             filename = sdist_filename or whl_path.basename,
         ),
+        **({"whl_file": str(whl_file)} if whl_file else {})
     )
+
+    # The generated wheel target can obtain the original archive independently.
+    # Do not retain the temporary download or delete a caller-owned wheel.
+    if whl_file and whl_path.dirname == rctx.path("."):
+        rctx.delete(whl_path)
 
     # Delete these in case the wheel had them. They generally don't cause
     # a problem, but let's avoid the chance of that happening.

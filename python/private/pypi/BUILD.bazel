@@ -481,6 +481,7 @@ bzl_library(
     deps = [
         ":pip_archive",
         ":whl_archive",
+        ":whl_download",
     ],
 )
 
@@ -555,8 +556,19 @@ bzl_library(
     deps = [
         ":attrs",
         ":patch_and_extract_whl",
-        ":urllib",
         ":whl_deps_repo",
+        ":whl_download",
+        "//python/private:auth",
+        "//python/private:repo_utils",
+    ],
+)
+
+bzl_library(
+    name = "whl_download",
+    srcs = ["whl_download.bzl"],
+    deps = [
+        ":attrs",
+        ":urllib",
         "//python/private:auth",
         "//python/private:repo_utils",
     ],
