@@ -61,13 +61,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/de/f0/c81e05b613866b76d2d1066490adf1a3dbc4ee9d9c839961c3fc8a6997af/pip-26.0.1-py3-none-any.whl",
-        "bdb1b08f4274833d62c1aa29e20907365a2ceb950410df15fc9521bad440122b",
+        "https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl",
+        "fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70",
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/6e/74/59906d876c6cb1137f42a137164f2fe683b06283cde84bfcf7f5dd43970b/pip_tools-7.5.3-py3-none-any.whl",
-        "3aac0c473240ae90db7213c033401f345b05197293ccbdd2704e52e7a783785e",
+        "https://files.pythonhosted.org/packages/4b/68/f3bd09c53ed3159bb1349e1d5859ad1ea7755b8e4cd50174290e9e8cbb47/pip_tools-7.6.2-py3-none-any.whl",
+        "f37eb4b736859c2c30230e50977312c61918b7ef931071ff7811fd067715c25f",
     ),
     (
         "pypi__pyproject_hooks",
