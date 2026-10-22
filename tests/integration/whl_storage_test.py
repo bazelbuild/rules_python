@@ -14,18 +14,18 @@ from tests.integration import runner
 class WheelStorageTest(runner.TestCase):
     def setUp(self):
         super().setUp()
-        self.wheel = self.repo_root / "pkg-1.0-py3-none-any.whl"
+        self.wheel = self.repo_root / "storage_pkg-1.0-py3-none-any.whl"
         with zipfile.ZipFile(self.wheel, "w") as wheel:
-            wheel.writestr("pkg/__init__.py", "PATCHED = False\n")
+            wheel.writestr("storage_pkg/__init__.py", "PATCHED = False\n")
             wheel.writestr(
-                "pkg-1.0.dist-info/METADATA",
-                "Metadata-Version: 2.1\nName: pkg\nVersion: 1.0\n",
+                "storage_pkg-1.0.dist-info/METADATA",
+                "Metadata-Version: 2.1\nName: storage-pkg\nVersion: 1.0\n",
             )
             wheel.writestr(
-                "pkg-1.0.dist-info/WHEEL",
+                "storage_pkg-1.0.dist-info/WHEEL",
                 "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
             )
-            wheel.writestr("pkg-1.0.dist-info/RECORD", "")
+            wheel.writestr("storage_pkg-1.0.dist-info/RECORD", "")
         self.original_wheel = self.wheel.read_bytes()
         (self.repo_root / "wheel.sha256").write_text(
             hashlib.sha256(self.original_wheel).hexdigest()
@@ -40,6 +40,23 @@ class WheelStorageTest(runner.TestCase):
         self.addCleanup(thread.join)
         self.addCleanup(server.shutdown)
         self.bazel_env["WHEEL_TEST_ADDRESS"] = f"127.0.0.1:{server.server_port}"
+        base_url = f"http://127.0.0.1:{server.server_port}"
+        digest = hashlib.sha256(self.original_wheel).hexdigest()
+        (self.repo_root / "uv.lock").write_text(
+            f"""\
+version = 1
+revision = 3
+requires-python = ">=3.14"
+
+[[package]]
+name = "storage-pkg"
+version = "1.0"
+source = {{ registry = "{base_url}/simple" }}
+wheels = [
+    {{ url = "{base_url}/{self.wheel.name}", hash = "sha256:{digest}", size = {len(self.original_wheel)} }},
+]
+"""
+        )
         output_base = self.run_bazel("info", "output_base").stdout.strip()
         self.external = Path(output_base) / "external"
 
@@ -76,8 +93,10 @@ class WheelStorageTest(runner.TestCase):
         self.assertFalse((patched / self.wheel.name).exists())
         self.assertEqual(self.repositories("patched_whl"), [])
         self.run_bazel("build", "@patched//:whl", "@patched//:whl_file")
-        with zipfile.ZipFile(patched / "pkg-1.0+patched-py3-none-any.whl") as wheel:
-            self.assertEqual(wheel.read("pkg/__init__.py"), b"PATCHED = True\n")
+        with zipfile.ZipFile(
+            patched / "storage_pkg-1.0+patched-py3-none-any.whl"
+        ) as wheel:
+            self.assertEqual(wheel.read("storage_pkg/__init__.py"), b"PATCHED = True\n")
         self.assertEqual(self.repositories("patched_whl"), [])
 
         self.assert_runs("nonmatching", patched=False)
@@ -95,6 +114,26 @@ class WheelStorageTest(runner.TestCase):
                 self.assertEqual(self.wheel.read_bytes(), self.original_wheel)
                 self.assertFalse((self.repository(name) / self.wheel.name).exists())
                 self.assertEqual(self.repositories(name + "_whl"), [])
+
+    def test_uv_lock_lazy_archive(self):
+        self.assert_runs("uv_locked", patched=False)
+        repositories = [
+            path
+            for path in self.external.glob("*uv_pip_*")
+            if path.is_dir() and not path.name.endswith("_whl")
+        ]
+        self.assertEqual(len(repositories), 1, repositories)
+        extracted = repositories[0].resolve()
+        archive_repo = self.external / (repositories[0].name + "_whl")
+        self.assertEqual(list(extracted.glob("*.whl")), [])
+        self.assertFalse(archive_repo.exists())
+        self.assertFalse(archive_repo.is_symlink())
+
+        self.run_bazel("build", "@uv_pip//storage_pkg:whl")
+        self.assertEqual(
+            (archive_repo / self.wheel.name).read_bytes(), self.original_wheel
+        )
+        self.assertEqual(list(extracted.glob("*.whl")), [])
 
 
 if __name__ == "__main__":

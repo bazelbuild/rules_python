@@ -12,3 +12,11 @@ python.toolchain(python_version = "3.14")
 
 wheels = use_extension("//:wheels.bzl", "wheels")
 use_repo(wheels, "nonmatching", "patched", "plain", "provided", "provided_patched")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "uv_pip",
+    python_version = "3.14",
+    uv_lock = "//:uv.lock",
+)
+use_repo(pip, "uv_pip")

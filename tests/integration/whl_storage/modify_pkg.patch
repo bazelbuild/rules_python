@@ -1,5 +1,5 @@
---- pkg/__init__.py
-+++ pkg/__init__.py
+--- storage_pkg/__init__.py
++++ storage_pkg/__init__.py
 @@ -1 +1 @@
 -PATCHED = False
 +PATCHED = True

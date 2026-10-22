@@ -1,3 +1,3 @@
-import pkg
+import storage_pkg
 
-print(f"PATCHED={pkg.PATCHED}")
+print(f"PATCHED={storage_pkg.PATCHED}")
