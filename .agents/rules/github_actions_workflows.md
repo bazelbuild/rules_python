@@ -42,10 +42,16 @@ globs: ".github/workflows/**,.github/actions/**"
   (such as multi-line shell or Python logic) into standalone files (e.g. `.sh`
   or `.py` files) instead of inlining them in workflow YAML steps (`run: |`),
   shell scripts, or command invocations via heredocs (`<< 'EOF'`) or `-c` flags
-  (`bash -c`, `python3 -c`).
+  (`bash -c`, `python3 -c`). For single-line substitutions in shell scripts, use
+  `sed --in-place`.
+* **Shell Rules**: Consult the shell rules when writing shell code in workflows
+  or action scripts.
 * **Executable Permissions**: Workflow step scripts must have `chmod +x` (mode
   `100755`) and a shebang (e.g. `#!/usr/bin/env python3`).
 * **Test Location**: Place workflow tests under `tests/workflows/`.
+* **Platform Constraints**: Set
+  `target_compatible_with = ["@platforms//os:linux"]` on tests for Linux-only
+  workflow scripts instead of adding macOS/BSD workarounds.
 * **Imports over `sys.path`**: Never alter `sys.path`. Define a `py_library`
   with `imports = ["../../.github/workflows"]` in `tests/workflows/BUILD.bazel`.
 * **Functional Design & Fixtures**: Keep scripts functional with one public
