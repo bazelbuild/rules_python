@@ -29,6 +29,17 @@ Unreleased changes are tracked as individual files in the [news/](./news)
 directory, or view the [latest generated
 changelog](https://rules-python.readthedocs.io/en/latest/changelog.html).
 
+{#v2-4-3}
+## [2.4.3] - 2026-10-21
+
+[2.4.3]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.3
+
+{#v2-4-3-changed}
+### Changed
+* Updated `certifi` to `2026.10.19`
+  ([#4299](https://github.com/bazel-contrib/rules_python/issues/4299)).
+
+
 {#v2-4-2}
 ## [2.4.2] - 2026-10-08
 
