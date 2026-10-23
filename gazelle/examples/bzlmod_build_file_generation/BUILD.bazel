@@ -19,14 +19,7 @@ load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 lock(
     name = "requirements",
     srcs = ["pyproject.toml"],
-    out = "requirements_lock.txt",
-)
-
-lock(
-    name = "requirements_windows",
-    srcs = ["pyproject.toml"],
-    out = "requirements_windows.txt",
-    args = ["--python-platform=windows"],
+    out = "uv.lock",
 )
 
 # This repository rule fetches the metadata for python packages we
