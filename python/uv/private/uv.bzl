@@ -36,7 +36,7 @@ uv = use_extension(
     # your module is used elsewhere.
     dev_dependency = True,
 )
-uv.configure(version = "0.5.24")
+uv.configure(version = "0.13.5")
 ```
 
 Since this is only for locking the requirements files, it should be always
