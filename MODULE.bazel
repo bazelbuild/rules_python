@@ -31,6 +31,7 @@ use_repo(
     "pypi__pyproject_hooks",
     "pypi__setuptools",
     "pypi__tomli",
+    "pypi__typing_extensions",
     "pypi__wheel",
     "pypi__zipp",
     "rules_python_internal",

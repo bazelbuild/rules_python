@@ -29,6 +29,19 @@ Unreleased changes are tracked as individual files in the [news/](./news)
 directory, or view the [latest generated
 changelog](https://rules-python.readthedocs.io/en/latest/changelog.html).
 
+{#v2-4-4}
+## [2.4.4] - 2026-10-22
+
+[2.4.4]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.4
+
+{#v2-4-4-changed}
+### Changed
+* (pypi) Updated `pip` to `26.2.2`, `pip-tools` to `7.6.2`, and other internal
+  dependencies used for `compile_pip_requirements`, building sdists in
+  `whl_library`, and fetching wheels using `pip`
+  ([#4299](https://github.com/bazel-contrib/rules_python/issues/4299)).
+
+
 {#v2-4-3}
 ## [2.4.3] - 2026-10-21
 
