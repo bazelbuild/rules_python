@@ -17,9 +17,6 @@ runs:
     - name: Setup Bazel
       uses: bazel-contrib/setup-bazel@0.19.1
       with:
-        # Windows images have a fixed-version `bazel` on PATH, and Bazelisk
-        # < 1.29.0 has no windows-arm64 build.
-        bazelisk-version: 1.29.0
         bazelisk-cache: true
         disk-cache: true
         # Files hashed to compute the repository cache key. If only `true` is
@@ -38,13 +35,14 @@ runs:
           build --//python/config_settings:py_pbs_distribution=install_only_stripped
           ${{ inputs.buildbuddy_api_key && format('common --config={0}', inputs.buildbuddy_config) || '' }}
 
-    # setup-bazel only configures Bazelisk and restores caches; the Bazel
-    # binary itself is downloaded by Bazelisk on first invocation. Because
-    # Bazelisk does not retry mid-stream download failures, trigger and retry
-    # the download upfront via `bazel --version`.
+    # setup-bazel configures .bazelrc and restores caches. Download Bazelisk
+    # and the Bazel binary here with retries, SHA-256 verification, and mirror
+    # fallback instead of using setup-bazel's `bazelisk-version` input (which
+    # queries api.github.com/repos/bazelbuild/bazelisk/releases without
+    # retries) or leaving the Bazel download to the first build step.
     - name: Download Bazel
       shell: bash
-      run: "${GITHUB_ACTION_PATH}/download_bazel.sh"
+      run: "${GITHUB_ACTION_PATH}/download_bazel.py"
 
     # Use github-script to write the key directly to user.bazelrc without
     # passing it via environment variables or CLI args, keeping it out of
