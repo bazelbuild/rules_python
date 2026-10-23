@@ -14,27 +14,11 @@ load("@rules_python//python:py_test.bzl", "py_test")
 load("@rules_python//python/uv:lock.bzl", "lock")
 
 # This stanza calls a rule that generates targets for managing pip dependencies
-# with uv for a particular python version.
+# with uv.
 lock(
-    name = "requirements_3_10",
+    name = "requirements",
     srcs = ["pyproject.toml"],
-    out = "requirements_lock_3_10.txt",
-    args = [
-        "--extra-index-url",
-        "https://pypi.org/simple/",
-    ],
-    python_version = "3.10",
-)
-
-lock(
-    name = "requirements_windows_3_10",
-    srcs = ["pyproject.toml"],
-    out = "requirements_windows_3_10.txt",
-    args = [
-        "--extra-index-url",
-        "https://pypi.org/simple/",
-        "--python-platform=windows",
-    ],
+    out = "uv.lock",
     python_version = "3.10",
 )
 

@@ -5,6 +5,6 @@ load("@rules_python//python/uv:lock.bzl", "lock")
 lock(
     name = "requirements",
     srcs = ["pyproject.toml"],
-    out = "requirements_lock_3_11.txt",
+    out = "uv.lock",
     python_version = "3.11",
 )
