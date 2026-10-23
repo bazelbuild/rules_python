@@ -19,7 +19,9 @@ Ask for user input and provide a justificaiton if trying to violate them.
 
 ## Style and conventions
 
-Read `.editorconfig` for line length wrapping
+Read `.editorconfig` for line length wrapping. Do not line-break long string
+literals (such as URLs or hashes) to fit line length limits; allow them to
+exceed the limit.
 
 Read `CONTRIBUTING.md` for additional style rules and conventions.
 

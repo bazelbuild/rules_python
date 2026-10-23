@@ -25,7 +25,8 @@ this PR", or monitor its merge):
    - Have the subagent use the **`buildkite-retry-job`** skill
      (`retry_buildkite_jobs.py <pr_number>`) to automatically retry any
      transient network flakes (e.g., HTTP 504 gateway timeouts, downloader
-     errors) and unblock manual approval steps.
+     errors, `setup-bazel` `Unable to find Bazelisk version` errors) and
+     unblock manual approval steps.
    - **Blocked Builds (`.bazelci/presubmit.yml` Approval)**: When
      `.bazelci/presubmit.yml` is modified, Buildkite blocks the build until
      manually approved. Approve and unblock it immediately via

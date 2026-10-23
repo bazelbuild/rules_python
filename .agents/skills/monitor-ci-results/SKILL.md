@@ -50,7 +50,8 @@ or when monitoring CI after PR updates:
    `analyze-ci-failure` skill on the reported failure.
 5. **Autonomous Flake Retry**: If the CI Failure Analyzer subagent confirms
    that the failure is a transient infrastructure or network flake (e.g. disk
-   I/O error, 504 gateway, sandbox initialization failure), **immediately and
+   I/O error, 504 gateway, sandbox initialization failure, or `setup-bazel`
+   failing with `Unable to find Bazelisk version`), **immediately and
    autonomously** launch a separate subagent using `invoke_subagent` with the
    role "CI Job Retrier" and the prompt template in
    `.agents/skills/monitor-ci-results/retry-job-prompt.md` to run the

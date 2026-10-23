@@ -76,3 +76,7 @@ globs: "*.py,*.sh"
 ## Context Managers
 * Implement temporary state changes (e.g., `Git.checkout()`, `os.chdir()`) as
   context managers that restore prior state on exit.
+
+## Formatting
+* Do not line-break long string literals (such as URLs or hashes) to fit line
+  length limits; allow them to exceed the limit.

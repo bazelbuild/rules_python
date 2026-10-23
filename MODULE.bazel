@@ -38,6 +38,7 @@ use_repo(
     "pypi__pyproject_hooks",
     "pypi__setuptools",
     "pypi__tomli",
+    "pypi__typing_extensions",
     "pypi__wheel",
     "pypi__zipp",
     "rules_python_internal",
@@ -455,7 +456,7 @@ uv = use_extension("//python/uv:uv.bzl", "uv")
 uv.default(
     base_url = "https://github.com/astral-sh/uv/releases/download",
     manifest_filename = "dist-manifest.json",
-    version = "0.13.1",
+    version = "0.13.5",
 )
 uv.default(
     compatible_with = [
@@ -523,7 +524,7 @@ uv_dev = use_extension(
     dev_dependency = True,
 )
 uv_dev.configure(
-    version = "0.13.1",
+    version = "0.13.5",
 )
 
 flag_alias(

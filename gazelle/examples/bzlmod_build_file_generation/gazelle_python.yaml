@@ -25,7 +25,6 @@ manifest:
     platformdirs: platformdirs
     pylint: pylint
     requests: requests
-    setuptools: setuptools
     six: six
     sqlparse: sqlparse
     tabulate: tabulate
@@ -33,7 +32,7 @@ manifest:
     typing_extensions: typing_extensions
     urllib3: urllib3
     wrapt: wrapt
-    yaml: PyYAML
+    yaml: pyyaml
     yamllint: yamllint
   pip_repository:
     name: pip
