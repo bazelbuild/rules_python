@@ -139,7 +139,7 @@ def test_download_bazelisk_from_primary_url(
 ):
     """Verifies download_bazel.py downloads Bazelisk, checks SHA-256, and updates GITHUB_PATH."""
     calls_file = tmp_path / "calls.txt"
-    release_dir = tmp_path / "releases" / "v1.28.1"
+    release_dir = tmp_path / "releases" / "v1.30.0"
     asset = _write_fake_bazel(
         release_dir,
         f'echo "$@" >> "{calls_file}"\necho "bazel 9.1.1"\n',
