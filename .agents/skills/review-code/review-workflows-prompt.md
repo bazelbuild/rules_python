@@ -8,10 +8,11 @@ project's workflow rules and conventions:
 2. Verify executable permissions: any script invoked directly as a workflow
    step (e.g. `.github/workflows/*.py`, `*.sh`) must have `chmod +x` (filemode
    `100755`) and an appropriate shebang (e.g. `#!/usr/bin/env python3`).
-3. Verify action versions and Dependabot coverage: ensure steps in
-   `.github/workflows/**` and `.github/actions/**` use the latest action
-   versions, and verify every `.github/actions/<name>` directory is listed under
-   `github-actions` `directories` in `.github/dependabot.yml`.
+3. Verify action and tool versions and Dependabot coverage: ensure
+   `.github/workflows/**` and `.github/actions/**` use the latest release of
+   referenced actions and downloaded tools (check via
+   `gh release view --repo <owner>/<repo>`), and verify every
+   `.github/actions/<name>` directory is in `.github/dependabot.yml`.
 4. Verify fallback jobs: ensure `suppress-no-jobs-ran-error` / `noop` fallback
    jobs exist in conditional workflows.
 5. Check event payload handling: for steps that are a single Python script,
