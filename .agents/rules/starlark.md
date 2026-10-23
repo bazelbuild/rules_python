@@ -109,6 +109,8 @@ globs: "*.bzl,BUILD,BUILD.bazel,*.bazel"
   existing files unless explicitly directed by the user.
 * **Line Length & Wrapping**: Wrap Markdown and Starlark lines to 80 columns in
   accordance with `.editorconfig`.
+  * **Long string literals**: Do not line-break long string literals (such as
+    URLs or hashes) to fit line length limits; allow them to exceed the limit.
   * **Long ternaries**: Use `if`/`else` statements when `a if cond else b`
     exceeds 80 columns (`buildifier` collapses multi-line ternaries).
 
