@@ -3,7 +3,7 @@
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
-load(":patch_whl.bzl", "patch_whl")
+load(":patch_whl.bzl", "get_whl_patches", "patch_whl")
 load(":pep508_requirement.bzl", "requirement")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_extract.bzl", "whl_extract")
@@ -85,11 +85,7 @@ def patch_and_extract_whl(rctx, *, whl_path, logger, sdist_filename = None, whl_
         The repository metadata if the extraction is reproducible
     """
     if rctx.attr.whl_patches:
-        patches = {}
-        for patch_file, json_args in rctx.attr.whl_patches.items():
-            patch_dst = struct(**json.decode(json_args))
-            if whl_path.basename in patch_dst.whls:
-                patches[patch_file] = patch_dst.patch_strip
+        patches = get_whl_patches(rctx.attr.whl_patches, whl_path.basename)
 
         if patches:
             # patch_whl deletes its input before repacking. Never delete an

@@ -5,7 +5,7 @@ load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS")
 load(":patch_and_extract_whl.bzl", "patch_and_extract_whl")
 load(":whl_deps_repo.bzl", "whl_deps_attrs")
-load(":whl_download.bzl", "download_whl")
+load(":whl_file_repo.bzl", "download_whl")
 
 def _whl_archive_impl(rctx):
     logger = repo_utils.logger(rctx)

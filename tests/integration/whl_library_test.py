@@ -11,7 +11,7 @@ from pathlib import Path
 from tests.integration import runner
 
 
-class WheelStorageTest(runner.TestCase):
+class WheelLibraryTest(runner.TestCase):
     def setUp(self):
         super().setUp()
         self.wheel = self.repo_root / "storage_pkg-1.0-py3-none-any.whl"
@@ -90,14 +90,15 @@ wheels = [
     def test_matching_and_nonmatching_patches(self):
         self.assert_runs("patched", patched=True)
         patched = self.repository("patched")
-        self.assertFalse((patched / self.wheel.name).exists())
-        self.assertEqual(self.repositories("patched_whl"), [])
+        self.assertEqual(list(patched.glob("*.whl")), [])
         self.run_bazel("build", "@patched//:whl", "@patched//:whl_file")
         with zipfile.ZipFile(
-            patched / "storage_pkg-1.0+patched-py3-none-any.whl"
+            self.repository("patched_whl") / "storage_pkg-1.0+patched-py3-none-any.whl"
         ) as wheel:
             self.assertEqual(wheel.read("storage_pkg/__init__.py"), b"PATCHED = True\n")
-        self.assertEqual(self.repositories("patched_whl"), [])
+        self.assertFalse((self.repository("patched_whl") / self.wheel.name).exists())
+        self.assertFalse((self.repository("patched_whl") / "storage_pkg").exists())
+        self.assertEqual(list(patched.glob("*.whl")), [])
 
         self.assert_runs("nonmatching", patched=False)
         self.assertEqual(list(self.repository("nonmatching").glob("*.whl")), [])
@@ -112,8 +113,21 @@ wheels = [
                 self.assert_runs(name, patched=patched)
                 self.run_bazel("build", f"@{name}//:whl", f"@{name}//:whl_file")
                 self.assertEqual(self.wheel.read_bytes(), self.original_wheel)
-                self.assertFalse((self.repository(name) / self.wheel.name).exists())
+                self.assertEqual(list(self.repository(name).glob("*.whl")), [])
                 self.assertEqual(self.repositories(name + "_whl"), [])
+                if patched:
+                    with zipfile.ZipFile(
+                        self.repository(name + "_patched_whl")
+                        / "storage_pkg-1.0+patched-py3-none-any.whl"
+                    ) as wheel:
+                        self.assertEqual(
+                            wheel.read("storage_pkg/__init__.py"), b"PATCHED = True\n"
+                        )
+
+    def test_repository_contents(self):
+        # Retain the existing direct whl_archive, pip_archive, sdist, and
+        # dependency-wiring assertions in the same nested Bazel test.
+        self.run_bazel("test", "//:test_contents")
 
     def test_uv_lock_lazy_archive(self):
         self.assert_runs("uv_locked", patched=False)
