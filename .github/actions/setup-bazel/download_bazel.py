@@ -39,30 +39,32 @@ MAX_ATTEMPTS = 5
 INITIAL_DELAY_SECONDS = 2.0
 
 # Maps "<os>-<arch>" to a list of (url, sha256) tuples tried in order.
+# Primary URLs use v1.30.0 (latest GitHub release); the npm mirror fallback uses
+# 1.28.1 (latest version published to the npm registry).
 # fmt: off
 BAZELISK_URLS: dict[str, list[tuple[str, str]]] = {
     "darwin-amd64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-darwin-amd64", "023225736cea5dc88f2b0807d5b1af4eb0f69a4ed45e3994b2c18c263bc80e48"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-darwin-amd64", "a0e6468b0c6b812f782d8cbfb05824121f6980c0bd70aaa1774fb8272bb7b2ad"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "023225736cea5dc88f2b0807d5b1af4eb0f69a4ed45e3994b2c18c263bc80e48"),
     ],
     "darwin-arm64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-darwin-arm64", "dea3f3f5de2dbc5e269e0132cdd369d5efe738f7b973d5d4eb2b4f7055a97b39"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-darwin-arm64", "555d2ff912ccd336d0060bdb5251ef2f62629c6f8fbadb59005a45d5625793ec"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "dea3f3f5de2dbc5e269e0132cdd369d5efe738f7b973d5d4eb2b4f7055a97b39"),
     ],
     "linux-amd64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-linux-amd64", "22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-linux-amd64", "a248ae2b2b62b5baebb748f6fba7203bff1a27e5d01b55399a8406744cb539e8"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "22e7d3a188699982f661cf4687137ee52d1f24fec1ec893d91a6c4d791a75de8"),
     ],
     "linux-arm64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-linux-arm64", "8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-linux-arm64", "b2bcc040c213b44586b121bda6d983c35df121b917c3a7a66fb16f2fa0df1a4f"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "8ded44b58a0d9425a4178af26cf17693feac3b87bdcfef0a2a0898fcd1afc9f2"),
     ],
     "windows-amd64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-windows-amd64.exe", "b9d65a1f7c2d7af885a96a4fd5aa36b40fb41816d30944390569eef908bdc954"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-windows-amd64.exe", "5d14a31e9d8a363c48ba1900dbd56764d730835232eb0d113cce255856ffe3ef"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "b9d65a1f7c2d7af885a96a4fd5aa36b40fb41816d30944390569eef908bdc954"),
     ],
     "windows-arm64": [
-        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.28.1/bazelisk-windows-arm64.exe", "85ba3d92a8bdcbecc06657b8c0ae30f4307b552d601d9d6246f8a98aec36c346"),
+        ("https://github.com/bazelbuild/bazelisk/releases/download/v1.30.0/bazelisk-windows-arm64.exe", "cb832b1d157e0dc5f89108da426f9c6fe087f5b15873e072480ec49cc5afe488"),
         ("https://registry.npmjs.org/@bazel/bazelisk/-/bazelisk-1.28.1.tgz", "85ba3d92a8bdcbecc06657b8c0ae30f4307b552d601d9d6246f8a98aec36c346"),
     ],
 }
