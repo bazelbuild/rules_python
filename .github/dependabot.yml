@@ -12,8 +12,15 @@ updates:
   - package-ecosystem: "pip"
     directories:
       # Maintain dependencies for our tools
-      - "/docs"
       - "/tools/publish"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "uv"
+    directories:
+      - "/dev"
+      - "/sphinxdocs/dev"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
