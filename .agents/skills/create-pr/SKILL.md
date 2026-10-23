@@ -9,11 +9,11 @@ to a subagent. NEVER create or draft PRs directly in the main conversation.
 
 ### Instructions
 
-1. **Code Review Audit**: Launch a subagent with `review-code` to verify
-   `git diff` conforms to all rules (news entry in `news/`, line wrapping,
-   copyright, conventions, Starlark formatting). Fix any issues before
-   proceeding.
-2. **Launch Subagent**: Use `invoke_subagent` (`TypeName: "self"`).
+1. **Code Review Subagent**: Before launching the PR subagent, launch a
+   subagent (`invoke_subagent`, `TypeName: "self"`) to run the `review-code`
+   skill (`.agents/skills/review-code/SKILL.md`). Wait for it to finish and fix
+   any issues before proceeding.
+2. **Launch PR Subagent**: Use `invoke_subagent` (`TypeName: "self"`).
 3. **Subagent Prompt Instructions**:
    - Follow `CONTRIBUTING.md` and `@/.agents/rules/pr.md`.
    - **PR Title**: Conventional commits format (`agents:` prefix for agent

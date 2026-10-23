@@ -6,9 +6,10 @@ globs: ".github/workflows/**,.github/actions/**,.github/dependabot.yml"
 
 # GitHub Actions Workflows Rule
 
-* Use the latest version of referenced actions in `.github/workflows/` and
-  `.github/actions/` (ensuring actions target supported Node.js runtimes such as
-  `node24` rather than deprecated `node20`).
+* Use the latest release of referenced actions and downloaded tools in
+  `.github/workflows/` and `.github/actions/` (check via
+  `gh release view --repo <owner>/<repo>`), targeting supported Node.js
+  runtimes (`node24`, not `node20`).
 * **Dependabot Coverage for Composite Actions**: When adding a composite action
   directory under `.github/actions/<name>`, add `"/.github/actions/<name>"` to
   the `github-actions` `directories` list in `.github/dependabot.yml` (since
