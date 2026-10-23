@@ -29,6 +29,18 @@ Unreleased changes are tracked as individual files in the [news/](./news)
 directory, or view the [latest generated
 changelog](https://rules-python.readthedocs.io/en/latest/changelog.html).
 
+{#v2-4-5}
+## [2.4.5] - 2026-10-22
+
+[2.4.5]: https://github.com/bazel-contrib/rules_python/releases/tag/2.4.5
+
+{#v2-4-5-changed}
+### Changed
+* (uv) Updated the default `uv` version to `0.13.5` to address
+  [GHSA-hq85-5cpj-mr62](https://github.com/astral-sh/uv/security/advisories/GHSA-hq85-5cpj-mr62)
+  ([#4299](https://github.com/bazel-contrib/rules_python/issues/4299)).
+
+
 {#v2-4-4}
 ## [2.4.4] - 2026-10-22
 
