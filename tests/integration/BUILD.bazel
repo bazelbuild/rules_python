@@ -15,7 +15,7 @@
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "default_test_runner")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
-load("//tests/support:support.bzl", "NOT_WINDOWS")
+load("//tests/support:support.bzl", "NOT_WINDOWS", "SUPPORTS_BZLMOD")
 load(":integration_test.bzl", "rules_python_integration_test")
 
 licenses(["notice"])
@@ -113,6 +113,14 @@ rules_python_integration_test(
 rules_python_integration_test(
     name = "custom_commands_test",
     py_main = "custom_commands_test.py",
+)
+
+rules_python_integration_test(
+    name = "prebuilt_toolchain_test",
+    py_data = ["//crates/exe_zip_maker"],
+    py_deps = ["//python/runfiles"],
+    py_main = "prebuilt_toolchain_test.py",
+    target_compatible_with = SUPPORTS_BZLMOD + NOT_WINDOWS,
 )
 
 rules_python_integration_test(
