@@ -17,6 +17,7 @@ def _load_bootstrap() -> dict:
         template_path = r.Rlocation(
             "rules_python/python/private/python_bootstrap_template.txt"
         )
+        assert template_path is not None
         template = pathlib.Path(template_path)
     else:
         template = (
