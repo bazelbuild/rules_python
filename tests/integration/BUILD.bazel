@@ -149,6 +149,7 @@ rules_python_integration_test(
 
 rules_python_integration_test(
     name = "whl_library_test",
+    py_main = "whl_library_test.py",
 )
 
 py_library(
