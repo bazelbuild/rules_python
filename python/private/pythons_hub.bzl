@@ -16,7 +16,7 @@
 
 load("//python:versions.bzl", "PLATFORMS")
 load(":pbs_manifest.bzl", "parse_runtime_manifest")
-load(":runtimes_manifest_workspace.bzl", "MANIFEST_TEXT")
+load(":runtimes_manifest.bzl", "MANIFEST_TEXT")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "toolchain_suites_content")
 

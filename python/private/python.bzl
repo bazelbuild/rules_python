@@ -30,7 +30,7 @@ load(":pyproject_utils.bzl", "read_pyproject", "version_from_requires_python")
 load(":python_register_toolchains.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
-load(":runtimes_manifest_workspace.bzl", "MANIFEST_TEXT")
+load(":runtimes_manifest.bzl", "MANIFEST_TEXT")
 load(
     ":toolchains_repo.bzl",
     "host_compatible_python_repo",
@@ -40,7 +40,12 @@ load(
 )
 load(":version.bzl", "version")
 
-def parse_modules(*, module_ctx, logger = None, _fail = fail, _default_runtime_manifest = MANIFEST_TEXT):
+def parse_modules(
+        *,
+        module_ctx,
+        logger = None,
+        _fail = fail,
+        _default_runtime_manifest = MANIFEST_TEXT):
     """Parse the modules and return a struct for registrations.
 
     Args:
@@ -844,13 +849,19 @@ def _populate_from_pbs_manifest(
             v_dict.setdefault("url", {})[platform_key] = urls
             v_dict.setdefault("strip_prefix", {})[platform_key] = strip_prefix
 
-def _get_toolchain_config(*, mctx, modules, default_runtime_manifest, _fail = fail):
+def _get_toolchain_config(
+        *,
+        mctx,
+        modules,
+        default_runtime_manifest,
+        _fail = fail):
     """Computes the configs for toolchains.
 
     Args:
         mctx: The module context.
         modules: The modules from module_ctx
-        default_runtime_manifest: The contents of the built-in runtimes manifest.
+        default_runtime_manifest: The contents of the built-in runtimes
+            manifest.
         _fail: Function to call for failing; only used for testing.
 
     Returns:
