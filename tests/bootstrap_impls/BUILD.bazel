@@ -142,8 +142,8 @@ pytest_test(
 
 py_test(
     name = "cached_venv_replaces_dangling_package_symlink_test",
-    main = "cached_venv_dangling_symlink_test.py",
     srcs = ["cached_venv_dangling_symlink_test.py"],
+    main = "cached_venv_dangling_symlink_test.py",
     data = ["//python/private:python_bootstrap_template.txt"],
     deps = ["//python/runfiles"],
 )
